@@ -32,8 +32,8 @@ export const metadata: Metadata = {
     images: [
       {
         url: new URL("og.png", siteUrl).toString(),
-        width: 1792,
-        height: 934,
+        width: 1733,
+        height: 907,
         alt: "Orume 3D — Ideias que ganham forma",
       },
     ],
@@ -49,7 +49,7 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  themeColor: "#070705",
+  themeColor: "#081425",
   colorScheme: "dark",
 };
 

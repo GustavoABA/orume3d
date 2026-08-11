@@ -30,11 +30,11 @@ test("renderiza a landing page da Orume 3D", async () => {
   const html = await response.text();
   assert.match(html, /<html[^>]*lang="pt-BR"/i);
   assert.match(html, /Orume 3D \| Ideias que ganham forma/i);
-  assert.match(html, /A sua ideia\./i);
-  assert.match(html, /A nossa forma\./i);
+  assert.match(html, /Você imagina\./i);
+  assert.match(html, /A gente imprime\./i);
+  assert.match(html, /Abrir Instagram ao vivo/i);
   assert.match(html, /wa\.me\/5519989342212/i);
   assert.match(html, /instagram\.com\/orume3d/i);
   assert.match(html, /tiktok\.com\/@orume3d/i);
   assert.doesNotMatch(html, /codex-preview|SkeletonPreview|react-loading-skeleton/i);
 });
-

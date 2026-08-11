@@ -11,6 +11,11 @@ const files = (await readdir(feedDir))
 
 const titleFromName = (file) => {
   const bareName = path.basename(file, path.extname(file));
+
+  if (/instagram-[A-Za-z0-9_-]+$/i.test(bareName)) {
+    return "Projeto publicado pela Orume 3D";
+  }
+
   const readable = bareName
     .replace(/^\d+[\s_-]*/, "")
     .replace(/[-_]+/g, " ")
@@ -27,6 +32,9 @@ const titleFromName = (file) => {
 const manifest = files.map((file) => ({
   src: "./feed/" + encodeURIComponent(file),
   title: titleFromName(file),
+  ...(file.match(/instagram-([A-Za-z0-9_-]+)\.[^.]+$/i)
+    ? { href: "https://www.instagram.com/p/" + file.match(/instagram-([A-Za-z0-9_-]+)\.[^.]+$/i)[1] + "/" }
+    : {}),
 }));
 
 await writeFile(
