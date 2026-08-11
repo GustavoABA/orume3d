@@ -1,0 +1,8 @@
+COMO ADICIONAR POSTS AO FEED
+
+1. Coloque as novas imagens nesta pasta.
+2. Nomeie em ordem: 02-produto-personalizado.jpg, 03-prototipo.png...
+3. Envie as imagens para o GitHub.
+
+O site reconhece as imagens automaticamente durante a publicação.
+
