@@ -2,7 +2,7 @@
 
 /* eslint-disable @next/next/no-img-element -- feed images are discovered dynamically at build time */
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import type { CSSProperties } from "react";
 import { FaInstagram, FaTiktok, FaWhatsapp } from "react-icons/fa6";
 import feedManifest from "../public/feed/feed.json";
@@ -104,7 +104,6 @@ export default function Home() {
   const [instagramOpen, setInstagramOpen] = useState(false);
   const [contractOpen, setContractOpen] = useState(false);
   const [showFloatingBudget, setShowFloatingBudget] = useState(false);
-  const heroVisualRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -120,12 +119,22 @@ export default function Home() {
     );
 
     document.querySelectorAll("[data-reveal]").forEach((element) => observer.observe(element));
-    return () => observer.disconnect();
+
+    const hero = document.querySelector<HTMLElement>(".hero");
+    const heroVisibilityObserver = new IntersectionObserver(([entry]) => {
+      hero?.classList.toggle("is-offscreen", !entry.isIntersecting);
+    });
+
+    if (hero) heroVisibilityObserver.observe(hero);
+
+    return () => {
+      observer.disconnect();
+      heroVisibilityObserver.disconnect();
+    };
   }, []);
 
   useEffect(() => {
     const root = document.documentElement;
-    const heroVisual = heroVisualRef.current;
     let animationFrame = 0;
 
     const updateScrollMotion = () => {
@@ -133,43 +142,20 @@ export default function Home() {
       const scrollable = Math.max(document.documentElement.scrollHeight - window.innerHeight, 1);
       const progress = Math.min(Math.max(window.scrollY / scrollable, 0), 1);
       root.style.setProperty("--page-progress", `${progress * 100}%`);
-      root.style.setProperty("--hero-scroll", `${Math.min(window.scrollY * 0.16, 90)}px`);
     };
 
     const requestScrollMotion = () => {
       if (!animationFrame) animationFrame = window.requestAnimationFrame(updateScrollMotion);
     };
 
-    const updatePointerMotion = (event: PointerEvent) => {
-      if (!heroVisual || !window.matchMedia("(pointer: fine)").matches) return;
-      const bounds = heroVisual.getBoundingClientRect();
-      const x = (event.clientX - bounds.left) / bounds.width - 0.5;
-      const y = (event.clientY - bounds.top) / bounds.height - 0.5;
-      heroVisual.style.setProperty("--tilt-x", `${y * -10}deg`);
-      heroVisual.style.setProperty("--tilt-y", `${x * 12}deg`);
-      heroVisual.style.setProperty("--pointer-x", `${50 + x * 16}%`);
-      heroVisual.style.setProperty("--pointer-y", `${50 + y * 16}%`);
-    };
-
-    const resetPointerMotion = () => {
-      heroVisual?.style.setProperty("--tilt-x", "0deg");
-      heroVisual?.style.setProperty("--tilt-y", "0deg");
-      heroVisual?.style.setProperty("--pointer-x", "50%");
-      heroVisual?.style.setProperty("--pointer-y", "50%");
-    };
-
     updateScrollMotion();
     window.addEventListener("scroll", requestScrollMotion, { passive: true });
     window.addEventListener("resize", requestScrollMotion);
-    heroVisual?.addEventListener("pointermove", updatePointerMotion);
-    heroVisual?.addEventListener("pointerleave", resetPointerMotion);
 
     return () => {
       if (animationFrame) window.cancelAnimationFrame(animationFrame);
       window.removeEventListener("scroll", requestScrollMotion);
       window.removeEventListener("resize", requestScrollMotion);
-      heroVisual?.removeEventListener("pointermove", updatePointerMotion);
-      heroVisual?.removeEventListener("pointerleave", resetPointerMotion);
     };
   }, []);
 
@@ -193,19 +179,18 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    const updateFloatingBudget = () => {
-      const feedSection = document.getElementById("feed");
-      if (!feedSection) return;
-      setShowFloatingBudget(feedSection.getBoundingClientRect().top <= window.innerHeight * 0.72);
-    };
+    const feedSection = document.getElementById("feed");
+    if (!feedSection) return;
 
-    updateFloatingBudget();
-    window.addEventListener("scroll", updateFloatingBudget, { passive: true });
-    window.addEventListener("resize", updateFloatingBudget);
-    return () => {
-      window.removeEventListener("scroll", updateFloatingBudget);
-      window.removeEventListener("resize", updateFloatingBudget);
-    };
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setShowFloatingBudget(entry.isIntersecting || entry.boundingClientRect.top < 0);
+      },
+      { rootMargin: "0px 0px -28% 0px" },
+    );
+
+    observer.observe(feedSection);
+    return () => observer.disconnect();
   }, []);
 
   useEffect(() => {
@@ -269,7 +254,7 @@ export default function Home() {
 
       <header className="site-header">
         <a className="brand" href="#inicio" aria-label="Orume 3D — início">
-          <img className="brand-logo" src="./orume-logo-mark.png" alt="" aria-hidden="true" />
+          <img className="brand-logo" src="./orume-logo-mark.webp" alt="" aria-hidden="true" decoding="async" />
           <span>ORUME <b>3D</b></span>
         </a>
 
@@ -342,18 +327,11 @@ export default function Home() {
             <a className="scroll-link" href="#feed">Ver projetos recentes <span aria-hidden="true">↓</span></a>
           </div>
 
-          <div className="hero-visual" aria-hidden="true" ref={heroVisualRef}>
+          <div className="hero-visual" aria-hidden="true">
             <div className="print-status"><i /> imprimindo ideia</div>
-            <div className="print-nozzle"><span /><i /></div>
-            <div className="object-orbit"><i /><i /><i /></div>
-            <div className="hero-particles">{Array.from({ length: 7 }).map((_, index) => <i key={index} />)}</div>
-            <div className="layer-object">
-              {Array.from({ length: 11 }).map((_, index) => (
-                <i key={index} style={{ "--layer": index } as CSSProperties} />
-              ))}
-              <b><img src="./orume-logo-mark.png" alt="" /></b>
+            <div className="hero-mark">
+              <img src="./orume-logo-mark.webp" alt="" decoding="async" />
             </div>
-            <div className="print-scan" />
             <div className="visual-note">camada por camada <span>↗</span></div>
           </div>
         </div>
@@ -473,7 +451,7 @@ export default function Home() {
                 className={`service-visual service-visual-${index + 1}`}
                 role="img"
                 aria-label={service.imageLabel}
-                style={{ backgroundImage: 'url("./service-triptych.png")' }}
+                style={{ backgroundImage: 'url("./service-triptych.webp")' }}
               ><span>{service.imageLabel}</span></div>
               <h3>{service.title}</h3>
               <p>{service.text}</p>
@@ -548,7 +526,7 @@ export default function Home() {
 
       <footer className="footer section-shell">
         <div className="footer-main">
-          <a className="brand footer-brand" href="#inicio"><img className="brand-logo" src="./orume-logo-mark.png" alt="" aria-hidden="true" /><span>ORUME <b>3D</b></span></a>
+          <a className="brand footer-brand" href="#inicio"><img className="brand-logo" src="./orume-logo-mark.webp" alt="" aria-hidden="true" loading="lazy" decoding="async" /><span>ORUME <b>3D</b></span></a>
           <p>Ideias que ganham forma.</p>
         </div>
         <div className="footer-links">
@@ -625,7 +603,7 @@ export default function Home() {
         >
           <div className="contract-modal" role="dialog" aria-modal="true" aria-label="Contrato de encomenda e produção 3D">
             <div className="contract-modal-head">
-              <div><img className="contract-logo" src="./orume-logo-mark.png" alt="" aria-hidden="true" /><span>ORUME 3D</span><small>Termos da encomenda</small></div>
+              <div><img className="contract-logo" src="./orume-logo-mark.webp" alt="" aria-hidden="true" decoding="async" /><span>ORUME 3D</span><small>Termos da encomenda</small></div>
               <button className="modal-close" type="button" aria-label="Fechar contrato" onClick={() => setContractOpen(false)}>×</button>
             </div>
 
