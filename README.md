@@ -2,6 +2,8 @@
 
 Site de prospecção e vendas da Orume 3D, com foco em impressão 3D sob medida e experiência mobile.
 
+A versão atual apresenta os projetos logo após a abertura, a história da empresa em Santa Cruz da Conceição/SP, o fluxo de atendimento pelo WhatsApp e um contrato geral consultável e imprimível dentro do site.
+
 ## Atualizar o feed
 
 1. Coloque novas fotos em `public/feed`.

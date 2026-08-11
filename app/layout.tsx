@@ -10,14 +10,15 @@ export const metadata: Metadata = {
     template: "%s | Orume 3D",
   },
   description:
-    "Impressão 3D sob medida: peças personalizadas, presentes, decoração, protótipos e soluções feitas para o seu projeto.",
+    "Impressão 3D sob medida em Santa Cruz da Conceição: peças personalizadas, protótipos e soluções feitas para o seu projeto.",
   keywords: [
     "impressão 3D",
     "impressão 3D personalizada",
     "peças 3D",
     "protótipos 3D",
     "Orume 3D",
-    "Campinas",
+    "Santa Cruz da Conceição",
+    "interior de São Paulo",
   ],
   alternates: {
     canonical: siteUrl,
@@ -32,8 +33,8 @@ export const metadata: Metadata = {
     images: [
       {
         url: new URL("og.png", siteUrl).toString(),
-        width: 1733,
-        height: 907,
+        width: 1735,
+        height: 906,
         alt: "Orume 3D — Ideias que ganham forma",
       },
     ],
@@ -49,7 +50,7 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  themeColor: "#081425",
+  themeColor: "#0b1017",
   colorScheme: "dark",
 };
 
