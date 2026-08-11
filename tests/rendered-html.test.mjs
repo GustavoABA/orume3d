@@ -36,6 +36,11 @@ test("renderiza a landing page da Orume 3D", async () => {
   assert.match(html, /Santa Cruz da Conceição/i);
   assert.match(html, /Abrir contrato completo/i);
   assert.match(html, /Todos os orçamentos e fechamentos são realizados pelo WhatsApp/i);
+  assert.match(html, /orume-logo\.png/i);
+  assert.match(html, /service-triptych\.png/i);
+  assert.match(html, /gostaria%20de%20criar%20uma%20pe%C3%A7a%20personalizada/i);
+  assert.match(html, /gostaria%20de%20encomendar%20um%20presente/i);
+  assert.match(html, /preciso%20desenvolver%20um%20prot%C3%B3tipo/i);
   assert.match(html, /wa\.me\/5519989342212/i);
   assert.match(html, /instagram\.com\/orume3d/i);
   assert.match(html, /tiktok\.com\/@orume3d/i);

@@ -2,8 +2,9 @@
 
 /* eslint-disable @next/next/no-img-element -- feed images are discovered dynamically at build time */
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { CSSProperties } from "react";
+import { FaInstagram, FaTiktok, FaWhatsapp } from "react-icons/fa6";
 
 const WHATSAPP_URL =
   "https://wa.me/5519989342212?text=Ol%C3%A1%2C%20vim%20pelo%20site%20da%20Orume%203D%20e%20quero%20fazer%20um%20or%C3%A7amento.";
@@ -11,6 +12,9 @@ const INSTAGRAM_URL = "https://www.instagram.com/orume3d/";
 const TIKTOK_URL = "https://www.tiktok.com/@orume3d";
 const CDC_URL = "https://www.planalto.gov.br/ccivil_03/leis/l8078compilado.htm";
 const ECOMMERCE_URL = "https://www.planalto.gov.br/ccivil_03/_ato2011-2014/2013/decreto/d7962.htm";
+
+const whatsappUrl = (message: string) =>
+  `https://wa.me/5519989342212?text=${encodeURIComponent(message)}`;
 
 type FeedItem = {
   src: string;
@@ -28,18 +32,27 @@ const services = [
     title: "Peças personalizadas",
     text: "Objetos criados a partir de referências, medidas e necessidades específicas do seu projeto.",
     tag: "Sob medida",
+    imageLabel: "Peça personalizada",
+    message:
+      "Olá, Orume 3D! Vim pelo site e gostaria de criar uma peça personalizada. Tenho uma ideia ou referência e quero conversar sobre medidas, material, acabamento, quantidade e prazo. Podem me ajudar com o orçamento?",
   },
   {
     number: "02",
     title: "Presentes e decoração",
     text: "Peças com identidade para presentear, decorar ambientes e transformar boas ideias em algo físico.",
     tag: "Criação",
+    imageLabel: "Presente e decoração",
+    message:
+      "Olá, Orume 3D! Vim pelo site e gostaria de encomendar um presente ou item de decoração personalizado. Quero conversar sobre tema, tamanho, cores, quantidade, acabamento, prazo e valor. Podem me ajudar a transformar essa ideia em uma peça 3D?",
   },
   {
     number: "03",
     title: "Protótipos e soluções",
     text: "Modelos e peças funcionais para testar formatos, validar conceitos e resolver problemas reais.",
     tag: "Funcional",
+    imageLabel: "Protótipo funcional",
+    message:
+      "Olá, Orume 3D! Vim pelo site e preciso desenvolver um protótipo ou uma solução funcional em impressão 3D. Posso enviar referências, medidas e requisitos de uso para vocês avaliarem material, viabilidade, prazo e orçamento?",
   },
 ];
 
@@ -53,12 +66,10 @@ const steps = [
 function SocialLink({
   href,
   label,
-  short,
   className = "",
 }: {
   href: string;
   label: string;
-  short: string;
   className?: string;
 }) {
   return (
@@ -69,7 +80,7 @@ function SocialLink({
       rel="noreferrer"
       aria-label={`Abrir ${label}`}
     >
-      <span aria-hidden="true">{short}</span>
+      <span aria-hidden="true">{label === "Instagram" ? <FaInstagram /> : <FaTiktok />}</span>
       <b>{label}</b>
     </a>
   );
@@ -82,6 +93,7 @@ export default function Home() {
   const [instagramOpen, setInstagramOpen] = useState(false);
   const [contractOpen, setContractOpen] = useState(false);
   const [showFloatingBudget, setShowFloatingBudget] = useState(false);
+  const heroVisualRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -98,6 +110,56 @@ export default function Home() {
 
     document.querySelectorAll("[data-reveal]").forEach((element) => observer.observe(element));
     return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    const root = document.documentElement;
+    const heroVisual = heroVisualRef.current;
+    let animationFrame = 0;
+
+    const updateScrollMotion = () => {
+      animationFrame = 0;
+      const scrollable = Math.max(document.documentElement.scrollHeight - window.innerHeight, 1);
+      const progress = Math.min(Math.max(window.scrollY / scrollable, 0), 1);
+      root.style.setProperty("--page-progress", `${progress * 100}%`);
+      root.style.setProperty("--hero-scroll", `${Math.min(window.scrollY * 0.16, 90)}px`);
+    };
+
+    const requestScrollMotion = () => {
+      if (!animationFrame) animationFrame = window.requestAnimationFrame(updateScrollMotion);
+    };
+
+    const updatePointerMotion = (event: PointerEvent) => {
+      if (!heroVisual || !window.matchMedia("(pointer: fine)").matches) return;
+      const bounds = heroVisual.getBoundingClientRect();
+      const x = (event.clientX - bounds.left) / bounds.width - 0.5;
+      const y = (event.clientY - bounds.top) / bounds.height - 0.5;
+      heroVisual.style.setProperty("--tilt-x", `${y * -10}deg`);
+      heroVisual.style.setProperty("--tilt-y", `${x * 12}deg`);
+      heroVisual.style.setProperty("--pointer-x", `${50 + x * 16}%`);
+      heroVisual.style.setProperty("--pointer-y", `${50 + y * 16}%`);
+    };
+
+    const resetPointerMotion = () => {
+      heroVisual?.style.setProperty("--tilt-x", "0deg");
+      heroVisual?.style.setProperty("--tilt-y", "0deg");
+      heroVisual?.style.setProperty("--pointer-x", "50%");
+      heroVisual?.style.setProperty("--pointer-y", "50%");
+    };
+
+    updateScrollMotion();
+    window.addEventListener("scroll", requestScrollMotion, { passive: true });
+    window.addEventListener("resize", requestScrollMotion);
+    heroVisual?.addEventListener("pointermove", updatePointerMotion);
+    heroVisual?.addEventListener("pointerleave", resetPointerMotion);
+
+    return () => {
+      if (animationFrame) window.cancelAnimationFrame(animationFrame);
+      window.removeEventListener("scroll", requestScrollMotion);
+      window.removeEventListener("resize", requestScrollMotion);
+      heroVisual?.removeEventListener("pointermove", updatePointerMotion);
+      heroVisual?.removeEventListener("pointerleave", resetPointerMotion);
+    };
   }, []);
 
   useEffect(() => {
@@ -169,17 +231,18 @@ export default function Home() {
   return (
     <main>
       <div className="grain" aria-hidden="true" />
+      <div className="site-progress" aria-hidden="true"><i /></div>
 
       <header className="site-header">
         <a className="brand" href="#inicio" aria-label="Orume 3D — início">
-          <span className="brand-mark" aria-hidden="true"><i /><i /><i /></span>
+          <img className="brand-logo" src="./orume-logo.png" alt="" aria-hidden="true" />
           <span>ORUME <b>3D</b></span>
         </a>
 
         <div className="header-actions">
           <div className="header-socials">
-            <SocialLink href={INSTAGRAM_URL} label="Instagram" short="IG" />
-            <SocialLink href={TIKTOK_URL} label="TikTok" short="TT" />
+            <SocialLink href={INSTAGRAM_URL} label="Instagram" />
+            <SocialLink href={TIKTOK_URL} label="TikTok" />
           </div>
           <a className="header-budget" href={WHATSAPP_URL} target="_blank" rel="noreferrer">
             <span className="status-dot" aria-hidden="true" />
@@ -213,8 +276,8 @@ export default function Home() {
           <a href="#processo" onClick={closeMenu}><span>04</span> Como funciona</a>
           <a href="#contrato" onClick={closeMenu}><span>05</span> Termos da encomenda</a>
           <div className="nav-socials">
-            <SocialLink href={INSTAGRAM_URL} label="Instagram" short="IG" />
-            <SocialLink href={TIKTOK_URL} label="TikTok" short="TT" />
+            <SocialLink href={INSTAGRAM_URL} label="Instagram" />
+            <SocialLink href={TIKTOK_URL} label="TikTok" />
           </div>
           <a className="nav-cta" href={WHATSAPP_URL} target="_blank" rel="noreferrer">
             Pedir orçamento no WhatsApp <b aria-hidden="true">↗</b>
@@ -227,8 +290,8 @@ export default function Home() {
         <div className="hero-layout">
           <div className="hero-content">
             <div className="hero-socials" aria-label="Redes sociais da Orume 3D">
-              <SocialLink href={INSTAGRAM_URL} label="Instagram" short="IG" />
-              <SocialLink href={TIKTOK_URL} label="TikTok" short="TT" />
+              <SocialLink href={INSTAGRAM_URL} label="Instagram" />
+              <SocialLink href={TIKTOK_URL} label="TikTok" />
             </div>
             <p className="kicker"><span aria-hidden="true" /> Impressão 3D sob medida</p>
             <h1>
@@ -245,14 +308,18 @@ export default function Home() {
             <a className="scroll-link" href="#feed">Ver projetos recentes <span aria-hidden="true">↓</span></a>
           </div>
 
-          <div className="hero-visual" aria-hidden="true">
+          <div className="hero-visual" aria-hidden="true" ref={heroVisualRef}>
             <div className="print-status"><i /> imprimindo ideia</div>
+            <div className="print-nozzle"><span /><i /></div>
+            <div className="object-orbit"><i /><i /><i /></div>
+            <div className="hero-particles">{Array.from({ length: 7 }).map((_, index) => <i key={index} />)}</div>
             <div className="layer-object">
               {Array.from({ length: 11 }).map((_, index) => (
                 <i key={index} style={{ "--layer": index } as CSSProperties} />
               ))}
-              <b>3D</b>
+              <b><img src="./orume-logo.png" alt="" /></b>
             </div>
+            <div className="print-scan" />
             <div className="visual-note">camada por camada <span>↗</span></div>
           </div>
         </div>
@@ -291,7 +358,7 @@ export default function Home() {
               <p>Abra o perfil da Orume dentro do site e acompanhe as publicações mais recentes.</p>
             </div>
             <button className="instagram-live" type="button" onClick={() => setInstagramOpen(true)}>
-              <span aria-hidden="true">IG</span>
+              <span aria-hidden="true"><FaInstagram /></span>
               Abrir Instagram
               <b aria-hidden="true">↗</b>
             </button>
@@ -336,14 +403,23 @@ export default function Home() {
             <article
               className={`service-card service-card-${index + 1}`}
               key={service.number}
-              data-reveal
+              data-reveal="card"
               style={{ "--delay": `${index * 90}ms` } as CSSProperties}
             >
               <div className="card-top"><span>{service.number}</span><b>{service.tag}</b></div>
-              <div className="card-shape" aria-hidden="true"><i /><i /><i /></div>
+              <div
+                className={`service-visual service-visual-${index + 1}`}
+                role="img"
+                aria-label={service.imageLabel}
+                style={{ backgroundImage: 'url("./service-triptych.png")' }}
+              ><span>{service.imageLabel}</span></div>
               <h3>{service.title}</h3>
               <p>{service.text}</p>
-              <a href={WHATSAPP_URL} target="_blank" rel="noreferrer">Conversar sobre o projeto <span>↗</span></a>
+              <a className="service-whatsapp" href={whatsappUrl(service.message)} target="_blank" rel="noreferrer">
+                <FaWhatsapp aria-hidden="true" />
+                <span>Conversar sobre o projeto</span>
+                <b aria-hidden="true">↗</b>
+              </a>
             </article>
           ))}
         </div>
@@ -361,7 +437,7 @@ export default function Home() {
             <article
               className="step"
               key={number}
-              data-reveal
+              data-reveal="line"
               style={{ "--delay": `${index * 80}ms` } as CSSProperties}
             >
               <span className="step-number">{number}</span>
@@ -410,13 +486,13 @@ export default function Home() {
 
       <footer className="footer section-shell">
         <div className="footer-main">
-          <a className="brand footer-brand" href="#inicio"><span className="brand-mark" aria-hidden="true"><i /><i /><i /></span><span>ORUME <b>3D</b></span></a>
+          <a className="brand footer-brand" href="#inicio"><img className="brand-logo" src="./orume-logo.png" alt="" aria-hidden="true" /><span>ORUME <b>3D</b></span></a>
           <p>Ideias que ganham forma.</p>
         </div>
         <div className="footer-links">
-          <a href={INSTAGRAM_URL} target="_blank" rel="noreferrer">Instagram ↗</a>
-          <a href={TIKTOK_URL} target="_blank" rel="noreferrer">TikTok ↗</a>
-          <a href={WHATSAPP_URL} target="_blank" rel="noreferrer">WhatsApp ↗</a>
+          <a href={INSTAGRAM_URL} target="_blank" rel="noreferrer"><FaInstagram aria-hidden="true" /> Instagram ↗</a>
+          <a href={TIKTOK_URL} target="_blank" rel="noreferrer"><FaTiktok aria-hidden="true" /> TikTok ↗</a>
+          <a href={WHATSAPP_URL} target="_blank" rel="noreferrer"><FaWhatsapp aria-hidden="true" /> WhatsApp ↗</a>
           <button type="button" onClick={() => setContractOpen(true)}>Contrato da encomenda ↗</button>
         </div>
         <div className="footer-bottom"><span>© {new Date().getFullYear()} Orume 3D</span><span>Santa Cruz da Conceição — SP</span></div>
@@ -460,7 +536,7 @@ export default function Home() {
         >
           <div className="instagram-modal" role="dialog" aria-modal="true" aria-label="Instagram da Orume 3D">
             <div className="instagram-modal-head">
-              <div><span>IG</span><b>@orume3d</b></div>
+              <div><span><FaInstagram aria-hidden="true" /></span><b>@orume3d</b></div>
               <button className="modal-close" type="button" aria-label="Fechar Instagram" onClick={() => setInstagramOpen(false)}>×</button>
             </div>
             <div className="instagram-embed-shell">
@@ -487,7 +563,7 @@ export default function Home() {
         >
           <div className="contract-modal" role="dialog" aria-modal="true" aria-label="Contrato de encomenda e produção 3D">
             <div className="contract-modal-head">
-              <div><span>ORUME 3D</span><small>Termos da encomenda</small></div>
+              <div><img className="contract-logo" src="./orume-logo.png" alt="" aria-hidden="true" /><span>ORUME 3D</span><small>Termos da encomenda</small></div>
               <button className="modal-close" type="button" aria-label="Fechar contrato" onClick={() => setContractOpen(false)}>×</button>
             </div>
 

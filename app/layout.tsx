@@ -23,6 +23,10 @@ export const metadata: Metadata = {
   alternates: {
     canonical: siteUrl,
   },
+  icons: {
+    icon: [{ url: new URL("orume-logo.png", siteUrl).toString(), type: "image/png" }],
+    apple: [{ url: new URL("orume-logo.png", siteUrl).toString(), type: "image/png" }],
+  },
   openGraph: {
     type: "website",
     locale: "pt_BR",
