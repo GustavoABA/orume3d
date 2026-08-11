@@ -24,8 +24,8 @@ export const metadata: Metadata = {
     canonical: siteUrl,
   },
   icons: {
-    icon: [{ url: new URL("orume-logo.png", siteUrl).toString(), type: "image/png" }],
-    apple: [{ url: new URL("orume-logo.png", siteUrl).toString(), type: "image/png" }],
+    icon: [{ url: new URL("orume-logo-mark.png", siteUrl).toString(), type: "image/png" }],
+    apple: [{ url: new URL("orume-logo-mark.png", siteUrl).toString(), type: "image/png" }],
   },
   openGraph: {
     type: "website",

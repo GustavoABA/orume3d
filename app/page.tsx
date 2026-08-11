@@ -235,7 +235,7 @@ export default function Home() {
 
       <header className="site-header">
         <a className="brand" href="#inicio" aria-label="Orume 3D — início">
-          <img className="brand-logo" src="./orume-logo.png" alt="" aria-hidden="true" />
+          <img className="brand-logo" src="./orume-logo-mark.png" alt="" aria-hidden="true" />
           <span>ORUME <b>3D</b></span>
         </a>
 
@@ -317,7 +317,7 @@ export default function Home() {
               {Array.from({ length: 11 }).map((_, index) => (
                 <i key={index} style={{ "--layer": index } as CSSProperties} />
               ))}
-              <b><img src="./orume-logo.png" alt="" /></b>
+              <b><img src="./orume-logo-mark.png" alt="" /></b>
             </div>
             <div className="print-scan" />
             <div className="visual-note">camada por camada <span>↗</span></div>
@@ -486,7 +486,7 @@ export default function Home() {
 
       <footer className="footer section-shell">
         <div className="footer-main">
-          <a className="brand footer-brand" href="#inicio"><img className="brand-logo" src="./orume-logo.png" alt="" aria-hidden="true" /><span>ORUME <b>3D</b></span></a>
+          <a className="brand footer-brand" href="#inicio"><img className="brand-logo" src="./orume-logo-mark.png" alt="" aria-hidden="true" /><span>ORUME <b>3D</b></span></a>
           <p>Ideias que ganham forma.</p>
         </div>
         <div className="footer-links">
@@ -563,7 +563,7 @@ export default function Home() {
         >
           <div className="contract-modal" role="dialog" aria-modal="true" aria-label="Contrato de encomenda e produção 3D">
             <div className="contract-modal-head">
-              <div><img className="contract-logo" src="./orume-logo.png" alt="" aria-hidden="true" /><span>ORUME 3D</span><small>Termos da encomenda</small></div>
+              <div><img className="contract-logo" src="./orume-logo-mark.png" alt="" aria-hidden="true" /><span>ORUME 3D</span><small>Termos da encomenda</small></div>
               <button className="modal-close" type="button" aria-label="Fechar contrato" onClick={() => setContractOpen(false)}>×</button>
             </div>
 
