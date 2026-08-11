@@ -1,13 +1,16 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import { access, readFile } from "node:fs/promises";
+import path from "node:path";
 
 async function render() {
+  const basePath = process.env.GITHUB_PAGES_BASE_PATH ?? "";
   const workerUrl = new URL("../dist/server/index.js", import.meta.url);
   workerUrl.searchParams.set("test", String(process.pid) + "-" + String(Date.now()));
   const { default: worker } = await import(workerUrl.href);
 
   return worker.fetch(
-    new Request("http://localhost/", {
+    new Request(`http://localhost${basePath}/`, {
       headers: { accept: "text/html" },
     }),
     {
@@ -45,4 +48,36 @@ test("renderiza a landing page da Orume 3D", async () => {
   assert.match(html, /instagram\.com\/orume3d/i);
   assert.match(html, /tiktok\.com\/@orume3d/i);
   assert.doesNotMatch(html, /codex-preview|SkeletonPreview|react-loading-skeleton/i);
+});
+
+test("exporta todos os arquivos do GitHub Pages no caminho correto", async () => {
+  const docsDir = path.resolve("docs");
+  const html = await readFile(path.join(docsDir, "index.html"), "utf8");
+  const basePath = process.env.GITHUB_PAGES_BASE_PATH ?? "";
+
+  assert.doesNotMatch(html, /["']\/_next\/static\//i);
+  await access(path.join(docsDir, "404.html"));
+  await access(path.join(docsDir, ".nojekyll"));
+
+  const references = [
+    ...html.matchAll(/(?:src|href)="([^"]*\/_next\/static\/[^"]+)"/g),
+  ].map((match) => match[1]);
+
+  assert.ok(references.length >= 5, "A página deve carregar seus arquivos de estilo e interação.");
+
+  for (const reference of new Set(references)) {
+    const pathname = reference.startsWith("http")
+      ? new URL(reference).pathname
+      : new URL(reference, "https://example.test" + (basePath || "/") + "/").pathname;
+    const relativePath = basePath && pathname.startsWith(basePath + "/")
+      ? pathname.slice(basePath.length + 1)
+      : pathname.replace(/^\/+/, "");
+    const assetPath = path.resolve(docsDir, decodeURIComponent(relativePath));
+
+    assert.ok(assetPath.startsWith(docsDir + path.sep), `Caminho inseguro no HTML: ${reference}`);
+    await access(assetPath);
+  }
+
+  const liveConfig = JSON.parse(await readFile(path.resolve("public", "live.json"), "utf8"));
+  assert.equal(typeof liveConfig.active, "boolean");
 });

@@ -1990,6 +1990,147 @@ main {
   color: #7892b4;
 }
 
+.live-section {
+  scroll-margin-top: 5.4rem;
+  padding: 4.8rem 1rem;
+  color: var(--cream);
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  background:
+    radial-gradient(circle at 78% 42%, rgba(72, 106, 155, 0.24), transparent 28rem),
+    #090e14;
+}
+
+.live-layout {
+  width: 100%;
+  max-width: 88rem;
+  display: grid;
+  gap: 1.5rem;
+  margin: 0 auto;
+}
+
+.live-copy {
+  align-self: center;
+}
+
+.live-status {
+  width: fit-content;
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  margin-bottom: 2rem;
+  padding: 0.55rem 0.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  border-radius: 999px;
+  color: #e8edf3;
+  background: rgba(255, 255, 255, 0.045);
+  font-size: 0.62rem;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.live-status i,
+.live-player-label i {
+  width: 0.48rem;
+  height: 0.48rem;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  background: #ff4b4b;
+  box-shadow: 0 0 0 0 rgba(255, 75, 75, 0.55);
+  animation: livePulse 1.7s ease-out infinite;
+}
+
+.live-copy h2 {
+  max-width: 10ch;
+  margin: 0.75rem 0 0;
+  font-size: clamp(2.8rem, 12vw, 6.4rem);
+  font-weight: 850;
+  letter-spacing: -0.07em;
+  line-height: 0.9;
+}
+
+.live-copy > p:not(.section-tag) {
+  max-width: 28rem;
+  margin: 1.2rem 0 0;
+  color: #9ca9b8;
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+.live-copy > a {
+  width: fit-content;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 1.7rem;
+  padding-bottom: 0.35rem;
+  border-bottom: 1px solid #718aaa;
+  color: #dbe3ec;
+  font-size: 0.66rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.live-copy > a span {
+  color: #8fa6c2;
+  font-size: 0.9rem;
+}
+
+.live-player {
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: 16 / 9;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 1rem;
+  background: #05080c;
+  box-shadow: 0 1.5rem 5rem rgba(0, 0, 0, 0.34);
+}
+
+.live-player::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+.live-player iframe {
+  width: 100%;
+  height: 100%;
+  display: block;
+  border: 0;
+}
+
+.live-player-label {
+  position: absolute;
+  z-index: 2;
+  top: 0.75rem;
+  left: 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.45rem 0.6rem;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 999px;
+  color: #f3f5f7;
+  background: rgba(7, 10, 14, 0.78);
+  font-size: 0.54rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  backdrop-filter: blur(10px);
+  pointer-events: none;
+}
+
+@keyframes livePulse {
+  0% { box-shadow: 0 0 0 0 rgba(255, 75, 75, 0.55); }
+  70%, 100% { box-shadow: 0 0 0 0.55rem rgba(255, 75, 75, 0); }
+}
+
 .feed-section {
   background: #e8e5de;
 }
@@ -2625,6 +2766,30 @@ main {
     padding: 1.7rem;
   }
 
+  .live-section {
+    padding-top: 6.5rem;
+    padding-bottom: 6.5rem;
+  }
+
+  .live-layout {
+    grid-template-columns: minmax(16rem, 0.72fr) minmax(0, 1.28fr);
+    align-items: center;
+    gap: clamp(2rem, 5vw, 5rem);
+  }
+
+  .services .section-heading {
+    grid-template-columns: 1fr;
+    align-items: start;
+    gap: 1.25rem;
+  }
+
+  .services .section-heading h2 {
+    max-width: 16ch;
+    justify-self: start;
+    margin-left: 0;
+    text-align: left;
+  }
+
   .intro-section {
     grid-template-columns: 8rem minmax(0, 1.05fr) minmax(18rem, 0.95fr);
   }
@@ -2694,25 +2859,71 @@ main {
   }
 }
 
+@media (min-width: 1100px) {
+  .live-section {
+    padding-right: max(2.5rem, calc((100vw - 88rem) / 2));
+    padding-left: max(2.5rem, calc((100vw - 88rem) / 2));
+  }
+}
+
+@page {
+  size: A4;
+  margin: 14mm 13mm 15mm;
+}
+
 @media print {
-  body * {
-    visibility: hidden !important;
+  html,
+  body {
+    width: auto !important;
+    min-width: 0 !important;
+    height: auto !important;
+    min-height: 0 !important;
+    overflow: visible !important;
+    color: #111820 !important;
+    background: #fff !important;
   }
 
-  .contract-modal,
-  .contract-modal * {
+  body {
+    margin: 0 !important;
+    font-family: Arial, Helvetica, sans-serif !important;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
+  main > * {
+    display: none !important;
+  }
+
+  main > .contract-backdrop {
+    position: static !important;
+    inset: auto !important;
+    width: auto !important;
+    height: auto !important;
+    min-height: 0 !important;
+    display: block !important;
+    overflow: visible !important;
+    padding: 0 !important;
+    background: transparent !important;
+    backdrop-filter: none !important;
+    opacity: 1 !important;
     visibility: visible !important;
+    animation: none !important;
   }
 
   .contract-modal {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: auto;
-    max-height: none;
-    overflow: visible;
-    border: 0;
-    box-shadow: none;
+    position: static !important;
+    inset: auto !important;
+    width: auto !important;
+    height: auto !important;
+    max-height: none !important;
+    display: block !important;
+    overflow: visible !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    color: #111820 !important;
+    background: #fff !important;
+    box-shadow: none !important;
+    transform: none !important;
   }
 
   .contract-modal-head,
@@ -2721,11 +2932,115 @@ main {
   }
 
   .contract-document {
-    padding: 1cm;
+    width: auto !important;
+    max-width: none !important;
+    display: block !important;
+    overflow: visible !important;
+    padding: 0 !important;
+    color: #111820 !important;
+    background: #fff !important;
+    font-family: Arial, Helvetica, sans-serif !important;
+  }
+
+  .contract-version {
+    margin: 0 0 4mm !important;
+    color: #44546a !important;
+    font-size: 7.5pt !important;
+    line-height: 1.25 !important;
+    letter-spacing: 0.08em !important;
+  }
+
+  .contract-document > h2 {
+    max-width: none !important;
+    margin: 0 !important;
+    font-size: 25pt !important;
+    line-height: 1.08 !important;
+    letter-spacing: -0.025em !important;
+  }
+
+  .contract-lead {
+    max-width: none !important;
+    margin: 5mm 0 0 !important;
+    color: #374151 !important;
+    font-size: 9.5pt !important;
+    line-height: 1.48 !important;
+    letter-spacing: normal !important;
+  }
+
+  .contract-parties {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 5mm !important;
+    margin: 6mm 0 !important;
+    padding: 4mm !important;
+    border: 0.35mm solid #cbd2da !important;
+    border-radius: 2mm !important;
+    background: #f3f5f7 !important;
+    break-inside: avoid-page;
+  }
+
+  .contract-parties p {
+    color: #202833 !important;
+    font-size: 8.3pt !important;
+    line-height: 1.42 !important;
+    letter-spacing: normal !important;
+  }
+
+  .contract-parties strong {
+    margin-bottom: 1mm !important;
+    font-size: 7pt !important;
+    line-height: 1.25 !important;
+    letter-spacing: 0.07em !important;
   }
 
   .contract-document > section {
-    break-inside: avoid;
+    padding: 4mm 0 !important;
+    border-top: 0.3mm solid #d5dae0 !important;
+    break-inside: auto;
+  }
+
+  .contract-document > section h3 {
+    margin: 0 !important;
+    color: #111820 !important;
+    font-size: 10.5pt !important;
+    line-height: 1.25 !important;
+    letter-spacing: normal !important;
+    break-after: avoid-page;
+  }
+
+  .contract-document > section p {
+    margin: 1.7mm 0 0 !important;
+    color: #303946 !important;
+    font-size: 8.8pt !important;
+    line-height: 1.46 !important;
+    letter-spacing: normal !important;
+    orphans: 3;
+    widows: 3;
+  }
+
+  .contract-legal-note {
+    gap: 2mm !important;
+    margin-top: 4mm !important;
+    padding: 4mm !important;
+    border: 0.35mm solid #cbd2da !important;
+    border-radius: 2mm !important;
+    background: #f3f5f7 !important;
+    break-inside: avoid-page;
+  }
+
+  .contract-legal-note strong,
+  .contract-legal-note a {
+    color: #24364d !important;
+    font-size: 7.5pt !important;
+    line-height: 1.35 !important;
+    letter-spacing: normal !important;
+  }
+
+  .contract-modal *,
+  .contract-modal *::before,
+  .contract-modal *::after {
+    animation: none !important;
+    text-shadow: none !important;
+    transition: none !important;
   }
 }
 

@@ -5,6 +5,8 @@
 import { useEffect, useRef, useState } from "react";
 import type { CSSProperties } from "react";
 import { FaInstagram, FaTiktok, FaWhatsapp } from "react-icons/fa6";
+import feedManifest from "../public/feed/feed.json";
+import initialLiveConfig from "../public/live.json";
 
 const WHATSAPP_URL =
   "https://wa.me/5519989342212?text=Ol%C3%A1%2C%20vim%20pelo%20site%20da%20Orume%203D%20e%20quero%20fazer%20um%20or%C3%A7amento.";
@@ -20,6 +22,14 @@ type FeedItem = {
   src: string;
   title: string;
   href?: string;
+};
+
+type LiveConfig = {
+  active: boolean;
+  videoId?: string;
+  channelId?: string;
+  youtubeUrl?: string;
+  title?: string;
 };
 
 type InstagramWindow = Window & {
@@ -87,7 +97,8 @@ function SocialLink({
 }
 
 export default function Home() {
-  const [feed, setFeed] = useState<FeedItem[]>([]);
+  const [feed, setFeed] = useState<FeedItem[]>(feedManifest as FeedItem[]);
+  const [live, setLive] = useState<LiveConfig>(initialLiveConfig);
   const [menuOpen, setMenuOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState<FeedItem | null>(null);
   const [instagramOpen, setInstagramOpen] = useState(false);
@@ -163,10 +174,22 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    fetch("./feed/feed.json")
-      .then((response) => (response.ok ? response.json() : []))
-      .then((items: FeedItem[]) => setFeed(items))
-      .catch(() => setFeed([]));
+    const refreshToken = Date.now();
+
+    Promise.all([
+      fetch(`./feed/feed.json?v=${refreshToken}`, { cache: "no-store" })
+        .then((response) => (response.ok ? response.json() : feedManifest)),
+      fetch(`./live.json?v=${refreshToken}`, { cache: "no-store" })
+        .then((response) => (response.ok ? response.json() : initialLiveConfig)),
+    ])
+      .then(([items, liveConfig]: [FeedItem[], LiveConfig]) => {
+        setFeed(items);
+        setLive(liveConfig);
+      })
+      .catch(() => {
+        setFeed(feedManifest as FeedItem[]);
+        setLive(initialLiveConfig);
+      });
   }, []);
 
   useEffect(() => {
@@ -227,6 +250,17 @@ export default function Home() {
   }, [instagramOpen]);
 
   const closeMenu = () => setMenuOpen(false);
+  const videoId = /^[A-Za-z0-9_-]{11}$/.test(live.videoId ?? "") ? live.videoId : "";
+  const channelId = /^UC[A-Za-z0-9_-]{20,}$/.test(live.channelId ?? "") ? live.channelId : "";
+  const liveEmbedUrl = videoId
+    ? `https://www.youtube-nocookie.com/embed/${videoId}?rel=0&playsinline=1`
+    : channelId
+      ? `https://www.youtube-nocookie.com/embed/live_stream?channel=${channelId}&rel=0&playsinline=1`
+      : "";
+  const liveWatchUrl = live.youtubeUrl
+    || (videoId ? `https://www.youtube.com/watch?v=${videoId}` : "")
+    || (channelId ? `https://www.youtube.com/channel/${channelId}/live` : "");
+  const showLive = live.active && Boolean(liveEmbedUrl && liveWatchUrl);
 
   return (
     <main>
@@ -325,11 +359,39 @@ export default function Home() {
         </div>
       </section>
 
+      {showLive && (
+        <section className="live-section" id="ao-vivo" aria-labelledby="live-title">
+          <div className="live-layout">
+            <div className="live-copy" data-reveal>
+              <div className="live-status"><i aria-hidden="true" /> Ao vivo agora</div>
+              <p className="section-tag">Direto da impressora</p>
+              <h2 id="live-title">{live.title || "Impressão ao vivo."}</h2>
+              <p>Acompanhe uma peça da Orume ganhando forma, camada por camada.</p>
+              <a href={liveWatchUrl} target="_blank" rel="noreferrer">
+                Assistir no YouTube <span aria-hidden="true">↗</span>
+              </a>
+            </div>
+
+            <div className="live-player" data-reveal>
+              <div className="live-player-label"><i aria-hidden="true" /> Orume 3D ao vivo</div>
+              <iframe
+                src={liveEmbedUrl}
+                title="Transmissão ao vivo da impressão 3D da Orume"
+                loading="lazy"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                referrerPolicy="strict-origin-when-cross-origin"
+                allowFullScreen
+              />
+            </div>
+          </div>
+        </section>
+      )}
+
       <section className="feed-section" id="feed">
         <div className="feed-heading" data-reveal>
           <div>
             <p className="section-tag">Direto da bancada</p>
-            <h2>Projetos que já<br />ganharam forma.</h2>
+            <h2>Projetos.</h2>
           </div>
           <span className="feed-count">{String(feed.length).padStart(2, "0")} projeto{feed.length === 1 ? "" : "s"}</span>
         </div>
@@ -355,7 +417,7 @@ export default function Home() {
             <div>
               <span className="panel-index">Instagram oficial</span>
               <h3>Veja o feed<br />ao vivo.</h3>
-              <p>Abra o perfil da Orume dentro do site e acompanhe as publicações mais recentes.</p>
+              <p>Abra o perfil e veja as publicações mais recentes.</p>
             </div>
             <button className="instagram-live" type="button" onClick={() => setInstagramOpen(true)}>
               <span aria-hidden="true"><FaInstagram /></span>

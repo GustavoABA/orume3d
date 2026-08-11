@@ -1,0 +1,10 @@
+COMO MOSTRAR A LIVE NO SITE
+
+1. Inicie ou agende a transmissão no YouTube.
+2. No GitHub da Orume, abra a aba Actions.
+3. Escolha "Controlar live no site" e clique em "Run workflow".
+4. Selecione "ligada", cole o link da transmissão e confirme.
+5. Quando terminar, execute novamente escolhendo "desligada".
+
+O site esconde toda a área quando o estado está como "desligada".
+Não é preciso alterar o código nem usar uma chave de API.

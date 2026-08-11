@@ -13,7 +13,7 @@
     "build": "vinext build",
     "pages": "node scripts/export-pages.mjs",
     "start": "vinext start",
-    "test": "pnpm run build && node --test tests/rendered-html.test.mjs",
+    "test": "pnpm run build && pnpm run pages && node --test tests/rendered-html.test.mjs",
     "lint": "eslint . --ignore-pattern dist --ignore-pattern .next --ignore-pattern docs --ignore-pattern .tmp",
     "db:generate": "drizzle-kit generate"
   },
