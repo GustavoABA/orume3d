@@ -1,0 +1,77 @@
+name: Atualizar feed do Instagram
+
+on:
+  schedule:
+    - cron: "3/5 * * * *"
+  workflow_dispatch:
+
+permissions:
+  actions: write
+  contents: write
+
+concurrency:
+  group: instagram-feed
+  cancel-in-progress: true
+
+jobs:
+  sincronizar:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Baixar o projeto
+        uses: actions/checkout@v4
+
+      - name: Conferir a credencial do Instagram
+        id: credentials
+        env:
+          INSTAGRAM_ACCESS_TOKEN: ${{ secrets.INSTAGRAM_ACCESS_TOKEN }}
+        run: |
+          if [ -z "$INSTAGRAM_ACCESS_TOKEN" ]; then
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::Cadastre o secret INSTAGRAM_ACCESS_TOKEN para ativar o feed automatico."
+          else
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Preparar o Node
+        if: steps.credentials.outputs.enabled == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Baixar as publicacoes mais recentes
+        if: steps.credentials.outputs.enabled == 'true'
+        env:
+          INSTAGRAM_ACCESS_TOKEN: ${{ secrets.INSTAGRAM_ACCESS_TOKEN }}
+          INSTAGRAM_FEED_LIMIT: 12
+        run: node scripts/sync-instagram.mjs
+
+      - name: Atualizar a galeria do site
+        if: steps.credentials.outputs.enabled == 'true'
+        run: node scripts/generate-feed.mjs
+
+      - name: Verificar se entrou publicacao nova
+        if: steps.credentials.outputs.enabled == 'true'
+        id: changes
+        shell: bash
+        run: |
+          if [ -z "$(git status --porcelain -- public/instagram public/feed/feed.json)" ]; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Salvar e publicar a atualizacao
+        if: steps.changes.outputs.changed == 'true'
+        run: |
+          git config user.name "Orume 3D Bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add public/instagram public/feed/feed.json
+          git commit -m "Atualiza feed do Instagram"
+          git pull --rebase origin main
+          git push origin HEAD:main
+
+      - name: Acionar a publicacao do site
+        if: steps.changes.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run pages.yml --ref main

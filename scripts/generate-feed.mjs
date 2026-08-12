@@ -1,4 +1,4 @@
-import { readdir, writeFile } from "node:fs/promises";
+import { readFile, readdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 
 const projectRoot = process.cwd();
@@ -29,7 +29,7 @@ const titleFromName = (file) => {
   return title.replace(/\b3d\b/gi, "3D");
 };
 
-const manifest = files.map((file) => ({
+const localManifest = files.map((file) => ({
   src: "./feed/" + encodeURIComponent(file),
   title: titleFromName(file),
   ...(file.match(/instagram-([A-Za-z0-9_-]+)\.[^.]+$/i)
@@ -37,10 +37,29 @@ const manifest = files.map((file) => ({
     : {}),
 }));
 
+let instagramManifest = [];
+try {
+  const parsed = JSON.parse(
+    await readFile(path.join(projectRoot, "public", "instagram", "feed.json"), "utf8"),
+  );
+  if (Array.isArray(parsed)) instagramManifest = parsed;
+} catch (error) {
+  if (error?.code !== "ENOENT") throw error;
+}
+
+const normalizedHref = (href) => String(href ?? "").replace(/[?#].*$/, "").replace(/\/+$/, "");
+const instagramLinks = new Set(instagramManifest.map((item) => normalizedHref(item.href)).filter(Boolean));
+const manifest = [
+  ...instagramManifest,
+  ...localManifest.filter((item) => !item.href || !instagramLinks.has(normalizedHref(item.href))),
+];
+
 await writeFile(
   path.join(feedDir, "feed.json"),
   JSON.stringify(manifest, null, 2) + "\n",
   "utf8",
 );
 
-console.log("Feed atualizado com " + manifest.length + " imagem(ns).");
+console.log(
+  `Feed atualizado com ${manifest.length} imagem(ns): ${instagramManifest.length} do Instagram e ${manifest.length - instagramManifest.length} local(is).`,
+);

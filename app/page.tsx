@@ -32,10 +32,6 @@ type LiveConfig = {
   title?: string;
 };
 
-type InstagramWindow = Window & {
-  instgrm?: { Embeds: { process: () => void } };
-};
-
 const services = [
   {
     number: "01",
@@ -101,7 +97,6 @@ export default function Home() {
   const [live, setLive] = useState<LiveConfig>(initialLiveConfig);
   const [menuOpen, setMenuOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState<FeedItem | null>(null);
-  const [instagramOpen, setInstagramOpen] = useState(false);
   const [contractOpen, setContractOpen] = useState(false);
   const [showFloatingBudget, setShowFloatingBudget] = useState(false);
 
@@ -194,13 +189,12 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    const modalOpen = Boolean(selectedItem || instagramOpen || contractOpen || menuOpen);
+    const modalOpen = Boolean(selectedItem || contractOpen || menuOpen);
     document.body.classList.toggle("modal-open", modalOpen);
 
     const closeOnEscape = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
         setSelectedItem(null);
-        setInstagramOpen(false);
         setContractOpen(false);
         setMenuOpen(false);
       }
@@ -211,28 +205,7 @@ export default function Home() {
       document.body.classList.remove("modal-open");
       window.removeEventListener("keydown", closeOnEscape);
     };
-  }, [contractOpen, instagramOpen, menuOpen, selectedItem]);
-
-  useEffect(() => {
-    if (!instagramOpen) return;
-
-    const instagramWindow = window as InstagramWindow;
-    const processEmbed = () => instagramWindow.instgrm?.Embeds.process();
-    const existingScript = document.querySelector<HTMLScriptElement>(
-      'script[src="https://www.instagram.com/embed.js"]',
-    );
-
-    if (existingScript) {
-      processEmbed();
-      return;
-    }
-
-    const script = document.createElement("script");
-    script.async = true;
-    script.src = "https://www.instagram.com/embed.js";
-    script.onload = processEmbed;
-    document.body.appendChild(script);
-  }, [instagramOpen]);
+  }, [contractOpen, menuOpen, selectedItem]);
 
   const closeMenu = () => setMenuOpen(false);
   const videoId = /^[A-Za-z0-9_-]{11}$/.test(live.videoId ?? "") ? live.videoId : "";
@@ -385,7 +358,13 @@ export default function Home() {
                 onClick={() => setSelectedItem(item)}
                 style={{ "--delay": `${index * 70}ms` } as CSSProperties}
               >
-                <img src={item.src} alt={item.title} loading={index === 0 ? "eager" : "lazy"} />
+                <img
+                  src={item.src}
+                  alt={item.title}
+                  loading={index === 0 ? "eager" : "lazy"}
+                  decoding="async"
+                  fetchPriority={index === 0 ? "high" : "auto"}
+                />
                 <span aria-hidden="true">↗</span>
               </button>
             ))}
@@ -394,14 +373,14 @@ export default function Home() {
           <aside className="project-profile-panel" data-reveal>
             <div>
               <span className="panel-index">Instagram oficial</span>
-              <h3>Veja o feed<br />ao vivo.</h3>
-              <p>Abra o perfil e veja as publicações mais recentes.</p>
+              <h3>Feed sempre<br />atualizado.</h3>
+              <p>As novas publicações entram automaticamente aqui, direto do perfil da Orume 3D.</p>
             </div>
-            <button className="instagram-live" type="button" onClick={() => setInstagramOpen(true)}>
+            <a className="instagram-live" href={INSTAGRAM_URL} target="_blank" rel="noreferrer">
               <span aria-hidden="true"><FaInstagram /></span>
               Abrir Instagram
               <b aria-hidden="true">↗</b>
-            </button>
+            </a>
             <a className="profile-handle" href={INSTAGRAM_URL} target="_blank" rel="noreferrer">@orume3d <span>↗</span></a>
           </aside>
         </div>
@@ -560,35 +539,8 @@ export default function Home() {
         >
           <div className="photo-modal" role="dialog" aria-modal="true" aria-label="Foto do projeto">
             <button className="modal-close" type="button" aria-label="Fechar foto" onClick={() => setSelectedItem(null)}>×</button>
-            <img src={selectedItem.src} alt={selectedItem.title} />
+            <img src={selectedItem.src} alt={selectedItem.title} decoding="async" />
             <a href={selectedItem.href || INSTAGRAM_URL} target="_blank" rel="noreferrer">Ver no Instagram <span aria-hidden="true">↗</span></a>
-          </div>
-        </div>
-      )}
-
-      {instagramOpen && (
-        <div
-          className="modal-backdrop"
-          role="presentation"
-          onMouseDown={(event) => {
-            if (event.target === event.currentTarget) setInstagramOpen(false);
-          }}
-        >
-          <div className="instagram-modal" role="dialog" aria-modal="true" aria-label="Instagram da Orume 3D">
-            <div className="instagram-modal-head">
-              <div><span><FaInstagram aria-hidden="true" /></span><b>@orume3d</b></div>
-              <button className="modal-close" type="button" aria-label="Fechar Instagram" onClick={() => setInstagramOpen(false)}>×</button>
-            </div>
-            <div className="instagram-embed-shell">
-              <blockquote
-                className="instagram-media"
-                data-instgrm-permalink="https://www.instagram.com/orume3d/?utm_source=ig_embed&utm_campaign=loading"
-                data-instgrm-version="14"
-              >
-                <a href={INSTAGRAM_URL} target="_blank" rel="noreferrer">Carregando o Instagram da Orume 3D…</a>
-              </blockquote>
-            </div>
-            <a className="open-instagram" href={INSTAGRAM_URL} target="_blank" rel="noreferrer">Abrir no app do Instagram ↗</a>
           </div>
         </div>
       )}
