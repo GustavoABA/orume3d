@@ -2,7 +2,7 @@ name: Atualizar feed do Instagram
 
 on:
   schedule:
-    - cron: "3/5 * * * *"
+    - cron: "17 8 * * *"
   workflow_dispatch:
 
 permissions:
@@ -42,7 +42,7 @@ jobs:
         if: steps.credentials.outputs.enabled == 'true'
         env:
           INSTAGRAM_ACCESS_TOKEN: ${{ secrets.INSTAGRAM_ACCESS_TOKEN }}
-          INSTAGRAM_FEED_LIMIT: 12
+          INSTAGRAM_FEED_LIMIT: 10
         run: node scripts/sync-instagram.mjs
 
       - name: Atualizar a galeria do site

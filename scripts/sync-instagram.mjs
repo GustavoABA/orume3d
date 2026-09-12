@@ -5,7 +5,7 @@ const projectRoot = process.cwd();
 const instagramDir = path.resolve(projectRoot, "public", "instagram");
 const temporaryDir = path.resolve(projectRoot, ".tmp", `instagram-sync-${process.pid}`);
 const accessToken = process.env.INSTAGRAM_ACCESS_TOKEN?.trim();
-const feedLimit = Math.min(Math.max(Number.parseInt(process.env.INSTAGRAM_FEED_LIMIT ?? "12", 10) || 12, 1), 25);
+const feedLimit = Math.min(Math.max(Number.parseInt(process.env.INSTAGRAM_FEED_LIMIT ?? "10", 10) || 10, 1), 25);
 const apiBaseUrl = new URL(process.env.INSTAGRAM_API_BASE_URL ?? "https://graph.instagram.com");
 const allowHttp = process.env.INSTAGRAM_ALLOW_HTTP === "true";
 

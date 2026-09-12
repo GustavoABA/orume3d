@@ -6,7 +6,7 @@ A versão atual apresenta os projetos logo após a abertura, a história da empr
 
 ## Feed automático do Instagram
 
-O site consulta a API oficial do Instagram a cada cinco minutos. Quando encontra uma publicação diferente, baixa a imagem original fornecida pela API, atualiza a galeria e aciona uma nova publicação do GitHub Pages. Fotos, capas de Reels/vídeos e capas de carrosséis são aceitas. Os arquivos não são recomprimidos pelo projeto.
+O site consulta a API oficial do Instagram uma vez a cada 24 horas. Quando encontra uma publicação diferente, baixa a imagem original fornecida pela API, atualiza a galeria e aciona uma nova publicação do GitHub Pages. Fotos, capas de Reels/vídeos e capas de carrosséis são aceitas. Os arquivos não são recomprimidos pelo projeto.
 
 Configuração única:
 
