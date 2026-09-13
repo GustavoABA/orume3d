@@ -32,6 +32,24 @@ type LiveConfig = {
   title?: string;
 };
 
+type InstagramLinksPayload = {
+  links: string[];
+  source: "known" | "proxy";
+};
+
+declare global {
+  interface Window {
+    OrumeInstagramLinks?: InstagramLinksPayload & {
+      refresh: () => Promise<string[]>;
+    };
+    instgrm?: {
+      Embeds?: {
+        process: () => void;
+      };
+    };
+  }
+}
+
 const services = [
   {
     number: "01",
@@ -94,6 +112,12 @@ function SocialLink({
 
 export default function Home() {
   const [feed, setFeed] = useState<FeedItem[]>(feedManifest as FeedItem[]);
+  const [instagramLinks, setInstagramLinks] = useState<string[]>(
+    (feedManifest as FeedItem[])
+      .map((item) => item.href)
+      .filter((href): href is string => Boolean(href)),
+  );
+  const [instagramLinksSource, setInstagramLinksSource] = useState<"known" | "proxy">("known");
   const [live, setLive] = useState<LiveConfig>(initialLiveConfig);
   const [menuOpen, setMenuOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState<FeedItem | null>(null);
@@ -127,6 +151,61 @@ export default function Home() {
       heroVisibilityObserver.disconnect();
     };
   }, []);
+
+  useEffect(() => {
+    const receiveLinks = (payload?: InstagramLinksPayload) => {
+      if (!payload?.links?.length) return;
+      setInstagramLinks(payload.links);
+      setInstagramLinksSource(payload.source);
+    };
+
+    const onLinks = (event: Event) => {
+      receiveLinks((event as CustomEvent<InstagramLinksPayload>).detail);
+    };
+
+    window.addEventListener("orume:instagram-links", onLinks);
+
+    if (window.OrumeInstagramLinks) {
+      receiveLinks(window.OrumeInstagramLinks);
+      window.OrumeInstagramLinks.refresh();
+    } else {
+      const script = document.createElement("script");
+      script.id = "orume-instagram-links";
+      script.src = "./instagram/links.js";
+      script.async = true;
+      document.head.appendChild(script);
+    }
+
+    return () => window.removeEventListener("orume:instagram-links", onLinks);
+  }, []);
+
+  useEffect(() => {
+    if (!instagramLinks.length) return;
+
+    const processEmbeds = () => {
+      window.requestAnimationFrame(() => window.instgrm?.Embeds?.process());
+    };
+    const existingScript = document.getElementById("instagram-embed-script") as HTMLScriptElement | null;
+
+    if (window.instgrm?.Embeds) {
+      processEmbeds();
+      return;
+    }
+
+    if (existingScript) {
+      existingScript.addEventListener("load", processEmbeds, { once: true });
+      return () => existingScript.removeEventListener("load", processEmbeds);
+    }
+
+    const script = document.createElement("script");
+    script.id = "instagram-embed-script";
+    script.src = "https://www.instagram.com/embed.js";
+    script.async = true;
+    script.addEventListener("load", processEmbeds, { once: true });
+    document.head.appendChild(script);
+
+    return () => script.removeEventListener("load", processEmbeds);
+  }, [instagramLinks]);
 
   useEffect(() => {
     const root = document.documentElement;
@@ -344,37 +423,48 @@ export default function Home() {
             <p className="section-tag">Direto da bancada</p>
             <h2>Projetos.</h2>
           </div>
-          <span className="feed-count">{String(feed.length).padStart(2, "0")} projeto{feed.length === 1 ? "" : "s"}</span>
+          <span className="feed-count">{String(instagramLinks.length).padStart(2, "0")} projeto{instagramLinks.length === 1 ? "" : "s"}</span>
         </div>
 
         <div className="project-stage">
-          <div className={`photo-feed photo-feed-${Math.min(feed.length, 4)}`}>
-            {feed.map((item, index) => (
-              <button
-                className="feed-photo"
-                type="button"
-                key={item.src}
-                aria-label={`Abrir foto: ${item.title}`}
-                onClick={() => setSelectedItem(item)}
-                style={{ "--delay": `${index * 70}ms` } as CSSProperties}
-              >
-                <img
-                  src={item.src}
-                  alt={item.title}
-                  loading={index === 0 ? "eager" : "lazy"}
-                  decoding="async"
-                  fetchPriority={index === 0 ? "high" : "auto"}
-                />
-                <span aria-hidden="true">↗</span>
-              </button>
-            ))}
+          <div className="instagram-embed-feed" data-source={instagramLinksSource}>
+            {instagramLinks.map((href, index) => {
+              const fallback = feed.find((item) => item.href === href);
+              return (
+                <article
+                  className="instagram-live-tile"
+                  key={href}
+                  style={{
+                    "--delay": `${index * 70}ms`,
+                    "--fallback-image": fallback ? `url("${fallback.src}")` : "none",
+                  } as CSSProperties}
+                >
+                  <blockquote
+                    className="instagram-media"
+                    data-instgrm-permalink={href}
+                    data-instgrm-version="14"
+                  >
+                    <a href={href} target="_blank" rel="noreferrer">Ver publicação no Instagram</a>
+                  </blockquote>
+                  <a
+                    className="instagram-tile-link"
+                    href={href}
+                    target="_blank"
+                    rel="noreferrer"
+                    aria-label="Abrir este projeto no Instagram"
+                  >
+                    <span aria-hidden="true">↗</span>
+                  </a>
+                </article>
+              );
+            })}
           </div>
 
           <aside className="project-profile-panel" data-reveal>
             <div>
               <span className="panel-index">Instagram oficial</span>
               <h3>Feed sempre<br />atualizado.</h3>
-              <p>As novas publicações entram automaticamente aqui, direto do perfil da Orume 3D.</p>
+              <p>Ao abrir o site, os projetos são carregados diretamente do Instagram da Orume 3D.</p>
             </div>
             <a className="instagram-live" href={INSTAGRAM_URL} target="_blank" rel="noreferrer">
               <span aria-hidden="true"><FaInstagram /></span>

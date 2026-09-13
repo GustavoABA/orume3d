@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { access, readFile } from "node:fs/promises";
 import path from "node:path";
+import vm from "node:vm";
 
 async function render() {
   const basePath = process.env.GITHUB_PAGES_BASE_PATH ?? "";
@@ -80,4 +81,42 @@ test("exporta todos os arquivos do GitHub Pages no caminho correto", async () =>
 
   const liveConfig = JSON.parse(await readFile(path.resolve("public", "live.json"), "utf8"));
   assert.equal(typeof liveConfig.active, "boolean");
+
+  const instagramLinks = await readFile(path.join(docsDir, "instagram", "links.js"), "utf8");
+  assert.match(instagramLinks, /api\.allorigins\.win\/raw/i);
+  assert.match(instagramLinks, /instagram\.com\/p\/DdJzJhTDqt0/i);
+  assert.match(instagramLinks, /orume:instagram-links/i);
+});
+
+test("extrai links de posts do HTML recebido pelo proxy", async () => {
+  const source = await readFile(path.resolve("public", "instagram", "links.js"), "utf8");
+  const events = [];
+  const window = {
+    dispatchEvent(event) { events.push(event); },
+    setTimeout,
+    clearTimeout,
+  };
+  const context = {
+    AbortController,
+    CustomEvent: class CustomEvent {
+      constructor(type, options) {
+        this.type = type;
+        this.detail = options.detail;
+      }
+    },
+    fetch: async () => { throw new Error("proxy indisponivel no teste"); },
+    window,
+  };
+
+  vm.runInNewContext(source, context);
+  const extracted = window.OrumeInstagramLinks.extract(
+    String.raw`href=\"https:\/\/www.instagram.com\/p\/Projeto123\/\" e \/reel\/Reel_456\/`,
+  );
+
+  assert.deepEqual(Array.from(extracted), [
+    "https://www.instagram.com/p/Projeto123/",
+    "https://www.instagram.com/reel/Reel_456/",
+  ]);
+  assert.equal(window.OrumeInstagramLinks.links.length, 8);
+  assert.ok(events.some((event) => event.type === "orume:instagram-links"));
 });
