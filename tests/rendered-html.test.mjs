@@ -83,9 +83,12 @@ test("exporta todos os arquivos do GitHub Pages no caminho correto", async () =>
   assert.equal(typeof liveConfig.active, "boolean");
 
   const instagramLinks = await readFile(path.join(docsDir, "instagram", "links.js"), "utf8");
+  const instagramLinksJson = JSON.parse(await readFile(path.join(docsDir, "instagram", "links.json"), "utf8"));
   assert.match(instagramLinks, /api\.allorigins\.win\/raw/i);
-  assert.match(instagramLinks, /instagram\.com\/p\/DdJzJhTDqt0/i);
   assert.match(instagramLinks, /orume:instagram-links/i);
+  assert.equal(instagramLinksJson.length, 9);
+  assert.ok(instagramLinksJson.every((link) => typeof link === "string"));
+  assert.match(instagramLinksJson[0], /instagram\.com\/p\/DdOJLGjFn9k/i);
 });
 
 test("extrai links de posts do HTML recebido pelo proxy", async () => {
@@ -104,7 +107,18 @@ test("extrai links de posts do HTML recebido pelo proxy", async () => {
         this.detail = options.detail;
       }
     },
-    fetch: async () => { throw new Error("proxy indisponivel no teste"); },
+    fetch: async (url) => {
+      if (url === "./instagram/links.json") {
+        return {
+          ok: true,
+          json: async () => [
+            "https://www.instagram.com/p/DdOJLGjFn9k/?utm_source=teste",
+            "https://www.instagram.com/p/DdJzJhTDqt0/",
+          ],
+        };
+      }
+      throw new Error("proxy indisponivel no teste");
+    },
     window,
   };
 
@@ -117,6 +131,10 @@ test("extrai links de posts do HTML recebido pelo proxy", async () => {
     "https://www.instagram.com/p/Projeto123/",
     "https://www.instagram.com/reel/Reel_456/",
   ]);
-  assert.equal(window.OrumeInstagramLinks.links.length, 8);
+  await new Promise((resolve) => setTimeout(resolve, 0));
+  assert.deepEqual(Array.from(window.OrumeInstagramLinks.links), [
+    "https://www.instagram.com/p/DdOJLGjFn9k/",
+    "https://www.instagram.com/p/DdJzJhTDqt0/",
+  ]);
   assert.ok(events.some((event) => event.type === "orume:instagram-links"));
 });

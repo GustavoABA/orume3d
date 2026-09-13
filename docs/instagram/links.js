@@ -2,22 +2,10 @@
   "use strict";
 
   var PROFILE_URL = "https://www.instagram.com/orume3d/";
+  var LINKS_URL = "./instagram/links.json";
   var EVENT_NAME = "orume:instagram-links";
   var MAX_POSTS = 12;
   var REQUEST_TIMEOUT_MS = 9000;
-
-  // Estes links mantem o feed disponivel quando o Instagram ou o proxy
-  // recusam a leitura automatica do perfil.
-  var knownLinks = [
-    "https://www.instagram.com/p/DdJzJhTDqt0/",
-    "https://www.instagram.com/p/Dc8CAYwkfUb/",
-    "https://www.instagram.com/p/DcZnTEMDl1e/",
-    "https://www.instagram.com/p/DcFOwPFjhet/",
-    "https://www.instagram.com/reel/Db79AYsR9kx/",
-    "https://www.instagram.com/p/Db69e02usl3/",
-    "https://www.instagram.com/p/Db66w2MDscm/",
-    "https://www.instagram.com/p/Db3-JtYR4x4/"
-  ];
 
   var proxyReaders = [
     function (targetUrl) {
@@ -67,13 +55,33 @@
     return links;
   }
 
-  function mergeLinks(discovered) {
+  function normalizeLink(value) {
+    var match = String(value || "").match(/https?:\/\/(?:www\.)?instagram\.com\/(p|reel)\/([A-Za-z0-9_-]{5,64})/i);
+    return match
+      ? "https://www.instagram.com/" + match[1].toLowerCase() + "/" + match[2] + "/"
+      : "";
+  }
+
+  function cleanLinks(values) {
     var seen = Object.create(null);
-    return discovered.concat(knownLinks).filter(function (link) {
+    return values.map(normalizeLink).filter(function (link) {
+      if (!link) return false;
       if (seen[link]) return false;
       seen[link] = true;
       return true;
     }).slice(0, MAX_POSTS);
+  }
+
+  function loadConfiguredLinks() {
+    return fetch(LINKS_URL, { cache: "no-store" })
+      .then(function (response) {
+        if (!response.ok) throw new Error("links.json: " + response.status);
+        return response.json();
+      })
+      .then(function (values) {
+        if (!Array.isArray(values)) throw new Error("links.json precisa ser uma lista");
+        return cleanLinks(values);
+      });
   }
 
   function publish(links, source) {
@@ -105,7 +113,14 @@
   }
 
   async function discover() {
-    publish(knownLinks, "known");
+    var configuredLinks = [];
+
+    try {
+      configuredLinks = await loadConfiguredLinks();
+      if (configuredLinks.length) publish(configuredLinks, "json");
+    } catch (_) {
+      // A pagina preserva o feed gerado no HTML caso o JSON fique indisponivel.
+    }
 
     for (var index = 0; index < proxyReaders.length; index += 1) {
       try {
@@ -113,7 +128,7 @@
         var markup = await readWithTimeout(proxyReaders[index], cacheBuster);
         var discovered = extractPostLinks(markup);
         if (discovered.length) {
-          publish(mergeLinks(discovered), "proxy");
+          publish(cleanLinks(discovered.concat(configuredLinks)), "proxy");
           return api.links;
         }
       } catch (_) {
@@ -126,13 +141,13 @@
 
   var api = {
     profile: PROFILE_URL,
-    links: knownLinks.slice(),
-    source: "known",
+    links: [],
+    source: "loading",
     refresh: discover,
-    extract: extractPostLinks
+    extract: extractPostLinks,
+    normalize: normalizeLink
   };
 
   window.OrumeInstagramLinks = api;
-  publish(knownLinks, "known");
   discover();
 })();

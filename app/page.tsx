@@ -34,7 +34,7 @@ type LiveConfig = {
 
 type InstagramLinksPayload = {
   links: string[];
-  source: "known" | "proxy";
+  source: "fallback" | "loading" | "json" | "proxy";
 };
 
 declare global {
@@ -117,7 +117,7 @@ export default function Home() {
       .map((item) => item.href)
       .filter((href): href is string => Boolean(href)),
   );
-  const [instagramLinksSource, setInstagramLinksSource] = useState<"known" | "proxy">("known");
+  const [instagramLinksSource, setInstagramLinksSource] = useState<InstagramLinksPayload["source"]>("fallback");
   const [live, setLive] = useState<LiveConfig>(initialLiveConfig);
   const [menuOpen, setMenuOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState<FeedItem | null>(null);
