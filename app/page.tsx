@@ -461,17 +461,16 @@ export default function Home() {
           </div>
 
           <aside className="project-profile-panel" data-reveal>
-            <div>
+            <div className="project-profile-copy">
               <span className="panel-index">Instagram oficial</span>
-              <h3>Feed sempre<br />atualizado.</h3>
-              <p>Ao abrir o site, os projetos são carregados diretamente do Instagram da Orume 3D.</p>
+              <h3>Mais projetos em <span>@orume3d</span></h3>
+              <p>Veja peças, bastidores e novidades direto no perfil oficial.</p>
             </div>
             <a className="instagram-live" href={INSTAGRAM_URL} target="_blank" rel="noreferrer">
               <span aria-hidden="true"><FaInstagram /></span>
-              Abrir Instagram
+              Ver todos os projetos
               <b aria-hidden="true">↗</b>
             </a>
-            <a className="profile-handle" href={INSTAGRAM_URL} target="_blank" rel="noreferrer">@orume3d <span>↗</span></a>
           </aside>
         </div>
       </section>
