@@ -10,6 +10,11 @@ const basePath = configuredBasePath
   ? "/" + configuredBasePath.replace(/^\/+|\/+$/g, "")
   : "";
 
+const pages = [
+  { route: "/", output: "index.html" },
+  { route: "/evelyn/", output: path.join("evelyn", "index.html") },
+];
+
 if (!docsDir.startsWith(root + path.sep)) {
   throw new Error("Destino de exportação fora do projeto.");
 }
@@ -29,58 +34,84 @@ const workerUrl = pathToFileURL(path.resolve(root, "dist", "server", "index.js")
 workerUrl.searchParams.set("export", String(Date.now()));
 const { default: worker } = await import(workerUrl.href);
 
-const response = await worker.fetch(
-  new Request(`http://localhost${basePath}/`, {
-    headers: { accept: "text/html" },
-  }),
-  {
-    ASSETS: {
-      fetch: async (request) => {
-        const url = new URL(request.url);
-        let assetPath = decodeURIComponent(url.pathname);
-        if (basePath && (assetPath === basePath || assetPath.startsWith(basePath + "/"))) {
-          assetPath = assetPath.slice(basePath.length) || "/";
-        }
-        const file = path.join(distClient, assetPath.replace(/^\/+/, ""));
-        try {
-          return new Response(await readFile(file));
-        } catch {
-          return new Response("Not found", { status: 404 });
-        }
-      },
+const env = {
+  ASSETS: {
+    fetch: async (request) => {
+      const url = new URL(request.url);
+      let assetPath = decodeURIComponent(url.pathname);
+      if (basePath && (assetPath === basePath || assetPath.startsWith(basePath + "/"))) {
+        assetPath = assetPath.slice(basePath.length) || "/";
+      }
+      const file = path.join(distClient, assetPath.replace(/^\/+/, ""));
+      try {
+        return new Response(await readFile(file));
+      } catch {
+        return new Response("Not found", { status: 404 });
+      }
     },
   },
-  {
-    waitUntil() {},
-    passThroughOnException() {},
-  },
-);
+};
 
-if (!response.ok) {
-  throw new Error("Falha ao renderizar a página estática: " + response.status);
+const executionContext = {
+  waitUntil() {},
+  passThroughOnException() {},
+};
+
+async function renderPage(route) {
+  const response = await worker.fetch(
+    new Request(`http://localhost${basePath}${route}`, {
+      headers: { accept: "text/html" },
+    }),
+    env,
+    executionContext,
+  );
+
+  if (!response.ok) {
+    throw new Error(`Falha ao renderizar a página estática ${route}: ${response.status}`);
+  }
+
+  let html = await response.text();
+
+  if (basePath) {
+    if (html.includes('"/_next/') || !html.includes(`${basePath}/_next/`)) {
+      throw new Error(`Os arquivos da rota ${route} não respeitam a subpasta configurada para o GitHub Pages.`);
+    }
+  } else {
+    const depth = route.split("/").filter(Boolean).length;
+    const relativePrefix = depth === 0 ? "./" : "../".repeat(depth);
+
+    html = html
+      .replaceAll('href="/', `href="${relativePrefix}`)
+      .replaceAll('src="/', `src="${relativePrefix}`)
+      .replaceAll('content="/', `content="${relativePrefix}`)
+      .replaceAll('url(/', `url(${relativePrefix}`)
+      .replaceAll('"/_next/', `"${relativePrefix}_next/`)
+      .replaceAll('css:/_next/', `css:${relativePrefix}_next/`);
+
+    if (html.includes('"/_next/')) {
+      throw new Error(`A exportação da rota ${route} ainda contém arquivos apontando para a raiz do domínio.`);
+    }
+  }
+
+  return html;
 }
 
-let html = await response.text();
-if (basePath) {
-  if (html.includes('"/_next/') || !html.includes(`${basePath}/_next/`)) {
-    throw new Error("Os arquivos do site não respeitam a subpasta configurada para o GitHub Pages.");
-  }
-} else {
-  html = html
-    .replaceAll('href="/', 'href="./')
-    .replaceAll('src="/', 'src="./')
-    .replaceAll('content="/', 'content="./')
-    .replaceAll('url(/', 'url(./')
-    .replaceAll('"/_next/', '"./_next/')
-    .replaceAll('css:/_next/', 'css:./_next/');
+let homeHtml = "";
 
-  if (html.includes('"/_next/')) {
-    throw new Error("A exportação ainda contém arquivos apontando para a raiz do domínio.");
-  }
+for (const page of pages) {
+  const html = await renderPage(page.route);
+  const outputPath = path.join(docsDir, page.output);
+  await mkdir(path.dirname(outputPath), { recursive: true });
+  await writeFile(outputPath, html, "utf8");
+
+  if (page.route === "/") homeHtml = html;
 }
 
-await writeFile(path.join(docsDir, "index.html"), html, "utf8");
-await writeFile(path.join(docsDir, "404.html"), html, "utf8");
+if (!homeHtml) {
+  throw new Error("A página inicial não foi exportada.");
+}
+
+await writeFile(path.join(docsDir, "404.html"), homeHtml, "utf8");
 await writeFile(path.join(docsDir, ".nojekyll"), "", "utf8");
 
-console.log("Versão para GitHub Pages criada em docs/.");
+console.log("Versão para GitHub Pages criada em docs/, incluindo /evelyn/.");
