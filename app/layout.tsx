@@ -65,7 +65,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="pt-BR">
-      <body>{children}</body>
+      <body>
+        {children}
+        <script src="./affiliate.js" defer />
+      </body>
     </html>
   );
 }
