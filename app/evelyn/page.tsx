@@ -4,7 +4,7 @@ import feedManifest from "../../public/feed/feed.json";
 import styles from "./evelyn.module.css";
 
 const WHATSAPP_URL =
-  "https://wa.me/5519989342212?text=VIM%20PELA%20EVELYN";
+  "https://wa.me/5519989342212?text=Ol%C3%A1%2C%20vim%20pela%20Evelyn%20e%20gostaria%20de%20conhecer%20melhor%20a%20Orume%203D%20e%20fazer%20um%20or%C3%A7amento%21";
 
 export const metadata: Metadata = {
   title: "Evelyn — Afiliada",
