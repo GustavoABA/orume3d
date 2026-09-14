@@ -12,7 +12,7 @@ const basePath = configuredBasePath
 
 const pages = [
   { route: "/", output: "index.html" },
-  { route: "/evelyn/", output: path.join("evelyn", "index.html") },
+  { route: "/evelyn", output: path.join("evelyn", "index.html") },
 ];
 
 if (!docsDir.startsWith(root + path.sep)) {
