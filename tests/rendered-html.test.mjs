@@ -102,7 +102,10 @@ test("exporta todos os arquivos do GitHub Pages no caminho correto", async () =>
   assert.match(budgetHtml, /id="quote-form"/i);
   assert.match(budgetHtml, /id="q-phone"[^>]*required/i);
   assert.match(budgetHtml, /id="q-cep"[^>]*required/i);
-  assert.match(budgetHtml, /id="q-cep"[^>]*pattern="[0-9]{5}-?\[0-9\]{3}"|id="q-cep"/i);
+  assert.ok(
+    budgetHtml.includes('pattern="[0-9]{5}-?[0-9]{3}"'),
+    "O CEP deve validar 8 dígitos com hífen opcional.",
+  );
   assert.match(budgetHtml, /<select id="q-qty"[^>]*>/i);
   assert.match(budgetHtml, /<option value="1"[^>]*>1<\/option>/i);
   assert.match(budgetHtml, /<option value="Outro">Outros<\/option>/i);
