@@ -61,8 +61,8 @@ const executionContext = {
 
 function stripClientRuntime(html) {
   return html
-    .replace(/<link\\b[^>]*rel=["']modulepreload["'][^>]*>/gi, "")
-    .replace(/<script\\b[^>]*>[\\s\\S]*?<\\/script>/gi, "");
+    .replace(/<link\b[^>]*rel=["']modulepreload["'][^>]*>/gi, "")
+    .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, "");
 }
 
 const homeMenuScript = `<script>
