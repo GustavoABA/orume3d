@@ -49,3 +49,12 @@ O site também apresenta o modelo de colaboração da Orume 3D com criadores, st
 - acompanhamento de vendas e repasses conforme o acordo da coleção.
 
 O primeiro contato para uma parceria é direcionado a uma mensagem específica no WhatsApp, separada do orçamento comum de clientes.
+
+
+## Desempenho da home
+
+A home usa o manifesto local gerado durante o build para exibir os projetos. O navegador não precisa consultar proxies nem carregar o JavaScript de embed do Instagram para montar a galeria.
+
+O workflow de Instagram continua responsável por consultar a API, salvar as mídias no repositório, atualizar o manifesto e disparar novo deploy. O estado da live também entra no build após a alteração do arquivo de configuração.
+
+Os termos completos ficam em `/termos/` e o programa de criadores/afiliados em `/parcerias/`, reduzindo o conteúdo e o JavaScript necessários na página inicial.
