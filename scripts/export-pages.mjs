@@ -103,8 +103,11 @@ const budgetFormScript = `<script>
   var modal=document.getElementById("clean-modal");
   var cleanConfirm=document.getElementById("clean-confirm");
   var cleanCancel=document.getElementById("clean-cancel");
+  var frame=document.getElementById("quote-frame");
   var endpoint="";
   var cleanConfirmed=false;
+  var waitingForResult=false;
+  var resultTimer=0;
 
   if(!form)return;
 
@@ -192,6 +195,27 @@ const budgetFormScript = `<script>
     };
   }
 
+  window.addEventListener("message",function(event){
+    if(!frame||event.source!==frame.contentWindow)return;
+    var data=event.data;
+    if(!data||data.source!=="orume-intake"||!waitingForResult)return;
+
+    waitingForResult=false;
+    if(resultTimer)window.clearTimeout(resultTimer);
+
+    if(data.ok){
+      var orderText=data.orderId?(" Pedido "+data.orderId+"."):"";
+      if(status)status.textContent="Orçamento recebido pela Orume."+orderText+" Entraremos em contato pelo WhatsApp informado.";
+      form.reset();
+      cleanConfirmed=false;
+      syncQuantity();
+    }else{
+      if(status)status.textContent="Não foi possível registrar: "+String(data.error||"erro desconhecido")+". Tente novamente.";
+    }
+
+    if(submit)submit.disabled=false;
+  });
+
   function sendToEndpoint(payload){
     var transport=document.createElement("form");
     transport.method="post";
@@ -239,16 +263,16 @@ const budgetFormScript = `<script>
     }
 
     if(submit)submit.disabled=true;
-    if(status)status.textContent="Enviando orçamento para a Orume…";
+    if(status)status.textContent="Registrando seu orçamento na Orume…";
+    waitingForResult=true;
     sendToEndpoint(payload);
 
-    window.setTimeout(function(){
-      if(status)status.textContent="Solicitação enviada para processamento. A Orume entrará em contato pelo WhatsApp informado.";
+    resultTimer=window.setTimeout(function(){
+      if(!waitingForResult)return;
+      waitingForResult=false;
+      if(status)status.textContent="O servidor demorou para confirmar o registro. Não envie novamente agora; aguarde alguns minutos ou entre em contato com a Orume.";
       if(submit)submit.disabled=false;
-      form.reset();
-      cleanConfirmed=false;
-      syncQuantity();
-    },1200);
+    },20000);
   });
 })();
 </script>`;
