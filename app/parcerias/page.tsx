@@ -60,7 +60,9 @@ export default function PartnershipsPage() {
             A identidade continua pertencendo ao criador. A Orume recebe autorização apenas para os
             produtos aprovados e registra produto, preço, custos, modelo comercial e participação antes do lançamento.
           </p>
-          <a href={CREATOR_URL} target="_blank" rel="noreferrer">Quero desenvolver uma coleção ↗</a>
+          <a href="./ficha/">Preencher pré-ficha da coleção ↗</a>
+          <a href="./contrato/">Ler contrato ORU-PAR-001 →</a>
+          <a href={CREATOR_URL} target="_blank" rel="noreferrer">Falar direto no WhatsApp →</a>
         </div>
         <div className={styles.flow}>
           {creatorFlow.map(([number, title, text]) => (
@@ -102,7 +104,7 @@ export default function PartnershipsPage() {
 
       <footer className={styles.footer}>
         <span>ORUME 3D • Santa Cruz da Conceição — SP</span>
-        <a href="../termos/">Termos de encomenda →</a>
+        <span><a href="./contrato/">Contrato de parceria</a> • <a href="../termos/">Termos de encomenda</a></span>
       </footer>
     </main>
   );
