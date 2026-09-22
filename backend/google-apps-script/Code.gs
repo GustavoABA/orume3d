@@ -16,20 +16,12 @@ function testSetup() {
     throw new Error("Abas ausentes: " + missing.join(", "));
   }
 
-  const props = PropertiesService.getScriptProperties();
-  const whatsappConfigured = Boolean(
-    props.getProperty("WHATSAPP_TOKEN") &&
-    props.getProperty("WHATSAPP_PHONE_NUMBER_ID") &&
-    props.getProperty("WHATSAPP_TO") &&
-    props.getProperty("WHATSAPP_API_VERSION")
-  );
-
   const result = {
     ok: true,
     spreadsheet: ss.getName(),
     spreadsheetId: ss.getId(),
     sheets: SHEETS,
-    whatsappConfigured: whatsappConfigured,
+    mode: "google-sheets-only",
   };
 
   Logger.log(JSON.stringify(result, null, 2));
@@ -67,28 +59,20 @@ function doPost(e) {
     const client = upsertClient_(clients, payload);
     const order = createOrder_(orders, payload, client.name);
 
-    const notify = notifyOwner_(payload, order.id, siteId);
-
     intake.getRange(intakeRow, 19).setValue("Registrado");
     intake.getRange(intakeRow, 20).setValue("Sim");
     intake.getRange(intakeRow, 21).setValue(order.id);
-    intake.getRange(intakeRow, 23).setValue(
-      notify.sent
-        ? "WhatsApp interno enviado"
-        : notify.reason === "not_configured"
-          ? "Registro concluído; notificação WhatsApp não configurada"
-          : "Registro concluído; WhatsApp não enviado (HTTP " + String(notify.code || "?") + ")"
-    );
+    intake.getRange(intakeRow, 23).setValue("Registro concluído pelo Apps Script");
 
     SpreadsheetApp.flush();
 
-    return postResponse_({
+    return json_({
       source: "orume-intake",
       ok: true,
       siteId: siteId,
       orderId: order.id,
       clientRow: client.row,
-      whatsappNotificationSent: notify.sent,
+      storage: "google-sheets",
     });
   } catch (error) {
     try {
@@ -100,7 +84,7 @@ function doPost(e) {
       }
     } catch (_) {}
 
-    return postResponse_({
+    return json_({
       source: "orume-intake",
       ok: false,
       error: String(error && error.message ? error.message : error),
@@ -330,69 +314,6 @@ function createOrder_(sheet, p, clientName) {
   const id = String(sheet.getRange(row, 1).getDisplayValue() || "").trim();
 
   return { row, id };
-}
-
-function notifyOwner_(p, orderId, siteId) {
-  const props = PropertiesService.getScriptProperties();
-  const token = props.getProperty("WHATSAPP_TOKEN");
-  const phoneNumberId = props.getProperty("WHATSAPP_PHONE_NUMBER_ID");
-  const to = props.getProperty("WHATSAPP_TO");
-  const apiVersion = props.getProperty("WHATSAPP_API_VERSION");
-
-  if (!token || !phoneNumberId || !to || !apiVersion) {
-    return { sent: false, reason: "not_configured" };
-  }
-
-  const url = "https://graph.facebook.com/" + apiVersion + "/" + phoneNumberId + "/messages";
-
-  const body = [
-    "NOVO ORÇAMENTO — ORUME 3D",
-    orderId ? "Pedido: " + orderId : "Registro: " + siteId,
-    "Cliente: " + safeText_(p.name),
-    "WhatsApp: " + normalizePhone_(p.phone),
-    "Cidade: " + safeText_(p.city),
-    "Produto: " + safeText_(p.product),
-    "Quantidade: " + safeText_(p.quantity),
-    p.deadline ? "Prazo desejado: " + safeText_(p.deadline) : "",
-    p.delivery ? "Entrega: " + safeText_(p.delivery) : "",
-    p.referral ? "Indicado por: " + safeText_(p.referral) : "",
-    "Atendimento: " + (p.cleanService ? "CLEAN" : "Padrão"),
-  ].filter(Boolean).join("\n");
-
-  const response = UrlFetchApp.fetch(url, {
-    method: "post",
-    contentType: "application/json",
-    headers: { Authorization: "Bearer " + token },
-    payload: JSON.stringify({
-      messaging_product: "whatsapp",
-      to: to,
-      type: "text",
-      text: { body: body },
-    }),
-    muteHttpExceptions: true,
-  });
-
-  const code = response.getResponseCode();
-  return { sent: code >= 200 && code < 300, code: code };
-}
-
-function postResponse_(value) {
-  const payload = JSON.stringify(value)
-    .replace(/</g, "\\u003c")
-    .replace(/>/g, "\\u003e")
-    .replace(/&/g, "\\u0026");
-
-  const html = [
-    "<!doctype html><html><head><meta charset=\"utf-8\"></head><body>",
-    "<script>",
-    "window.parent.postMessage(" + payload + ", '*');",
-    "</script>",
-    "</body></html>"
-  ].join("");
-
-  return HtmlService
-    .createHtmlOutput(html)
-    .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
 }
 
 function json_(value) {
