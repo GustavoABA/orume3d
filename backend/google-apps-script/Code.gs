@@ -52,7 +52,13 @@ function testEmail() {
   return { ok: true, sentTo: NOTIFICATION_EMAIL };
 }
 
-function doGet() {
+function doGet(e) {
+  const action = e && e.parameter ? String(e.parameter.action || "") : "";
+
+  if (action === "status") {
+    return statusJsonp_(e);
+  }
+
   return json_({ ok: true, service: "orume-intake" });
 }
 
@@ -75,9 +81,23 @@ function doPost(e) {
       throw new Error("Uma ou mais abas obrigatórias não foram encontradas.");
     }
 
-    enforceRateLimit_(payload);
+    const siteId =
+      normalizeSiteId_(payload.siteId) ||
+      ("SITE-" + Utilities.getUuid().split("-")[0].toUpperCase());
 
-    const siteId = "SITE-" + Utilities.getUuid().split("-")[0].toUpperCase();
+    const existing = findSubmissionBySiteId_(intake, siteId);
+    if (existing) {
+      return json_({
+        source: "orume-intake",
+        ok: existing.status === "Registrado",
+        siteId: siteId,
+        orderId: existing.orderId || "",
+        storage: "google-sheets",
+        duplicate: true,
+      });
+    }
+
+    enforceRateLimit_(payload);
     intakeRow = appendIntake_(intake, payload, siteId);
 
     const client = upsertClient_(clients, payload);
@@ -123,6 +143,78 @@ function doPost(e) {
   } finally {
     try { lock.releaseLock(); } catch (_) {}
   }
+}
+
+
+function normalizeSiteId_(value) {
+  const id = String(value || "").trim().toUpperCase();
+  return /^SITE-[A-Z0-9-]{6,80}$/.test(id) ? id : "";
+}
+
+function findSubmissionBySiteId_(sheet, siteId) {
+  if (!siteId || sheet.getLastRow() < 2) return null;
+
+  const lastRow = sheet.getLastRow();
+  const ids = sheet.getRange(2, 2, lastRow - 1, 1).getDisplayValues();
+
+  for (let i = ids.length - 1; i >= 0; i--) {
+    if (String(ids[i][0] || "").trim() === siteId) {
+      const row = i + 2;
+      return {
+        row: row,
+        status: String(sheet.getRange(row, 19).getDisplayValue() || "").trim(),
+        orderId: String(sheet.getRange(row, 21).getDisplayValue() || "").trim(),
+        technical: String(sheet.getRange(row, 23).getDisplayValue() || "").trim(),
+      };
+    }
+  }
+
+  return null;
+}
+
+function sanitizeCallback_(value) {
+  const callback = String(value || "").trim();
+  return /^[A-Za-z_$][A-Za-z0-9_$]{0,80}$/.test(callback) ? callback : "";
+}
+
+function statusJsonp_(e) {
+  const callback = sanitizeCallback_(e && e.parameter ? e.parameter.callback : "");
+  const siteId = normalizeSiteId_(e && e.parameter ? (e.parameter.siteId || e.parameter.id) : "");
+
+  if (!callback) {
+    return ContentService
+      .createTextOutput("/* callback inválido */")
+      .setMimeType(ContentService.MimeType.JAVASCRIPT);
+  }
+
+  let result = {
+    source: "orume-status",
+    found: false,
+    siteId: siteId,
+  };
+
+  if (siteId) {
+    const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+    const intake = ss.getSheetByName(SHEETS.intake);
+    const existing = intake ? findSubmissionBySiteId_(intake, siteId) : null;
+
+    if (existing) {
+      result = {
+        source: "orume-status",
+        found: true,
+        siteId: siteId,
+        status: existing.status,
+        orderId: existing.orderId || "",
+        complete: existing.status === "Registrado",
+        failed: existing.status === "Erro",
+        error: existing.status === "Erro" ? existing.technical : "",
+      };
+    }
+  }
+
+  return ContentService
+    .createTextOutput(callback + "(" + JSON.stringify(result) + ");")
+    .setMimeType(ContentService.MimeType.JAVASCRIPT);
 }
 
 function parsePayload_(e) {
