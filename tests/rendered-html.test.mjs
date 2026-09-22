@@ -100,9 +100,17 @@ test("exporta todos os arquivos do GitHub Pages no caminho correto", async () =>
   const creatorContractHtml = await readFile(path.join(docsDir, "parcerias", "contrato", "index.html"), "utf8");
 
   assert.match(budgetHtml, /id="quote-form"/i);
-  assert.match(budgetHtml, /PEDIDO DE ORÇAMENTO — SITE ORUME 3D/i);
+  assert.match(budgetHtml, /id="q-phone"[^>]*required/i);
+  assert.match(budgetHtml, /id="q-qty"[^>]*<option value="1">1<\/option>/i);
+  assert.match(budgetHtml, /<option value="Outro">Outros<\/option>/i);
+  assert.match(budgetHtml, /id="q-description"/i);
+  assert.doesNotMatch(budgetHtml, /id="q-description"[^>]*required/i);
+  assert.match(budgetHtml, /id="q-clean"/i);
+  assert.match(budgetHtml, /ATENDIMENTO CLEAN/i);
+  assert.match(budgetHtml, /id="quote-submit"/i);
+  assert.match(budgetHtml, /intake-config\.json/i);
   assert.match(budgetHtml, /new FormData\(form\)/i);
-  assert.match(budgetHtml, /wa\.me\/5519989342212/i);
+  assert.doesNotMatch(budgetHtml, /wa\.me\/5519989342212/i);
   assert.match(affiliateHtml, /id="affiliate-form"/i);
   assert.match(affiliateHtml, /PROPOSTA DE PARCERIA \/ AFILIADO — ORUME 3D/i);
   assert.match(affiliateHtml, /Comissão \/ modelo imaginado/i);
