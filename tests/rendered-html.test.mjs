@@ -40,6 +40,8 @@ test("renderiza a landing page da Orume 3D", async () => {
   assert.match(html, /Santa Cruz da Conceição/i);
   assert.match(html, /Abrir termos completos/i);
   assert.match(html, /Ver programa de parcerias/i);
+  assert.match(html, /Montar meu orçamento/i);
+  assert.match(html, /href="\.\/orcamento\//i);
   assert.match(html, /Todos os orçamentos e fechamentos são realizados pelo WhatsApp/i);
   assert.match(html, /orume-logo-mark\.webp/i);
   assert.match(html, /service-triptych\.webp/i);
@@ -62,7 +64,10 @@ test("exporta todos os arquivos do GitHub Pages no caminho correto", async () =>
   assert.doesNotMatch(html, /["']\/_next\/static\//i);
   await access(path.join(docsDir, "404.html"));
   await access(path.join(docsDir, ".nojekyll"));
+  await access(path.join(docsDir, "orcamento", "index.html"));
   await access(path.join(docsDir, "parcerias", "index.html"));
+  await access(path.join(docsDir, "parcerias", "ficha", "index.html"));
+  await access(path.join(docsDir, "parcerias", "contrato", "index.html"));
   await access(path.join(docsDir, "termos", "index.html"));
   await access(path.join(docsDir, "favicon.svg"));
 
@@ -87,6 +92,20 @@ test("exporta todos os arquivos do GitHub Pages no caminho correto", async () =>
     assert.ok(assetPath.startsWith(docsDir + path.sep), `Caminho inseguro no HTML: ${reference}`);
     await access(assetPath);
   }
+
+  const budgetHtml = await readFile(path.join(docsDir, "orcamento", "index.html"), "utf8");
+  const creatorFormHtml = await readFile(path.join(docsDir, "parcerias", "ficha", "index.html"), "utf8");
+  const creatorContractHtml = await readFile(path.join(docsDir, "parcerias", "contrato", "index.html"), "utf8");
+
+  assert.match(budgetHtml, /id="quote-form"/i);
+  assert.match(budgetHtml, /PEDIDO DE ORÇAMENTO — SITE ORUME 3D/i);
+  assert.match(budgetHtml, /new FormData\(form\)/i);
+  assert.match(budgetHtml, /wa\.me\/5519989342212/i);
+  assert.match(creatorFormHtml, /id="creator-form"/i);
+  assert.match(creatorFormHtml, /PRÉ-FICHA DE PRODUTO \/ COLEÇÃO — ORU-PAR-001/i);
+  assert.match(creatorFormHtml, /Direitos de merchandising/i);
+  assert.match(creatorContractHtml, /Contrato de parceria para criação e comercialização/i);
+  assert.match(creatorContractHtml, /18\. Vigência e foro/i);
 
   const liveConfig = JSON.parse(await readFile(path.resolve("public", "live.json"), "utf8"));
   assert.equal(typeof liveConfig.active, "boolean");
