@@ -6,6 +6,36 @@ const SHEETS = {
   orders: "Encomendas",
 };
 
+function testSetup() {
+  const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+  const missing = Object.keys(SHEETS)
+    .map(function(key) { return SHEETS[key]; })
+    .filter(function(name) { return !ss.getSheetByName(name); });
+
+  if (missing.length) {
+    throw new Error("Abas ausentes: " + missing.join(", "));
+  }
+
+  const props = PropertiesService.getScriptProperties();
+  const whatsappConfigured = Boolean(
+    props.getProperty("WHATSAPP_TOKEN") &&
+    props.getProperty("WHATSAPP_PHONE_NUMBER_ID") &&
+    props.getProperty("WHATSAPP_TO") &&
+    props.getProperty("WHATSAPP_API_VERSION")
+  );
+
+  const result = {
+    ok: true,
+    spreadsheet: ss.getName(),
+    spreadsheetId: ss.getId(),
+    sheets: SHEETS,
+    whatsappConfigured: whatsappConfigured,
+  };
+
+  Logger.log(JSON.stringify(result, null, 2));
+  return result;
+}
+
 function doGet() {
   return json_({ ok: true, service: "orume-intake" });
 }
@@ -43,7 +73,11 @@ function doPost(e) {
     intake.getRange(intakeRow, 20).setValue("Sim");
     intake.getRange(intakeRow, 21).setValue(order.id);
     intake.getRange(intakeRow, 23).setValue(
-      notify.sent ? "WhatsApp interno enviado" : "Registro concluído; notificação WhatsApp não configurada"
+      notify.sent
+        ? "WhatsApp interno enviado"
+        : notify.reason === "not_configured"
+          ? "Registro concluído; notificação WhatsApp não configurada"
+          : "Registro concluído; WhatsApp não enviado (HTTP " + String(notify.code || "?") + ")"
     );
 
     SpreadsheetApp.flush();
