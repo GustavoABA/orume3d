@@ -300,9 +300,9 @@ function notifyOwner_(p, orderId, siteId) {
   const token = props.getProperty("WHATSAPP_TOKEN");
   const phoneNumberId = props.getProperty("WHATSAPP_PHONE_NUMBER_ID");
   const to = props.getProperty("WHATSAPP_TO");
-  const apiVersion = props.getProperty("WHATSAPP_API_VERSION") || "v24.0";
+  const apiVersion = props.getProperty("WHATSAPP_API_VERSION");
 
-  if (!token || !phoneNumberId || !to) {
+  if (!token || !phoneNumberId || !to || !apiVersion) {
     return { sent: false, reason: "not_configured" };
   }
 
