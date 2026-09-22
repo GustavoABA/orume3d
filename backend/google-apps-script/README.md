@@ -28,8 +28,11 @@ A implantação do Google Apps Script não pode ser publicada pela integração 
 
 Sem a API oficial, um site não pode enviar silenciosamente uma mensagem de WhatsApp em nome da Orume. Para ativar a notificação interna, crie estas Script Properties:
 
-- `WHATSAPP_MESSAGES_URL`: URL completa do endpoint de mensagens da sua conta WhatsApp Business Cloud API.
-- `WHATSAPP_TOKEN`: token da API.
-- `WHATSAPP_TO`: seu número de destino no formato aceito pela conta da API.
+- `WHATSAPP_TOKEN`: token da WhatsApp Business Cloud API.
+- `WHATSAPP_PHONE_NUMBER_ID`: Phone Number ID fornecido pela Meta.
+- `WHATSAPP_TO`: número que receberá a notificação, no formato aceito pela sua conta.
+- `WHATSAPP_API_VERSION`: versão da Graph API habilitada para sua integração, por exemplo `vXX.X`. Consulte a versão atual na documentação/painel da Meta antes de preencher.
 
-O registro na planilha funciona sem essas três propriedades; apenas a notificação interna fica desativada.
+Não coloque token no GitHub, no HTML do site ou em `intake-config.json`. Use apenas **Configurações do projeto → Propriedades do script** no Apps Script.
+
+O registro na planilha funciona sem essas propriedades; apenas a notificação interna fica desativada.
