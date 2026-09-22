@@ -15,6 +15,7 @@ const pages = [
   { route: "/evelyn", output: path.join("evelyn", "index.html") },
   { route: "/orcamento", output: path.join("orcamento", "index.html") },
   { route: "/parcerias", output: path.join("parcerias", "index.html") },
+  { route: "/parcerias/afiliados", output: path.join("parcerias", "afiliados", "index.html") },
   { route: "/parcerias/ficha", output: path.join("parcerias", "ficha", "index.html") },
   { route: "/parcerias/contrato", output: path.join("parcerias", "contrato", "index.html") },
   { route: "/termos", output: path.join("termos", "index.html") },
@@ -177,6 +178,40 @@ const creatorFormScript = `<script>
 })();
 </script>`;
 
+const affiliateFormScript = `<script>
+(function(){
+  var form=document.getElementById("affiliate-form");
+  var status=document.getElementById("affiliate-status");
+  if(!form)return;
+  function clean(value){return String(value||"").trim();}
+  function add(lines,label,value){
+    value=clean(value);
+    if(value)lines.push(label+": "+value);
+  }
+  form.addEventListener("submit",function(event){
+    event.preventDefault();
+    if(!form.reportValidity())return;
+    var data=new FormData(form);
+    var lines=["*PROPOSTA DE PARCERIA / AFILIADO — ORUME 3D*",""];
+    add(lines,"Nome",data.get("name"));
+    add(lines,"Nome público / empresa",data.get("publicName"));
+    add(lines,"WhatsApp",data.get("phone"));
+    add(lines,"Cidade / UF",data.get("city"));
+    add(lines,"Tipo de parceria",data.get("type"));
+    add(lines,"Perfil / site / canal",data.get("profile"));
+    add(lines,"Como pretende indicar ou vender",data.get("how"));
+    add(lines,"Volume / público aproximado",data.get("volume"));
+    add(lines,"Comissão / modelo imaginado",data.get("commission"));
+    add(lines,"Observações",data.get("notes"));
+    lines.push("","Entendo que comissão, base de cálculo e pagamento precisam ser definidos com a Orume antes das vendas atribuídas.");
+    var url="https://wa.me/5519989342212?text="+encodeURIComponent(lines.join("\\n"));
+    if(status)status.textContent="Proposta pronta. Abrindo o WhatsApp para sua conferência…";
+    var opened=window.open(url,"_blank","noopener,noreferrer");
+    if(!opened)window.location.href=url;
+  });
+})();
+</script>`;
+
 async function renderPage(route) {
   const response = await worker.fetch(
     new Request(`http://localhost${basePath}${route}`, {
@@ -198,6 +233,8 @@ async function renderPage(route) {
     html = html.replace("</body>", budgetFormScript + "</body>");
   } else if (route === "/parcerias/ficha") {
     html = html.replace("</body>", creatorFormScript + "</body>");
+  } else if (route === "/parcerias/afiliados") {
+    html = html.replace("</body>", affiliateFormScript + "</body>");
   }
 
   if (basePath) {
