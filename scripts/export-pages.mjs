@@ -13,6 +13,8 @@ const basePath = configuredBasePath
 const pages = [
   { route: "/", output: "index.html" },
   { route: "/evelyn", output: path.join("evelyn", "index.html") },
+  { route: "/parcerias", output: path.join("parcerias", "index.html") },
+  { route: "/termos", output: path.join("termos", "index.html") },
 ];
 
 if (!docsDir.startsWith(root + path.sep)) {
@@ -114,4 +116,4 @@ if (!homeHtml) {
 await writeFile(path.join(docsDir, "404.html"), homeHtml, "utf8");
 await writeFile(path.join(docsDir, ".nojekyll"), "", "utf8");
 
-console.log("Versão para GitHub Pages criada em docs/, incluindo /evelyn/.");
+console.log("Versão para GitHub Pages criada em docs/, incluindo /evelyn/, /parcerias/ e /termos/.");
