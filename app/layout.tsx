@@ -25,7 +25,6 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: [{ url: new URL("favicon.svg", siteUrl).toString(), type: "image/svg+xml" }],
-    shortcut: [{ url: new URL("favicon.svg", siteUrl).toString(), type: "image/svg+xml" }],
     apple: [{ url: new URL("orume-icon.png", siteUrl).toString(), type: "image/png" }],
   },
   openGraph: {
