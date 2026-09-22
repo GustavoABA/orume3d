@@ -12,6 +12,9 @@ const WHATSAPP_URL =
   "https://wa.me/5519989342212?text=Ol%C3%A1%2C%20vim%20pelo%20site%20da%20Orume%203D%20e%20quero%20fazer%20um%20or%C3%A7amento.";
 const INSTAGRAM_URL = "https://www.instagram.com/orume3d/";
 const TIKTOK_URL = "https://www.tiktok.com/@orume3d";
+const CREATOR_WHATSAPP_URL = whatsappUrl(
+  "Olá, Orume 3D! Sou criador(a) de conteúdo e quero conversar sobre uma coleção oficial de produtos personalizados. Gostaria de entender desenvolvimento, protótipo, aprovação, modelo de venda e participação nas vendas.",
+);
 const CDC_URL = "https://www.planalto.gov.br/ccivil_03/leis/l8078compilado.htm";
 const ECOMMERCE_URL = "https://www.planalto.gov.br/ccivil_03/_ato2011-2014/2013/decreto/d7962.htm";
 
@@ -85,6 +88,13 @@ const steps = [
   ["02", "Orçamento completo", "A Orume informa material, acabamento, valor, pagamento, prazo de produção e entrega."],
   ["03", "Confirmação da venda", "O resumo do pedido e estes termos são confirmados antes do pagamento combinado."],
   ["04", "Produção e entrega", "Após a aprovação, a impressão começa e você recebe as atualizações até a entrega."],
+];
+
+const creatorSteps = [
+  ["01", "Conceito da coleção", "Você apresenta personagem, identidade, público e quais produtos gostaria de transformar em itens físicos."],
+  ["02", "Desenvolvimento e protótipo", "A Orume avalia viabilidade, modelagem, materiais, acabamento, custos e prepara uma visualização ou protótipo para aprovação."],
+  ["03", "Aprovação e modelo comercial", "Produto, preço, participação, produção sob demanda, pré-venda ou estoque ficam definidos por escrito antes do lançamento."],
+  ["04", "Lançamento e relatório", "A coleção aprovada pode ser divulgada como colaboração e as vendas são acompanhadas para cálculo dos repasses combinados."],
 ];
 
 function SocialLink({
@@ -345,7 +355,8 @@ export default function Home() {
           <a href="#sobre" onClick={closeMenu}><span>02</span> Sobre nós</a>
           <a href="#solucoes" onClick={closeMenu}><span>03</span> O que fazemos</a>
           <a href="#processo" onClick={closeMenu}><span>04</span> Como funciona</a>
-          <a href="#contrato" onClick={closeMenu}><span>05</span> Termos da encomenda</a>
+          <a href="#criadores" onClick={closeMenu}><span>05</span> Para criadores</a>
+          <a href="#contrato" onClick={closeMenu}><span>06</span> Termos da encomenda</a>
           <div className="nav-socials">
             <SocialLink href={INSTAGRAM_URL} label="Instagram" />
             <SocialLink href={TIKTOK_URL} label="TikTok" />
@@ -556,6 +567,59 @@ export default function Home() {
         </div>
       </section>
 
+
+      <section className="creator-section section-shell" id="criadores">
+        <div className="creator-intro" data-reveal>
+          <div className="section-code">04 — PARCERIAS COM CRIADORES</div>
+          <p className="section-tag">Merchandising físico com aprovação</p>
+          <h2>Seu personagem pode virar uma coleção real.</h2>
+          <p>
+            A Orume desenvolve produtos físicos em parceria com criadores, streamers e VTubers.
+            Cada item nasce de uma proposta aprovada: identidade, produto, uso de artes, processo de criação,
+            modelo de venda, custos e participação ficam definidos antes da comercialização.
+          </p>
+          <a className="creator-cta" href={CREATOR_WHATSAPP_URL} target="_blank" rel="noreferrer">
+            Quero criar uma coleção <span aria-hidden="true">↗</span>
+          </a>
+        </div>
+
+        <div className="creator-flow" data-reveal>
+          <span className="panel-index">Fluxo de colaboração</span>
+          {creatorSteps.map(([number, title, text]) => (
+            <article className="creator-step" key={number}>
+              <span>{number}</span>
+              <div>
+                <h3>{title}</h3>
+                <p>{text}</p>
+              </div>
+            </article>
+          ))}
+        </div>
+
+        <div className="creator-rules" data-reveal>
+          <div>
+            <span>Direitos</span>
+            <strong>A identidade continua pertencendo ao criador.</strong>
+            <p>A Orume usa apenas os materiais autorizados para os produtos aprovados.</p>
+          </div>
+          <div>
+            <span>Aprovação</span>
+            <strong>Nada vai à venda sem validação do produto.</strong>
+            <p>Render, foto, protótipo ou outra prévia clara é apresentada antes do lançamento.</p>
+          </div>
+          <div>
+            <span>Modelo comercial</span>
+            <strong>Pré-venda, sob demanda ou estoque.</strong>
+            <p>Preço, base de cálculo, participação e repasse são definidos para cada produto ou coleção.</p>
+          </div>
+          <div>
+            <span>IA</span>
+            <strong>Uso somente com ciência e autorização.</strong>
+            <p>Quando houver IA no desenvolvimento, a ferramenta ou etapa deve ser informada e aprovada.</p>
+          </div>
+        </div>
+      </section>
+
       <section className="contract-section section-shell" id="contrato">
         <div className="contract-copy" data-reveal>
           <div className="section-code">04 — TERMOS DA ENCOMENDA</div>
@@ -601,6 +665,7 @@ export default function Home() {
           <a href={INSTAGRAM_URL} target="_blank" rel="noreferrer"><FaInstagram aria-hidden="true" /> Instagram ↗</a>
           <a href={TIKTOK_URL} target="_blank" rel="noreferrer"><FaTiktok aria-hidden="true" /> TikTok ↗</a>
           <a href={WHATSAPP_URL} target="_blank" rel="noreferrer"><FaWhatsapp aria-hidden="true" /> WhatsApp ↗</a>
+          <a href="#criadores">Parcerias com criadores ↗</a>
           <button type="button" onClick={() => setContractOpen(true)}>Contrato da encomenda ↗</button>
         </div>
         <div className="footer-bottom"><span>© {new Date().getFullYear()} Orume 3D</span><span>Santa Cruz da Conceição — SP</span></div>
