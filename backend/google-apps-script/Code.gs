@@ -104,8 +104,9 @@ function validate_(p) {
     throw new Error("CEP inválido. Informe os 8 dígitos.");
   }
 
-  if (String(p.quantity || "").length > 12) {
-    throw new Error("Quantidade inválida.");
+  const quantity = String(p.quantity || "").trim();
+  if (!/^\d+$/.test(quantity) || Number(quantity) < 1 || Number(quantity) > 9999) {
+    throw new Error("Quantidade inválida. Informe um número inteiro entre 1 e 9999.");
   }
 
   const serialized = JSON.stringify(p);
