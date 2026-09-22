@@ -623,7 +623,7 @@ export default function Home() {
 
       <section className="contract-section section-shell" id="contrato">
         <div className="contract-copy" data-reveal>
-          <div className="section-code">04 — TERMOS DA ENCOMENDA</div>
+          <div className="section-code">05 — TERMOS DA ENCOMENDA</div>
           <p className="section-tag">Tudo claro antes de produzir</p>
           <h2>Seu pedido com regras bem definidas.</h2>
           <p>
