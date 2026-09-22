@@ -12,8 +12,6 @@ const WHATSAPP_URL =
   "https://wa.me/5519989342212?text=Ol%C3%A1%2C%20vim%20pelo%20site%20da%20Orume%203D%20e%20quero%20fazer%20um%20or%C3%A7amento.";
 const INSTAGRAM_URL = "https://www.instagram.com/orume3d/";
 const TIKTOK_URL = "https://www.tiktok.com/@orume3d";
-const CDC_URL = "https://www.planalto.gov.br/ccivil_03/leis/l8078compilado.htm";
-const ECOMMERCE_URL = "https://www.planalto.gov.br/ccivil_03/_ato2011-2014/2013/decreto/d7962.htm";
 
 const whatsappUrl = (message: string) =>
   `https://wa.me/5519989342212?text=${encodeURIComponent(message)}`;
@@ -35,24 +33,6 @@ type LiveConfig = {
   youtubeUrl?: string;
   title?: string;
 };
-
-type InstagramLinksPayload = {
-  links: string[];
-  source: "fallback" | "loading" | "json" | "proxy";
-};
-
-declare global {
-  interface Window {
-    OrumeInstagramLinks?: InstagramLinksPayload & {
-      refresh: () => Promise<string[]>;
-    };
-    instgrm?: {
-      Embeds?: {
-        process: () => void;
-      };
-    };
-  }
-}
 
 const services = [
   {
@@ -122,17 +102,9 @@ function SocialLink({
 }
 
 export default function Home() {
-  const [feed, setFeed] = useState<FeedItem[]>(feedManifest as FeedItem[]);
-  const [instagramLinks, setInstagramLinks] = useState<string[]>(
-    (feedManifest as FeedItem[])
-      .map((item) => item.href)
-      .filter((href): href is string => Boolean(href)),
-  );
-  const [instagramLinksSource, setInstagramLinksSource] = useState<InstagramLinksPayload["source"]>("fallback");
-  const [live, setLive] = useState<LiveConfig>(initialLiveConfig);
+  const feed = feedManifest as FeedItem[];
+  const live = initialLiveConfig as LiveConfig;
   const [menuOpen, setMenuOpen] = useState(false);
-  const [selectedItem, setSelectedItem] = useState<FeedItem | null>(null);
-  const [contractOpen, setContractOpen] = useState(false);
   const [showFloatingBudget, setShowFloatingBudget] = useState(false);
 
   useEffect(() => {
@@ -163,60 +135,6 @@ export default function Home() {
     };
   }, []);
 
-  useEffect(() => {
-    const receiveLinks = (payload?: InstagramLinksPayload) => {
-      if (!payload?.links?.length) return;
-      setInstagramLinks(payload.links);
-      setInstagramLinksSource(payload.source);
-    };
-
-    const onLinks = (event: Event) => {
-      receiveLinks((event as CustomEvent<InstagramLinksPayload>).detail);
-    };
-
-    window.addEventListener("orume:instagram-links", onLinks);
-
-    if (window.OrumeInstagramLinks) {
-      receiveLinks(window.OrumeInstagramLinks);
-      window.OrumeInstagramLinks.refresh();
-    } else {
-      const script = document.createElement("script");
-      script.id = "orume-instagram-links";
-      script.src = "./instagram/links.js";
-      script.async = true;
-      document.head.appendChild(script);
-    }
-
-    return () => window.removeEventListener("orume:instagram-links", onLinks);
-  }, []);
-
-  useEffect(() => {
-    if (!instagramLinks.length) return;
-
-    const processEmbeds = () => {
-      window.requestAnimationFrame(() => window.instgrm?.Embeds?.process());
-    };
-    const existingScript = document.getElementById("instagram-embed-script") as HTMLScriptElement | null;
-
-    if (window.instgrm?.Embeds) {
-      processEmbeds();
-      return;
-    }
-
-    if (existingScript) {
-      existingScript.addEventListener("load", processEmbeds, { once: true });
-      return () => existingScript.removeEventListener("load", processEmbeds);
-    }
-
-    const script = document.createElement("script");
-    script.id = "instagram-embed-script";
-    script.src = "https://www.instagram.com/embed.js";
-    script.async = true;
-    script.addEventListener("load", processEmbeds, { once: true });
-    document.head.appendChild(script);
-
-    return () => script.removeEventListener("load", processEmbeds);
-  }, [instagramLinks]);
 
   useEffect(() => {
     const root = document.documentElement;
@@ -244,24 +162,6 @@ export default function Home() {
     };
   }, []);
 
-  useEffect(() => {
-    const refreshToken = Date.now();
-
-    Promise.all([
-      fetch(`./feed/feed.json?v=${refreshToken}`, { cache: "no-store" })
-        .then((response) => (response.ok ? response.json() : feedManifest)),
-      fetch(`./live.json?v=${refreshToken}`, { cache: "no-store" })
-        .then((response) => (response.ok ? response.json() : initialLiveConfig)),
-    ])
-      .then(([items, liveConfig]: [FeedItem[], LiveConfig]) => {
-        setFeed(items);
-        setLive(liveConfig);
-      })
-      .catch(() => {
-        setFeed(feedManifest as FeedItem[]);
-        setLive(initialLiveConfig);
-      });
-  }, []);
 
   useEffect(() => {
     const feedSection = document.getElementById("feed");
@@ -279,15 +179,10 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    const modalOpen = Boolean(selectedItem || contractOpen || menuOpen);
-    document.body.classList.toggle("modal-open", modalOpen);
+    document.body.classList.toggle("modal-open", menuOpen);
 
     const closeOnEscape = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        setSelectedItem(null);
-        setContractOpen(false);
-        setMenuOpen(false);
-      }
+      if (event.key === "Escape") setMenuOpen(false);
     };
 
     window.addEventListener("keydown", closeOnEscape);
@@ -295,7 +190,7 @@ export default function Home() {
       document.body.classList.remove("modal-open");
       window.removeEventListener("keydown", closeOnEscape);
     };
-  }, [contractOpen, menuOpen, selectedItem]);
+  }, [menuOpen]);
 
   const closeMenu = () => setMenuOpen(false);
   const videoId = /^[A-Za-z0-9_-]{11}$/.test(live.videoId ?? "") ? live.videoId : "";
@@ -356,8 +251,8 @@ export default function Home() {
           <a href="#sobre" onClick={closeMenu}><span>02</span> Sobre nós</a>
           <a href="#solucoes" onClick={closeMenu}><span>03</span> O que fazemos</a>
           <a href="#processo" onClick={closeMenu}><span>04</span> Como funciona</a>
-          <a href="#criadores" onClick={closeMenu}><span>05</span> Para criadores</a>
-          <a href="#contrato" onClick={closeMenu}><span>06</span> Termos da encomenda</a>
+          <a href="./parcerias/" onClick={closeMenu}><span>05</span> Parcerias</a>
+          <a href="./termos/" onClick={closeMenu}><span>06</span> Termos da encomenda</a>
           <div className="nav-socials">
             <SocialLink href={INSTAGRAM_URL} label="Instagram" />
             <SocialLink href={TIKTOK_URL} label="TikTok" />
@@ -435,41 +330,32 @@ export default function Home() {
             <p className="section-tag">Direto da bancada</p>
             <h2>Projetos.</h2>
           </div>
-          <span className="feed-count">{String(instagramLinks.length).padStart(2, "0")} projeto{instagramLinks.length === 1 ? "" : "s"}</span>
+          <span className="feed-count">{String(feed.length).padStart(2, "0")} projeto{feed.length === 1 ? "" : "s"}</span>
         </div>
 
         <div className="project-stage">
-          <div className="instagram-embed-feed" data-source={instagramLinksSource}>
-            {instagramLinks.map((href, index) => {
-              const fallback = feed.find((item) => item.href === href);
-              return (
-                <article
-                  className="instagram-live-tile"
-                  key={href}
-                  style={{
-                    "--delay": `${index * 70}ms`,
-                    "--fallback-image": fallback ? `url("${fallback.src}")` : "none",
-                  } as CSSProperties}
-                >
-                  <blockquote
-                    className="instagram-media"
-                    data-instgrm-permalink={href}
-                    data-instgrm-version="14"
-                  >
-                    <a href={href} target="_blank" rel="noreferrer">Ver publicação no Instagram</a>
-                  </blockquote>
-                  <a
-                    className="instagram-tile-link"
-                    href={href}
-                    target="_blank"
-                    rel="noreferrer"
-                    aria-label="Abrir este projeto no Instagram"
-                  >
-                    <span aria-hidden="true">↗</span>
-                  </a>
-                </article>
-              );
-            })}
+          <div className="project-image-grid">
+            {feed.slice(0, 6).map((item, index) => (
+              <a
+                className="project-image-card"
+                key={item.src}
+                href={item.href || INSTAGRAM_URL}
+                target="_blank"
+                rel="noreferrer"
+                aria-label={`${item.title} — abrir no Instagram`}
+                style={{ "--delay": `${index * 55}ms` } as CSSProperties}
+              >
+                <img
+                  src={item.src}
+                  alt={item.title}
+                  loading="lazy"
+                  decoding="async"
+                  width="720"
+                  height="720"
+                />
+                <span aria-hidden="true">↗</span>
+              </a>
+            ))}
           </div>
 
           <aside className="project-profile-panel" data-reveal>
@@ -579,9 +465,14 @@ export default function Home() {
             Cada item nasce de uma proposta aprovada: identidade, produto, uso de artes, processo de criação,
             modelo de venda, custos e participação ficam definidos antes da comercialização.
           </p>
-          <a className="creator-cta" href={CREATOR_WHATSAPP_URL} target="_blank" rel="noreferrer">
-            Quero criar uma coleção <span aria-hidden="true">↗</span>
-          </a>
+          <div className="creator-actions">
+            <a className="creator-cta" href={CREATOR_WHATSAPP_URL} target="_blank" rel="noreferrer">
+              Quero criar uma coleção <span aria-hidden="true">↗</span>
+            </a>
+            <a className="creator-more" href="./parcerias/">
+              Ver programa de parcerias <span aria-hidden="true">→</span>
+            </a>
+          </div>
         </div>
 
         <div className="creator-flow" data-reveal>
@@ -630,9 +521,9 @@ export default function Home() {
             O contrato geral explica orçamento, aprovação, pagamento, produção, entrega, cancelamento e garantia.
             O resumo individual enviado pelo WhatsApp completa as informações de cada encomenda.
           </p>
-          <button className="contract-open-button" type="button" onClick={() => setContractOpen(true)}>
-            Abrir contrato completo <span aria-hidden="true">↗</span>
-          </button>
+          <a className="contract-open-button" href="./termos/">
+            Abrir termos completos <span aria-hidden="true">↗</span>
+          </a>
         </div>
 
         <div className="contract-summary" data-reveal>
@@ -666,8 +557,8 @@ export default function Home() {
           <a href={INSTAGRAM_URL} target="_blank" rel="noreferrer"><FaInstagram aria-hidden="true" /> Instagram ↗</a>
           <a href={TIKTOK_URL} target="_blank" rel="noreferrer"><FaTiktok aria-hidden="true" /> TikTok ↗</a>
           <a href={WHATSAPP_URL} target="_blank" rel="noreferrer"><FaWhatsapp aria-hidden="true" /> WhatsApp ↗</a>
-          <a href="#criadores">Parcerias com criadores ↗</a>
-          <button type="button" onClick={() => setContractOpen(true)}>Contrato da encomenda ↗</button>
+          <a href="./parcerias/">Parcerias ↗</a>
+          <a href="./termos/">Termos da encomenda ↗</a>
         </div>
         <div className="footer-bottom"><span>© {new Date().getFullYear()} Orume 3D</span><span>Santa Cruz da Conceição — SP</span></div>
       </footer>
@@ -684,128 +575,6 @@ export default function Home() {
         <b aria-hidden="true">↗</b>
       </a>
 
-      {selectedItem && (
-        <div
-          className="modal-backdrop"
-          role="presentation"
-          onMouseDown={(event) => {
-            if (event.target === event.currentTarget) setSelectedItem(null);
-          }}
-        >
-          <div className="photo-modal" role="dialog" aria-modal="true" aria-label="Foto do projeto">
-            <button className="modal-close" type="button" aria-label="Fechar foto" onClick={() => setSelectedItem(null)}>×</button>
-            <img src={selectedItem.src} alt={selectedItem.title} decoding="async" />
-            <a href={selectedItem.href || INSTAGRAM_URL} target="_blank" rel="noreferrer">Ver no Instagram <span aria-hidden="true">↗</span></a>
-          </div>
-        </div>
-      )}
-
-      {contractOpen && (
-        <div
-          className="modal-backdrop contract-backdrop"
-          role="presentation"
-          onMouseDown={(event) => {
-            if (event.target === event.currentTarget) setContractOpen(false);
-          }}
-        >
-          <div className="contract-modal" role="dialog" aria-modal="true" aria-label="Contrato de encomenda e produção 3D">
-            <div className="contract-modal-head">
-              <div><img className="contract-logo" src="./orume-logo-mark.webp" alt="" aria-hidden="true" decoding="async" /><span>ORUME 3D</span><small>Termos da encomenda</small></div>
-              <button className="modal-close" type="button" aria-label="Fechar contrato" onClick={() => setContractOpen(false)}>×</button>
-            </div>
-
-            <article className="contract-document">
-              <p className="contract-version">Versão 1 — 11 de agosto de 2026</p>
-              <h2>Contrato geral de encomenda e produção 3D</h2>
-              <p className="contract-lead">
-                Este documento apresenta as condições gerais aplicáveis às encomendas da Orume 3D. O resumo individual
-                enviado pelo WhatsApp integra este contrato e informa as características específicas de cada pedido.
-              </p>
-
-              <div className="contract-parties">
-                <p><strong>Fornecedor</strong> Orume 3D, empresa de impressão 3D situada em Santa Cruz da Conceição/SP. Os dados cadastrais completos serão informados no resumo individual antes do fechamento.</p>
-                <p><strong>Cliente</strong> Pessoa identificada no atendimento e no resumo do pedido confirmado pelo WhatsApp.</p>
-              </div>
-
-              <section>
-                <h3>1. Objeto e resumo do pedido</h3>
-                <p>A Orume produzirá as peças descritas no resumo enviado ao cliente. Esse resumo deverá indicar, conforme o projeto, modelo ou referência, dimensões, material, cor, acabamento, quantidade, valor, forma de pagamento, prazo estimado, entrega e frete.</p>
-              </section>
-
-              <section>
-                <h3>2. Orçamento e correção de informações</h3>
-                <p>Todos os orçamentos são elaborados e fechados pelo WhatsApp oficial da Orume 3D. Antes da confirmação, o cliente poderá revisar e corrigir informações, medidas, quantidades, endereço e demais dados do pedido. O orçamento será válido pelo prazo informado na própria mensagem.</p>
-              </section>
-
-              <section>
-                <h3>3. Formação do contrato</h3>
-                <p>A contratação ocorre após a confirmação escrita do resumo do pedido e o cumprimento da condição de pagamento combinada. A Orume confirmará o recebimento da aceitação pelo WhatsApp e manterá estes termos disponíveis para consulta e reprodução.</p>
-              </section>
-
-              <section>
-                <h3>4. Aprovação, características e tolerâncias</h3>
-                <p>Quando houver desenho, modelo ou prévia digital, a produção dependerá da aprovação do cliente. Impressões 3D podem apresentar linhas de camada e pequenas variações próprias do processo e do material, desde que não prejudiquem o uso, a segurança ou as características prometidas. Essas particularidades não afastam a responsabilidade por vícios ou defeitos.</p>
-              </section>
-
-              <section>
-                <h3>5. Pagamento</h3>
-                <p>Valor, entrada, saldo, forma e datas de pagamento constarão no resumo individual. A produção começa somente depois do cumprimento da condição inicial combinada. Nenhuma cobrança diferente do orçamento poderá ser aplicada sem informação e concordância prévia do cliente.</p>
-              </section>
-
-              <section>
-                <h3>6. Produção, prazo e alterações</h3>
-                <p>O prazo de produção começa após a confirmação do pedido, do pagamento acordado e da aprovação de arquivos ou medidas, quando necessária. Mudanças solicitadas depois da aprovação poderão exigir novo orçamento e novo prazo, ambos informados antes da continuidade. Eventual atraso relevante será comunicado ao cliente.</p>
-              </section>
-
-              <section>
-                <h3>7. Entrega e recebimento</h3>
-                <p>Retirada, transportadora, endereço, frete e prazo estimado de entrega serão definidos no resumo do pedido. O cliente deverá conferir os dados antes do envio. A Orume responde pela entrega conforme a legislação aplicável. Em caso de avaria aparente, fotos da embalagem e da peça ajudam a agilizar o atendimento, sem limitar direitos legais.</p>
-              </section>
-
-              <section>
-                <h3>8. Cancelamento e direito de arrependimento</h3>
-                <p>Nas contratações realizadas fora do estabelecimento comercial, inclusive pelo WhatsApp, o consumidor poderá exercer o direito de arrependimento no prazo legal de sete dias, contado da assinatura ou do recebimento do produto, comunicando a Orume pelo mesmo WhatsApp utilizado na compra. Os valores serão restituídos conforme a legislação, sem multa. Nenhuma disposição deste contrato reduz direitos obrigatórios do consumidor.</p>
-              </section>
-
-              <section>
-                <h3>9. Qualidade e garantia legal</h3>
-                <p>Produtos duráveis possuem garantia legal de 90 dias para reclamação de vícios aparentes, sem prejuízo das regras aplicáveis aos vícios ocultos. Recebida a reclamação, a Orume analisará o caso e terá o prazo legal para sanar o problema. Não sendo solucionado no prazo previsto em lei, o consumidor poderá escolher as alternativas asseguradas pelo Código de Defesa do Consumidor.</p>
-              </section>
-
-              <section>
-                <h3>10. Uso e conservação</h3>
-                <p>Limites de temperatura, carga, contato com água, alimentos, produtos químicos ou uso externo deverão ser informados quando relevantes ao material escolhido. Danos comprovadamente causados por uso contrário às orientações não são vícios de fabricação, sem prejuízo da análise de cada situação e dos direitos legais.</p>
-              </section>
-
-              <section>
-                <h3>11. Arquivos, marcas e direitos de terceiros</h3>
-                <p>Ao enviar arquivos, logotipos, personagens ou modelos, o cliente declara possuir autorização para utilizá-los. A Orume poderá recusar projetos ilícitos, perigosos ou que apresentem risco evidente de violação de direitos de terceiros.</p>
-              </section>
-
-              <section>
-                <h3>12. Dados pessoais e registros</h3>
-                <p>Os dados do atendimento serão utilizados para orçamento, produção, comunicação, pagamento, entrega e cumprimento de obrigações legais. O compartilhamento será limitado aos prestadores necessários, como meios de pagamento e transporte. Mensagens, aprovações e comprovantes poderão ser mantidos como registro da contratação.</p>
-              </section>
-
-              <section>
-                <h3>13. Atendimento e solução de dúvidas</h3>
-                <p>Dúvidas, alterações, reclamações e pedidos de cancelamento devem ser enviados ao WhatsApp oficial da Orume. As partes buscarão uma solução direta, sem impedir o acesso do consumidor ao Procon, à plataforma pública competente ou ao Poder Judiciário. Aplicam-se a legislação brasileira e o foro competente definido em lei, preservado o domicílio do consumidor quando cabível.</p>
-              </section>
-
-              <div className="contract-legal-note">
-                <strong>Referências legais</strong>
-                <a href={CDC_URL} target="_blank" rel="noreferrer">Código de Defesa do Consumidor ↗</a>
-                <a href={ECOMMERCE_URL} target="_blank" rel="noreferrer">Decreto do Comércio Eletrônico ↗</a>
-              </div>
-            </article>
-
-            <div className="contract-actions">
-              <button type="button" onClick={() => window.print()}>Imprimir ou salvar em PDF</button>
-              <a href={WHATSAPP_URL} target="_blank" rel="noreferrer">Falar no WhatsApp ↗</a>
-            </div>
-          </div>
-        </div>
-      )}
     </main>
   );
 }
