@@ -48,9 +48,10 @@ function doPost(e) {
 
     SpreadsheetApp.flush();
 
-    return json_({
+    return postResponse_({
+      source: "orume-intake",
       ok: true,
-      siteId,
+      siteId: siteId,
       orderId: order.id,
       clientRow: client.row,
       whatsappNotificationSent: notify.sent,
@@ -65,7 +66,8 @@ function doPost(e) {
       }
     } catch (_) {}
 
-    return json_({
+    return postResponse_({
+      source: "orume-intake",
       ok: false,
       error: String(error && error.message ? error.message : error),
     });
@@ -337,6 +339,25 @@ function notifyOwner_(p, orderId, siteId) {
 
   const code = response.getResponseCode();
   return { sent: code >= 200 && code < 300, code: code };
+}
+
+function postResponse_(value) {
+  const payload = JSON.stringify(value)
+    .replace(/</g, "\\u003c")
+    .replace(/>/g, "\\u003e")
+    .replace(/&/g, "\\u0026");
+
+  const html = [
+    "<!doctype html><html><head><meta charset=\"utf-8\"></head><body>",
+    "<script>",
+    "window.parent.postMessage(" + payload + ", '*');",
+    "</script>",
+    "</body></html>"
+  ].join("");
+
+  return HtmlService
+    .createHtmlOutput(html)
+    .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
 }
 
 function json_(value) {
