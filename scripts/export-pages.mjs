@@ -222,7 +222,7 @@ const budgetFormScript = `<script>
     }
 
     var payload=formPayload();
-    var digits=payload.phone.replace(/\D/g,"");
+    var digits=payload.phone.replace(/\\D/g,"");
     if(digits.length<10){
       if(status)status.textContent="Informe um WhatsApp válido com DDD.";
       document.getElementById("q-phone")&&document.getElementById("q-phone").focus();
