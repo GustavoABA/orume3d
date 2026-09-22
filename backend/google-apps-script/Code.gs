@@ -29,6 +29,8 @@ function doPost(e) {
       throw new Error("Uma ou mais abas obrigatórias não foram encontradas.");
     }
 
+    enforceRateLimit_(payload);
+
     const siteId = "SITE-" + Utilities.getUuid().split("-")[0].toUpperCase();
     intakeRow = appendIntake_(intake, payload, siteId);
 
@@ -88,10 +90,25 @@ function validate_(p) {
   require_(p.city, "Cidade / UF");
   require_(p.product, "Produto / peça");
   require_(p.quantity, "Quantidade");
+  require_(p.cep, "CEP");
 
   const phone = normalizePhone_(p.phone);
   if (phone.length < 10 || phone.length > 11) {
     throw new Error("WhatsApp inválido. Informe DDD + número.");
+  }
+
+  const cep = normalizeCep_(p.cep);
+  if (cep.length !== 8) {
+    throw new Error("CEP inválido. Informe os 8 dígitos.");
+  }
+
+  if (String(p.quantity || "").length > 12) {
+    throw new Error("Quantidade inválida.");
+  }
+
+  const serialized = JSON.stringify(p);
+  if (serialized.length > 12000) {
+    throw new Error("O formulário excedeu o limite de tamanho.");
   }
 }
 
@@ -107,10 +124,30 @@ function normalizePhone_(value) {
   return digits;
 }
 
+function normalizeCep_(value) {
+  return String(value || "").replace(/\D/g, "");
+}
+
+function formatCep_(value) {
+  const digits = normalizeCep_(value);
+  return digits.length === 8 ? digits.slice(0, 5) + "-" + digits.slice(5) : digits;
+}
+
 function safeText_(value) {
   let text = String(value == null ? "" : value).trim();
   if (/^[=+\-@]/.test(text)) text = "'" + text;
   return text;
+}
+
+
+function enforceRateLimit_(p) {
+  const cache = CacheService.getScriptCache();
+  const key = "quote:" + normalizePhone_(p.phone) + ":" + normalizeCep_(p.cep);
+  const recent = cache.get(key);
+  if (recent) {
+    throw new Error("Este orçamento acabou de ser enviado. Aguarde alguns minutos antes de tentar novamente.");
+  }
+  cache.put(key, "1", 180);
 }
 
 function appendIntake_(sheet, p, siteId) {
@@ -132,7 +169,7 @@ function appendIntake_(sheet, p, siteId) {
     safeText_(p.links),
     safeText_(p.description),
     safeText_(p.delivery),
-    safeText_(p.cep),
+    formatCep_(p.cep),
     safeText_(p.notes),
     p.cleanService ? "Sim" : "Não",
     "Recebido",
@@ -194,7 +231,7 @@ function upsertClient_(sheet, p) {
     displayName = safeText_(sheet.getRange(row, 1).getDisplayValue()) || displayName;
   }
 
-  const address = [safeText_(p.city), p.cep ? "CEP " + safeText_(p.cep) : ""].filter(Boolean).join(" — ");
+  const address = [safeText_(p.city), p.cep ? "CEP " + formatCep_(p.cep) : ""].filter(Boolean).join(" — ");
   const cleanNote = p.cleanService
     ? "Preferência de atendimento: CLEAN / mínimo de interação."
     : "Preferência de atendimento: padrão.";
@@ -260,13 +297,16 @@ function createOrder_(sheet, p, clientName) {
 
 function notifyOwner_(p, orderId, siteId) {
   const props = PropertiesService.getScriptProperties();
-  const url = props.getProperty("WHATSAPP_MESSAGES_URL");
   const token = props.getProperty("WHATSAPP_TOKEN");
+  const phoneNumberId = props.getProperty("WHATSAPP_PHONE_NUMBER_ID");
   const to = props.getProperty("WHATSAPP_TO");
+  const apiVersion = props.getProperty("WHATSAPP_API_VERSION") || "v24.0";
 
-  if (!url || !token || !to) {
+  if (!token || !phoneNumberId || !to) {
     return { sent: false, reason: "not_configured" };
   }
+
+  const url = "https://graph.facebook.com/" + apiVersion + "/" + phoneNumberId + "/messages";
 
   const body = [
     "NOVO ORÇAMENTO — ORUME 3D",
