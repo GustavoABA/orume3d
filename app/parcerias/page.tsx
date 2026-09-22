@@ -83,7 +83,8 @@ export default function PartnershipsPage() {
             comissão gerada, comissão paga e saldo pendente. O percentual não é presumido:
             ele é definido para cada parceria.
           </p>
-          <a href={AFFILIATE_URL} target="_blank" rel="noreferrer">Quero ser parceiro ↗</a>
+          <a href="./afiliados/">Preencher proposta de parceria ↗</a>
+          <a href={AFFILIATE_URL} target="_blank" rel="noreferrer">Falar direto no WhatsApp →</a>
         </div>
         <div className={styles.flow}>
           {affiliateFlow.map(([number, title, text]) => (
