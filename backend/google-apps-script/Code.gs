@@ -6,6 +6,9 @@ const SHEETS = {
   orders: "Encomendas",
 };
 
+const NOTIFICATION_EMAIL = "orume3d@gmail.com";
+const SPREADSHEET_URL = "https://docs.google.com/spreadsheets/d/" + SPREADSHEET_ID + "/edit";
+
 function testSetup() {
   const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
   const missing = Object.keys(SHEETS)
@@ -59,10 +62,16 @@ function doPost(e) {
     const client = upsertClient_(clients, payload);
     const order = createOrder_(orders, payload, client.name);
 
+    const emailResult = sendOrderEmail_(payload, order, siteId);
+
     intake.getRange(intakeRow, 19).setValue("Registrado");
     intake.getRange(intakeRow, 20).setValue("Sim");
     intake.getRange(intakeRow, 21).setValue(order.id);
-    intake.getRange(intakeRow, 23).setValue("Registro concluído pelo Apps Script");
+    intake.getRange(intakeRow, 23).setValue(
+      emailResult.sent
+        ? "Registro concluído; e-mail enviado para " + NOTIFICATION_EMAIL
+        : "Registro concluído; falha no e-mail: " + emailResult.error
+    );
 
     SpreadsheetApp.flush();
 
@@ -73,6 +82,7 @@ function doPost(e) {
       orderId: order.id,
       clientRow: client.row,
       storage: "google-sheets",
+      emailSent: emailResult.sent,
     });
   } catch (error) {
     try {
@@ -314,6 +324,139 @@ function createOrder_(sheet, p, clientName) {
   const id = String(sheet.getRange(row, 1).getDisplayValue() || "").trim();
 
   return { row, id };
+}
+
+
+function sendOrderEmail_(p, order, siteId) {
+  try {
+    if (MailApp.getRemainingDailyQuota() < 1) {
+      return { sent: false, error: "cota diária de e-mail esgotada" };
+    }
+
+    const tz = Session.getScriptTimeZone() || "America/Sao_Paulo";
+    const createdAt = Utilities.formatDate(new Date(), tz, "dd/MM/yyyy HH:mm:ss");
+    const orderId = order && order.id ? order.id : "";
+    const phone = normalizePhone_(p.phone);
+    const whatsappUrl = phone
+      ? "https://wa.me/55" + phone
+      : "";
+
+    const fields = [
+      ["Data / hora", createdAt],
+      ["ID do site", siteId],
+      ["ID do pedido", orderId],
+      ["Nome do cliente", safeText_(p.name)],
+      ["WhatsApp", phone],
+      ["Cidade / UF", safeText_(p.city)],
+      ["Indicado por", safeText_(p.referral) || "Direto / Orume"],
+      ["Produto / peça", safeText_(p.product)],
+      ["Quantidade", safeText_(p.quantity)],
+      ["Medidas aproximadas", safeText_(p.dimensions)],
+      ["Cor", safeText_(p.color)],
+      ["Material", safeText_(p.material)],
+      ["Prazo desejado", safeText_(p.deadline)],
+      ["Links / referências", safeText_(p.links)],
+      ["Detalhes do projeto", safeText_(p.description)],
+      ["Forma de entrega", safeText_(p.delivery)],
+      ["CEP", formatCep_(p.cep)],
+      ["Observações", safeText_(p.notes)],
+      ["Atendimento clean", p.cleanService ? "SIM" : "NÃO"],
+    ];
+
+    const subject =
+      "[ORUME 3D] Novo orçamento" +
+      (orderId ? " — " + orderId : "") +
+      " — " + safeText_(p.name);
+
+    const textLines = [
+      "NOVO ORÇAMENTO — ORUME 3D",
+      "",
+    ];
+
+    fields.forEach(function(field) {
+      textLines.push(field[0] + ": " + (field[1] || "—"));
+    });
+
+    textLines.push("");
+    textLines.push("Planilha: " + SPREADSHEET_URL);
+    if (whatsappUrl) textLines.push("Abrir WhatsApp do cliente: " + whatsappUrl);
+
+    const rows = fields.map(function(field) {
+      return (
+        "<tr>" +
+          "<td style=\"padding:8px 10px;border-bottom:1px solid #e5e7eb;" +
+          "font-weight:700;vertical-align:top;width:190px\">" +
+          escapeHtml_(field[0]) +
+          "</td>" +
+          "<td style=\"padding:8px 10px;border-bottom:1px solid #e5e7eb;" +
+          "vertical-align:top\">" +
+          formatEmailValue_(field[1]) +
+          "</td>" +
+        "</tr>"
+      );
+    }).join("");
+
+    const htmlBody =
+      "<div style=\"font-family:Arial,Helvetica,sans-serif;color:#111827;max-width:760px;margin:auto\">" +
+        "<div style=\"background:#0b1017;color:#fff;padding:22px 24px;border-radius:14px 14px 0 0\">" +
+          "<div style=\"font-size:12px;letter-spacing:.12em;color:#9fb1c8;font-weight:700\">ORUME 3D</div>" +
+          "<h1 style=\"margin:6px 0 0;font-size:24px\">Novo orçamento recebido</h1>" +
+        "</div>" +
+        "<div style=\"border:1px solid #d8dee8;border-top:0;padding:18px 20px;border-radius:0 0 14px 14px\">" +
+          "<table style=\"width:100%;border-collapse:collapse;font-size:14px\">" +
+            rows +
+          "</table>" +
+          "<div style=\"margin-top:18px\">" +
+            "<a href=\"" + escapeHtml_(SPREADSHEET_URL) + "\" " +
+              "style=\"display:inline-block;padding:10px 14px;margin:0 8px 8px 0;" +
+              "background:#486a9b;color:#fff;text-decoration:none;border-radius:8px;font-weight:700\">" +
+              "Abrir planilha" +
+            "</a>" +
+            (whatsappUrl
+              ? "<a href=\"" + escapeHtml_(whatsappUrl) + "\" " +
+                "style=\"display:inline-block;padding:10px 14px;margin:0 8px 8px 0;" +
+                "background:#25d366;color:#07110b;text-decoration:none;border-radius:8px;font-weight:700\">" +
+                "Abrir WhatsApp do cliente" +
+                "</a>"
+              : "") +
+          "</div>" +
+          (p.cleanService
+            ? "<div style=\"margin-top:12px;padding:12px 14px;background:#f3f4f6;border-radius:8px;" +
+              "font-size:13px\"><strong>ATENDIMENTO CLEAN:</strong> manter a comunicação objetiva, " +
+              "somente pelo WhatsApp e limitada ao necessário para o pedido.</div>"
+            : "") +
+        "</div>" +
+      "</div>";
+
+    MailApp.sendEmail({
+      to: NOTIFICATION_EMAIL,
+      subject: subject,
+      body: textLines.join("\n"),
+      htmlBody: htmlBody,
+      name: "Orume 3D — Orçamentos",
+    });
+
+    return { sent: true };
+  } catch (error) {
+    return {
+      sent: false,
+      error: String(error && error.message ? error.message : error),
+    };
+  }
+}
+
+function escapeHtml_(value) {
+  return String(value == null ? "" : value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+function formatEmailValue_(value) {
+  const text = String(value == null || value === "" ? "—" : value);
+  return escapeHtml_(text).replace(/\n/g, "<br>");
 }
 
 function json_(value) {
