@@ -116,8 +116,10 @@ test("exporta todos os arquivos do GitHub Pages no caminho correto", async () =>
   assert.match(budgetHtml, /id="quote-submit"/i);
   assert.match(budgetHtml, /intake-config\.json/i);
   assert.match(budgetHtml, /new FormData\(form\)/i);
-  assert.match(budgetHtml, /await fetch\(endpoint/i);
-  assert.match(budgetHtml, /response\.json\(\)/i);
+  assert.match(budgetHtml, /mode:"no-cors"/i);
+  assert.match(budgetHtml, /action=status/i);
+  assert.match(budgetHtml, /getStatusJsonp/i);
+  assert.match(budgetHtml, /waitForConfirmation/i);
   assert.doesNotMatch(budgetHtml, /wa\.me\/5519989342212/i);
   assert.match(affiliateHtml, /id="affiliate-form"/i);
   assert.match(affiliateHtml, /PROPOSTA DE PARCERIA \/ AFILIADO — ORUME 3D/i);
