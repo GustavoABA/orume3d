@@ -1,8 +1,5 @@
-"use client";
-
 /* eslint-disable @next/next/no-img-element -- feed images are discovered dynamically at build time */
 
-import { useEffect, useState } from "react";
 import type { CSSProperties } from "react";
 import { FaInstagram, FaTiktok, FaWhatsapp } from "react-icons/fa6";
 import feedManifest from "../public/feed/feed.json";
@@ -104,95 +101,6 @@ function SocialLink({
 export default function Home() {
   const feed = feedManifest as FeedItem[];
   const live = initialLiveConfig as LiveConfig;
-  const [menuOpen, setMenuOpen] = useState(false);
-  const [showFloatingBudget, setShowFloatingBudget] = useState(false);
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add("is-visible");
-            observer.unobserve(entry.target);
-          }
-        });
-      },
-      { threshold: 0.12, rootMargin: "0px 0px -36px" },
-    );
-
-    document.querySelectorAll("[data-reveal]").forEach((element) => observer.observe(element));
-
-    const hero = document.querySelector<HTMLElement>(".hero");
-    const heroVisibilityObserver = new IntersectionObserver(([entry]) => {
-      hero?.classList.toggle("is-offscreen", !entry.isIntersecting);
-    });
-
-    if (hero) heroVisibilityObserver.observe(hero);
-
-    return () => {
-      observer.disconnect();
-      heroVisibilityObserver.disconnect();
-    };
-  }, []);
-
-
-  useEffect(() => {
-    const root = document.documentElement;
-    let animationFrame = 0;
-
-    const updateScrollMotion = () => {
-      animationFrame = 0;
-      const scrollable = Math.max(document.documentElement.scrollHeight - window.innerHeight, 1);
-      const progress = Math.min(Math.max(window.scrollY / scrollable, 0), 1);
-      root.style.setProperty("--page-progress", `${progress * 100}%`);
-    };
-
-    const requestScrollMotion = () => {
-      if (!animationFrame) animationFrame = window.requestAnimationFrame(updateScrollMotion);
-    };
-
-    updateScrollMotion();
-    window.addEventListener("scroll", requestScrollMotion, { passive: true });
-    window.addEventListener("resize", requestScrollMotion);
-
-    return () => {
-      if (animationFrame) window.cancelAnimationFrame(animationFrame);
-      window.removeEventListener("scroll", requestScrollMotion);
-      window.removeEventListener("resize", requestScrollMotion);
-    };
-  }, []);
-
-
-  useEffect(() => {
-    const feedSection = document.getElementById("feed");
-    if (!feedSection) return;
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        setShowFloatingBudget(entry.isIntersecting || entry.boundingClientRect.top < 0);
-      },
-      { rootMargin: "0px 0px -28% 0px" },
-    );
-
-    observer.observe(feedSection);
-    return () => observer.disconnect();
-  }, []);
-
-  useEffect(() => {
-    document.body.classList.toggle("modal-open", menuOpen);
-
-    const closeOnEscape = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setMenuOpen(false);
-    };
-
-    window.addEventListener("keydown", closeOnEscape);
-    return () => {
-      document.body.classList.remove("modal-open");
-      window.removeEventListener("keydown", closeOnEscape);
-    };
-  }, [menuOpen]);
-
-  const closeMenu = () => setMenuOpen(false);
   const videoId = /^[A-Za-z0-9_-]{11}$/.test(live.videoId ?? "") ? live.videoId : "";
   const channelId = /^UC[A-Za-z0-9_-]{20,}$/.test(live.channelId ?? "") ? live.channelId : "";
   const liveEmbedUrl = videoId
@@ -208,7 +116,6 @@ export default function Home() {
   return (
     <main>
       <div className="grain" aria-hidden="true" />
-      <div className="site-progress" aria-hidden="true"><i /></div>
 
       <header className="site-header">
         <a className="brand" href="#inicio" aria-label="Orume 3D — início">
@@ -226,33 +133,31 @@ export default function Home() {
             Orçar agora
           </a>
           <button
-            className={menuOpen ? "menu-button is-active" : "menu-button"}
+            className="menu-button"
             type="button"
-            aria-expanded={menuOpen}
+            aria-expanded="false"
             aria-controls="site-navigation"
-            aria-label={menuOpen ? "Fechar menu" : "Abrir menu"}
-            onClick={() => setMenuOpen((open) => !open)}
+            aria-label="Abrir menu"
           >
             <span /><span />
           </button>
         </div>
 
         <button
-          className={menuOpen ? "nav-scrim is-open" : "nav-scrim"}
+          className="nav-scrim"
           type="button"
           aria-label="Fechar menu"
-          tabIndex={menuOpen ? 0 : -1}
-          onClick={closeMenu}
+          tabIndex={-1}
         />
 
-        <nav id="site-navigation" className={menuOpen ? "nav is-open" : "nav"}>
+        <nav id="site-navigation" className="nav">
           <div className="nav-label">Navegue pela Orume</div>
-          <a href="#feed" onClick={closeMenu}><span>01</span> Projetos recentes</a>
-          <a href="#sobre" onClick={closeMenu}><span>02</span> Sobre nós</a>
-          <a href="#solucoes" onClick={closeMenu}><span>03</span> O que fazemos</a>
-          <a href="#processo" onClick={closeMenu}><span>04</span> Como funciona</a>
-          <a href="./parcerias/" onClick={closeMenu}><span>05</span> Parcerias</a>
-          <a href="./termos/" onClick={closeMenu}><span>06</span> Termos da encomenda</a>
+          <a href="#feed"><span>01</span> Projetos recentes</a>
+          <a href="#sobre"><span>02</span> Sobre nós</a>
+          <a href="#solucoes"><span>03</span> O que fazemos</a>
+          <a href="#processo"><span>04</span> Como funciona</a>
+          <a href="./parcerias/"><span>05</span> Parcerias</a>
+          <a href="./termos/"><span>06</span> Termos da encomenda</a>
           <div className="nav-socials">
             <SocialLink href={INSTAGRAM_URL} label="Instagram" />
             <SocialLink href={TIKTOK_URL} label="TikTok" />
@@ -299,7 +204,7 @@ export default function Home() {
       {showLive && (
         <section className="live-section" id="ao-vivo" aria-labelledby="live-title">
           <div className="live-layout">
-            <div className="live-copy" data-reveal>
+            <div className="live-copy">
               <div className="live-status"><i aria-hidden="true" /> Ao vivo agora</div>
               <p className="section-tag">Direto da impressora</p>
               <h2 id="live-title">{live.title || "Impressão ao vivo."}</h2>
@@ -309,7 +214,7 @@ export default function Home() {
               </a>
             </div>
 
-            <div className="live-player" data-reveal>
+            <div className="live-player">
               <div className="live-player-label"><i aria-hidden="true" /> Orume 3D ao vivo</div>
               <iframe
                 src={liveEmbedUrl}
@@ -325,7 +230,7 @@ export default function Home() {
       )}
 
       <section className="feed-section" id="feed">
-        <div className="feed-heading" data-reveal>
+        <div className="feed-heading">
           <div>
             <p className="section-tag">Direto da bancada</p>
             <h2>Projetos.</h2>
@@ -358,7 +263,7 @@ export default function Home() {
             ))}
           </div>
 
-          <aside className="project-profile-panel" data-reveal>
+          <aside className="project-profile-panel">
             <div className="project-profile-copy">
               <span className="panel-index">Instagram oficial</span>
               <h3>Mais projetos em <span>@orume3d</span></h3>
@@ -375,11 +280,11 @@ export default function Home() {
 
       <section className="intro-section section-shell" id="sobre">
         <div className="section-code">01 — SOBRE NÓS</div>
-        <div className="intro-copy" data-reveal>
+        <div className="intro-copy">
           <p className="section-tag">Orume 3D</p>
           <h2>Impressão 3D feita no interior de São Paulo.</h2>
         </div>
-        <div className="about-detail" data-reveal>
+        <div className="about-detail">
           <p>
             Somos uma empresa de impressão 3D situada em Santa Cruz da Conceição, no interior de São Paulo.
             Criamos peças personalizadas, objetos, presentes e soluções funcionais com atendimento próximo do início ao fim.
@@ -396,7 +301,7 @@ export default function Home() {
       </section>
 
       <section className="services section-shell" id="solucoes">
-        <div className="section-heading" data-reveal>
+        <div className="section-heading">
           <div>
             <div className="section-code">02 — POSSIBILIDADES</div>
             <p className="section-tag">O que fazemos</p>
@@ -409,7 +314,7 @@ export default function Home() {
             <article
               className={`service-card service-card-${index + 1}`}
               key={service.number}
-              data-reveal="card"
+             
               style={{ "--delay": `${index * 90}ms` } as CSSProperties}
             >
               <div className="card-top"><span>{service.number}</span><b>{service.tag}</b></div>
@@ -432,7 +337,7 @@ export default function Home() {
       </section>
 
       <section className="process section-shell" id="processo">
-        <div className="process-intro" data-reveal>
+        <div className="process-intro">
           <div className="section-code">03 — COMO FUNCIONA</div>
           <p className="section-tag">Tudo pelo WhatsApp</p>
           <h2>Do orçamento<br />à produção.</h2>
@@ -443,7 +348,7 @@ export default function Home() {
             <article
               className="step"
               key={number}
-              data-reveal="line"
+             
               style={{ "--delay": `${index * 80}ms` } as CSSProperties}
             >
               <span className="step-number">{number}</span>
@@ -456,7 +361,7 @@ export default function Home() {
 
 
       <section className="creator-section section-shell" id="criadores">
-        <div className="creator-intro" data-reveal>
+        <div className="creator-intro">
           <div className="section-code">04 — PARCERIAS COM CRIADORES</div>
           <p className="section-tag">Merchandising físico com aprovação</p>
           <h2>Seu personagem pode virar uma coleção real.</h2>
@@ -475,7 +380,7 @@ export default function Home() {
           </div>
         </div>
 
-        <div className="creator-flow" data-reveal>
+        <div className="creator-flow">
           <span className="panel-index">Fluxo de colaboração</span>
           {creatorSteps.map(([number, title, text]) => (
             <article className="creator-step" key={number}>
@@ -488,7 +393,7 @@ export default function Home() {
           ))}
         </div>
 
-        <div className="creator-rules" data-reveal>
+        <div className="creator-rules">
           <div>
             <span>Direitos</span>
             <strong>A identidade continua pertencendo ao criador.</strong>
@@ -513,7 +418,7 @@ export default function Home() {
       </section>
 
       <section className="contract-section section-shell" id="contrato">
-        <div className="contract-copy" data-reveal>
+        <div className="contract-copy">
           <div className="section-code">05 — TERMOS DA ENCOMENDA</div>
           <p className="section-tag">Tudo claro antes de produzir</p>
           <h2>Seu pedido com regras bem definidas.</h2>
@@ -526,7 +431,7 @@ export default function Home() {
           </a>
         </div>
 
-        <div className="contract-summary" data-reveal>
+        <div className="contract-summary">
           <span className="panel-index">Como a venda é fechada</span>
           <ol>
             <li><span>01</span><div><b>Orçamento no WhatsApp</b><p>Peça, material, valor, prazo e entrega.</p></div></li>
@@ -537,7 +442,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="final-cta section-shell" data-reveal>
+      <section className="final-cta section-shell">
         <div className="final-orbit" aria-hidden="true"><i /><i /><i /></div>
         <p className="section-tag">Tem uma ideia em mente?</p>
         <h2>Vamos dar<br />forma a ela.</h2>
@@ -562,18 +467,6 @@ export default function Home() {
         </div>
         <div className="footer-bottom"><span>© {new Date().getFullYear()} Orume 3D</span><span>Santa Cruz da Conceição — SP</span></div>
       </footer>
-
-      <a
-        className={showFloatingBudget ? "floating-budget is-visible" : "floating-budget"}
-        href={WHATSAPP_URL}
-        target="_blank"
-        rel="noreferrer"
-        aria-label="Pedir orçamento pelo WhatsApp"
-      >
-        <span className="status-dot" aria-hidden="true" />
-        <span><small>Tem um projeto?</small>Peça seu orçamento</span>
-        <b aria-hidden="true">↗</b>
-      </a>
 
     </main>
   );
