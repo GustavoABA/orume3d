@@ -127,8 +127,16 @@ export default function BudgetPage() {
                 </select>
               </div>
               <div className={styles.field}>
-                <label htmlFor="q-cep">CEP para cálculo de envio</label>
-                <input id="q-cep" name="cep" inputMode="numeric" autoComplete="postal-code" />
+                <label htmlFor="q-cep">CEP para cálculo de envio *</label>
+                <input
+                  id="q-cep"
+                  name="cep"
+                  required
+                  inputMode="numeric"
+                  autoComplete="postal-code"
+                  pattern="[0-9]{5}-?[0-9]{3}"
+                  placeholder="00000-000"
+                />
               </div>
             </div>
             <div className={styles.field} style={{marginTop: ".8rem"}}>
