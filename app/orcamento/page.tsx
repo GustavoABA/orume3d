@@ -79,7 +79,7 @@ export default function BudgetPage() {
               </div>
               <div className={`${styles.field} ${styles.hiddenField}`} id="q-qty-other-wrap">
                 <label htmlFor="q-qty-other">Outra quantidade *</label>
-                <input id="q-qty-other" name="quantityOther" inputMode="numeric" placeholder="Digite a quantidade" />
+                <input id="q-qty-other" name="quantityOther" type="number" min="1" step="1" inputMode="numeric" placeholder="Digite a quantidade" />
               </div>
               <div className={styles.field}>
                 <label htmlFor="q-size">Medidas aproximadas</label>
