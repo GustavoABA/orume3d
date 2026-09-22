@@ -113,6 +113,10 @@ const budgetFormScript = `<script>
     .then(function(config){endpoint=String(config.endpoint||"").trim();})
     .catch(function(){endpoint="";});
 
+  function makeSiteId(){
+    return "SITE-"+Date.now().toString(36).toUpperCase()+"-"+Math.random().toString(36).slice(2,8).toUpperCase();
+  }
+
   function resolveQuantity(){
     if(!quantity)return "";
     if(quantity.value!=="Outro")return quantity.value;
@@ -170,9 +174,10 @@ const budgetFormScript = `<script>
     });
   }
 
-  function formPayload(){
+  function formPayload(siteId){
     var data=new FormData(form);
     return {
+      siteId:siteId,
       name:String(data.get("name")||"").trim(),
       phone:String(data.get("phone")||"").trim(),
       city:String(data.get("city")||"").trim(),
@@ -192,25 +197,80 @@ const budgetFormScript = `<script>
     };
   }
 
-  async function submitQuote(payload){
+  function submitNoCors(payload){
     var body=new FormData();
     body.append("payload",JSON.stringify(payload));
 
-    var response=await fetch(endpoint,{
+    return fetch(endpoint,{
       method:"POST",
       body:body,
-      redirect:"follow"
+      mode:"no-cors",
+      redirect:"follow",
+      cache:"no-store"
     });
+  }
 
-    if(!response.ok){
-      throw new Error("HTTP "+response.status);
+  function getStatusJsonp(siteId){
+    return new Promise(function(resolve,reject){
+      var callback="__orumeStatus_"+Math.random().toString(36).slice(2);
+      var script=document.createElement("script");
+      var timer=0;
+
+      function cleanup(){
+        if(timer)window.clearTimeout(timer);
+        try{delete window[callback];}catch(_){window[callback]=undefined;}
+        if(script.parentNode)script.parentNode.removeChild(script);
+      }
+
+      window[callback]=function(data){
+        cleanup();
+        resolve(data||{});
+      };
+
+      script.onerror=function(){
+        cleanup();
+        reject(new Error("Falha ao consultar status"));
+      };
+
+      timer=window.setTimeout(function(){
+        cleanup();
+        reject(new Error("Timeout ao consultar status"));
+      },8000);
+
+      script.src=endpoint+
+        "?action=status&siteId="+encodeURIComponent(siteId)+
+        "&callback="+encodeURIComponent(callback)+
+        "&_="+Date.now();
+      script.async=true;
+      document.head.appendChild(script);
+    });
+  }
+
+  async function waitForConfirmation(siteId){
+    var deadline=Date.now()+30000;
+    var last={};
+
+    while(Date.now()<deadline){
+      try{
+        last=await getStatusJsonp(siteId);
+
+        if(last&&last.found&&last.complete){
+          return last;
+        }
+
+        if(last&&last.found&&last.failed){
+          throw new Error(last.error||"O Apps Script marcou o pedido como erro.");
+        }
+      }catch(error){
+        if(error&&String(error.message||"").indexOf("marcou o pedido como erro")>=0){
+          throw error;
+        }
+      }
+
+      await new Promise(function(resolve){window.setTimeout(resolve,1500);});
     }
 
-    var result=await response.json();
-    if(!result||!result.ok){
-      throw new Error(result&&result.error?result.error:"Resposta inválida do servidor");
-    }
-    return result;
+    throw new Error("Tempo de confirmação excedido");
   }
 
   form.addEventListener("submit",async function(event){
@@ -224,7 +284,8 @@ const budgetFormScript = `<script>
       return;
     }
 
-    var payload=formPayload();
+    var siteId=makeSiteId();
+    var payload=formPayload(siteId);
     var digits=payload.phone.replace(/\\D/g,"");
     if(digits.length<10){
       if(status)status.textContent="Informe um WhatsApp válido com DDD.";
@@ -250,15 +311,26 @@ const budgetFormScript = `<script>
     if(status)status.textContent="Registrando seu orçamento…";
 
     try{
-      var result=await submitQuote(payload);
+      try{
+        localStorage.setItem("orume:lastQuotePending",JSON.stringify({
+          siteId:siteId,
+          createdAt:new Date().toISOString()
+        }));
+      }catch(_){}
+
+      await submitNoCors(payload);
+      var result=await waitForConfirmation(siteId);
       var orderText=result.orderId?(" Pedido "+result.orderId+"."):"";
+
       if(status)status.textContent="Orçamento recebido pela Orume."+orderText+" Entraremos em contato pelo WhatsApp informado.";
+
+      try{localStorage.removeItem("orume:lastQuotePending");}catch(_){}
       form.reset();
       cleanConfirmed=false;
       syncQuantity();
     }catch(error){
       console.error("Falha no orçamento:",error);
-      if(status)status.textContent="Não foi possível confirmar o registro. Tente novamente em alguns minutos.";
+      if(status)status.textContent="O pedido foi enviado, mas a confirmação não chegou. Aguarde alguns minutos antes de tentar novamente.";
     }finally{
       if(submit)submit.disabled=false;
     }
