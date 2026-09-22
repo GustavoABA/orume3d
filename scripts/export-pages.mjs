@@ -13,7 +13,10 @@ const basePath = configuredBasePath
 const pages = [
   { route: "/", output: "index.html" },
   { route: "/evelyn", output: path.join("evelyn", "index.html") },
+  { route: "/orcamento", output: path.join("orcamento", "index.html") },
   { route: "/parcerias", output: path.join("parcerias", "index.html") },
+  { route: "/parcerias/ficha", output: path.join("parcerias", "ficha", "index.html") },
+  { route: "/parcerias/contrato", output: path.join("parcerias", "contrato", "index.html") },
   { route: "/termos", output: path.join("termos", "index.html") },
 ];
 
@@ -85,7 +88,94 @@ const homeMenuScript = `<script>
   nav.querySelectorAll("a").forEach(function(link){link.addEventListener("click",function(){setOpen(false);});});
   document.addEventListener("keydown",function(event){if(event.key==="Escape")setOpen(false);});
 })();
+</script>
+
+const budgetFormScript = `<script>
+(function(){
+  var form=document.getElementById("quote-form");
+  var status=document.getElementById("quote-status");
+  if(!form)return;
+  function clean(value){return String(value||"").trim();}
+  function add(lines,label,value){
+    value=clean(value);
+    if(value)lines.push(label+": "+value);
+  }
+  form.addEventListener("submit",function(event){
+    event.preventDefault();
+    if(!form.reportValidity())return;
+    var data=new FormData(form);
+    var lines=["*PEDIDO DE ORÇAMENTO — SITE ORUME 3D*",""];
+    add(lines,"Cliente",data.get("name"));
+    add(lines,"WhatsApp",data.get("phone"));
+    add(lines,"Cidade / UF",data.get("city"));
+    add(lines,"Indicado por",data.get("referral"));
+    lines.push("");
+    add(lines,"Produto / peça",data.get("product"));
+    add(lines,"Quantidade",data.get("quantity"));
+    add(lines,"Medidas aproximadas",data.get("dimensions"));
+    add(lines,"Cor",data.get("color"));
+    add(lines,"Material",data.get("material"));
+    add(lines,"Prazo desejado",data.get("deadline"));
+    add(lines,"Forma de entrega",data.get("delivery"));
+    add(lines,"CEP",data.get("cep"));
+    add(lines,"Links / referências",data.get("links"));
+    add(lines,"Detalhes do projeto",data.get("description"));
+    add(lines,"Observações",data.get("notes"));
+    lines.push("","Mensagem montada pelo formulário do site da Orume 3D.");
+    var url="https://wa.me/5519989342212?text="+encodeURIComponent(lines.join("\n"));
+    if(status)status.textContent="Mensagem pronta. Abrindo o WhatsApp para sua conferência…";
+    var opened=window.open(url,"_blank","noopener,noreferrer");
+    if(!opened)window.location.href=url;
+  });
+})();
 </script>`;
+
+const creatorFormScript = `<script>
+(function(){
+  var form=document.getElementById("creator-form");
+  var status=document.getElementById("creator-status");
+  if(!form)return;
+  function clean(value){return String(value||"").trim();}
+  function add(lines,label,value){
+    value=clean(value);
+    if(value)lines.push(label+": "+value);
+  }
+  form.addEventListener("submit",function(event){
+    event.preventDefault();
+    if(!form.reportValidity())return;
+    var data=new FormData(form);
+    var lines=["*PRÉ-FICHA DE PRODUTO / COLEÇÃO — ORU-PAR-001*",""];
+    add(lines,"Criador(a)",data.get("creatorName"));
+    add(lines,"Nome artístico",data.get("artisticName"));
+    add(lines,"Produto / coleção",data.get("collection"));
+    add(lines,"Personagem / IP",data.get("ip"));
+    add(lines,"Descrição",data.get("description"));
+    add(lines,"Arte-base / origem",data.get("artBase"));
+    add(lines,"Direitos de merchandising",data.get("merchRights"));
+    lines.push("");
+    add(lines,"Uso de IA",data.get("ai"));
+    add(lines,"Ferramenta / etapa de IA",data.get("aiStage"));
+    lines.push("");
+    add(lines,"Modelo de venda",data.get("saleModel"));
+    add(lines,"Preço desejado",data.get("price"));
+    add(lines,"Participação do criador",data.get("creatorShare"));
+    add(lines,"Base de cálculo",data.get("calculationBase"));
+    add(lines,"Repasse",data.get("payout"));
+    add(lines,"Custo do protótipo",data.get("prototypeCost"));
+    lines.push("");
+    add(lines,"Lote / quantidade",data.get("lot"));
+    add(lines,"Prazo desejado",data.get("deadline"));
+    add(lines,"Acabamento",data.get("finish"));
+    add(lines,"Estado do protótipo / render",data.get("preview"));
+    add(lines,"Observações",data.get("notes"));
+    lines.push("","Esta é uma pré-ficha de conversa e não substitui o Anexo A aprovado/assinado.");
+    var url="https://wa.me/5519989342212?text="+encodeURIComponent(lines.join("\n"));
+    if(status)status.textContent="Pré-ficha pronta. Abrindo o WhatsApp para sua conferência…";
+    var opened=window.open(url,"_blank","noopener,noreferrer");
+    if(!opened)window.location.href=url;
+  });
+})();
+</script>`;`;
 
 async function renderPage(route) {
   const response = await worker.fetch(
@@ -104,6 +194,10 @@ async function renderPage(route) {
 
   if (route === "/") {
     html = html.replace("</body>", homeMenuScript + "</body>");
+  } else if (route === "/orcamento") {
+    html = html.replace("</body>", budgetFormScript + "</body>");
+  } else if (route === "/parcerias/ficha") {
+    html = html.replace("</body>", creatorFormScript + "</body>");
   }
 
   if (basePath) {
@@ -148,4 +242,4 @@ if (!homeHtml) {
 await writeFile(path.join(docsDir, "404.html"), homeHtml, "utf8");
 await writeFile(path.join(docsDir, ".nojekyll"), "", "utf8");
 
-console.log("Versão para GitHub Pages criada em docs/, incluindo /evelyn/, /parcerias/ e /termos/.");
+console.log("Versão para GitHub Pages criada em docs/, incluindo orçamento, parcerias, ficha de coleção e contratos.");
