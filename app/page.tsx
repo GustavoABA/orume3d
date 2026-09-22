@@ -12,14 +12,15 @@ const WHATSAPP_URL =
   "https://wa.me/5519989342212?text=Ol%C3%A1%2C%20vim%20pelo%20site%20da%20Orume%203D%20e%20quero%20fazer%20um%20or%C3%A7amento.";
 const INSTAGRAM_URL = "https://www.instagram.com/orume3d/";
 const TIKTOK_URL = "https://www.tiktok.com/@orume3d";
-const CREATOR_WHATSAPP_URL = whatsappUrl(
-  "Olá, Orume 3D! Sou criador(a) de conteúdo e quero conversar sobre uma coleção oficial de produtos personalizados. Gostaria de entender desenvolvimento, protótipo, aprovação, modelo de venda e participação nas vendas.",
-);
 const CDC_URL = "https://www.planalto.gov.br/ccivil_03/leis/l8078compilado.htm";
 const ECOMMERCE_URL = "https://www.planalto.gov.br/ccivil_03/_ato2011-2014/2013/decreto/d7962.htm";
 
 const whatsappUrl = (message: string) =>
   `https://wa.me/5519989342212?text=${encodeURIComponent(message)}`;
+
+const CREATOR_WHATSAPP_URL = whatsappUrl(
+  "Olá, Orume 3D! Sou criador(a) de conteúdo e quero conversar sobre uma coleção oficial de produtos personalizados. Gostaria de entender desenvolvimento, protótipo, aprovação, modelo de venda e participação nas vendas.",
+);
 
 type FeedItem = {
   src: string;
