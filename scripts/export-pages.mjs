@@ -95,38 +95,160 @@ const budgetFormScript = `<script>
 (function(){
   var form=document.getElementById("quote-form");
   var status=document.getElementById("quote-status");
+  var submit=document.getElementById("quote-submit");
+  var quantity=document.getElementById("q-qty");
+  var quantityOther=document.getElementById("q-qty-other");
+  var quantityOtherWrap=document.getElementById("q-qty-other-wrap");
+  var clean=document.getElementById("q-clean");
+  var modal=document.getElementById("clean-modal");
+  var cleanConfirm=document.getElementById("clean-confirm");
+  var cleanCancel=document.getElementById("clean-cancel");
+  var endpoint="";
+  var cleanConfirmed=false;
+
   if(!form)return;
-  function clean(value){return String(value||"").trim();}
-  function add(lines,label,value){
-    value=clean(value);
-    if(value)lines.push(label+": "+value);
+
+  fetch("../intake-config.json",{cache:"no-store"})
+    .then(function(response){return response.ok?response.json():{};})
+    .then(function(config){endpoint=String(config.endpoint||"").trim();})
+    .catch(function(){endpoint="";});
+
+  function resolveQuantity(){
+    if(!quantity)return "";
+    if(quantity.value!=="Outro")return quantity.value;
+    return String(quantityOther&&quantityOther.value||"").trim();
   }
+
+  function syncQuantity(){
+    var other=quantity&&quantity.value==="Outro";
+    if(quantityOtherWrap)quantityOtherWrap.style.display=other?"grid":"none";
+    if(quantityOther)quantityOther.required=Boolean(other);
+  }
+
+  if(quantity){
+    quantity.addEventListener("change",syncQuantity);
+    syncQuantity();
+  }
+
+  function openCleanModal(){
+    if(!modal)return;
+    if(typeof modal.showModal==="function")modal.showModal();
+    else {
+      var accepted=window.confirm("Atendimento clean: a comunicação será objetiva e limitada ao necessário pelo WhatsApp. Isso não altera preço, prazo, prioridade ou qualidade; muda apenas o estilo do atendimento. Deseja ativar?");
+      cleanConfirmed=accepted;
+      if(clean)clean.checked=accepted;
+    }
+  }
+
+  if(clean){
+    clean.addEventListener("change",function(){
+      if(clean.checked&&!cleanConfirmed)openCleanModal();
+      if(!clean.checked)cleanConfirmed=false;
+    });
+  }
+
+  if(cleanConfirm){
+    cleanConfirm.addEventListener("click",function(){
+      cleanConfirmed=true;
+      if(clean)clean.checked=true;
+      if(modal)modal.close();
+    });
+  }
+
+  if(cleanCancel){
+    cleanCancel.addEventListener("click",function(){
+      cleanConfirmed=false;
+      if(clean)clean.checked=false;
+      if(modal)modal.close();
+    });
+  }
+
+  if(modal){
+    modal.addEventListener("cancel",function(){
+      cleanConfirmed=false;
+      if(clean)clean.checked=false;
+    });
+  }
+
+  function formPayload(){
+    var data=new FormData(form);
+    return {
+      name:String(data.get("name")||"").trim(),
+      phone:String(data.get("phone")||"").trim(),
+      city:String(data.get("city")||"").trim(),
+      referral:String(data.get("referral")||"").trim(),
+      product:String(data.get("product")||"").trim(),
+      quantity:resolveQuantity(),
+      dimensions:String(data.get("dimensions")||"").trim(),
+      color:String(data.get("color")||"").trim(),
+      material:String(data.get("material")||"").trim(),
+      deadline:String(data.get("deadline")||"").trim(),
+      links:String(data.get("links")||"").trim(),
+      description:String(data.get("description")||"").trim(),
+      delivery:String(data.get("delivery")||"").trim(),
+      cep:String(data.get("cep")||"").trim(),
+      notes:String(data.get("notes")||"").trim(),
+      cleanService:Boolean(clean&&clean.checked)
+    };
+  }
+
+  function sendToEndpoint(payload){
+    var transport=document.createElement("form");
+    transport.method="post";
+    transport.action=endpoint;
+    transport.target="quote-frame";
+    transport.style.display="none";
+
+    var input=document.createElement("input");
+    input.type="hidden";
+    input.name="payload";
+    input.value=JSON.stringify(payload);
+    transport.appendChild(input);
+
+    document.body.appendChild(transport);
+    transport.submit();
+    transport.remove();
+  }
+
   form.addEventListener("submit",function(event){
     event.preventDefault();
     if(!form.reportValidity())return;
-    var data=new FormData(form);
-    var lines=["*PEDIDO DE ORÇAMENTO — SITE ORUME 3D*",""];
-    add(lines,"Cliente",data.get("name"));
-    add(lines,"WhatsApp",data.get("phone"));
-    add(lines,"Cidade / UF",data.get("city"));
-    add(lines,"Indicado por",data.get("referral"));
-    lines.push("");
-    add(lines,"Produto / peça",data.get("product"));
-    add(lines,"Quantidade",data.get("quantity"));
-    add(lines,"Medidas aproximadas",data.get("dimensions"));
-    add(lines,"Cor",data.get("color"));
-    add(lines,"Material",data.get("material"));
-    add(lines,"Prazo desejado",data.get("deadline"));
-    add(lines,"Forma de entrega",data.get("delivery"));
-    add(lines,"CEP",data.get("cep"));
-    add(lines,"Links / referências",data.get("links"));
-    add(lines,"Detalhes do projeto",data.get("description"));
-    add(lines,"Observações",data.get("notes"));
-    lines.push("","Mensagem montada pelo formulário do site da Orume 3D.");
-    var url="https://wa.me/5519989342212?text="+encodeURIComponent(lines.join("\\n"));
-    if(status)status.textContent="Mensagem pronta. Abrindo o WhatsApp para sua conferência…";
-    var opened=window.open(url,"_blank","noopener,noreferrer");
-    if(!opened)window.location.href=url;
+
+    var resolvedQuantity=resolveQuantity();
+    if(!resolvedQuantity){
+      if(status)status.textContent="Informe a quantidade.";
+      if(quantityOther)quantityOther.focus();
+      return;
+    }
+
+    var payload=formPayload();
+    var digits=payload.phone.replace(/\D/g,"");
+    if(digits.length<10){
+      if(status)status.textContent="Informe um WhatsApp válido com DDD.";
+      document.getElementById("q-phone")&&document.getElementById("q-phone").focus();
+      return;
+    }
+
+    try{
+      localStorage.setItem("orume:lastQuote",JSON.stringify({savedAt:new Date().toISOString(),payload:payload}));
+    }catch(_){}
+
+    if(!endpoint){
+      if(status)status.textContent="A integração automática da planilha ainda não foi ativada. Seus dados ficaram somente neste navegador e não foram enviados.";
+      return;
+    }
+
+    if(submit)submit.disabled=true;
+    if(status)status.textContent="Enviando orçamento para a Orume…";
+    sendToEndpoint(payload);
+
+    window.setTimeout(function(){
+      if(status)status.textContent="Solicitação enviada para processamento. A Orume entrará em contato pelo WhatsApp informado.";
+      if(submit)submit.disabled=false;
+      form.reset();
+      cleanConfirmed=false;
+      syncQuantity();
+    },1200);
   });
 })();
 </script>`;
