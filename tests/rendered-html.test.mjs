@@ -66,6 +66,7 @@ test("exporta todos os arquivos do GitHub Pages no caminho correto", async () =>
   await access(path.join(docsDir, ".nojekyll"));
   await access(path.join(docsDir, "orcamento", "index.html"));
   await access(path.join(docsDir, "parcerias", "index.html"));
+  await access(path.join(docsDir, "parcerias", "afiliados", "index.html"));
   await access(path.join(docsDir, "parcerias", "ficha", "index.html"));
   await access(path.join(docsDir, "parcerias", "contrato", "index.html"));
   await access(path.join(docsDir, "termos", "index.html"));
@@ -94,6 +95,7 @@ test("exporta todos os arquivos do GitHub Pages no caminho correto", async () =>
   }
 
   const budgetHtml = await readFile(path.join(docsDir, "orcamento", "index.html"), "utf8");
+  const affiliateHtml = await readFile(path.join(docsDir, "parcerias", "afiliados", "index.html"), "utf8");
   const creatorFormHtml = await readFile(path.join(docsDir, "parcerias", "ficha", "index.html"), "utf8");
   const creatorContractHtml = await readFile(path.join(docsDir, "parcerias", "contrato", "index.html"), "utf8");
 
@@ -101,6 +103,9 @@ test("exporta todos os arquivos do GitHub Pages no caminho correto", async () =>
   assert.match(budgetHtml, /PEDIDO DE ORÇAMENTO — SITE ORUME 3D/i);
   assert.match(budgetHtml, /new FormData\(form\)/i);
   assert.match(budgetHtml, /wa\.me\/5519989342212/i);
+  assert.match(affiliateHtml, /id="affiliate-form"/i);
+  assert.match(affiliateHtml, /PROPOSTA DE PARCERIA \/ AFILIADO — ORUME 3D/i);
+  assert.match(affiliateHtml, /Comissão \/ modelo imaginado/i);
   assert.match(creatorFormHtml, /id="creator-form"/i);
   assert.match(creatorFormHtml, /PRÉ-FICHA DE PRODUTO \/ COLEÇÃO — ORU-PAR-001/i);
   assert.match(creatorFormHtml, /Direitos de merchandising/i);
