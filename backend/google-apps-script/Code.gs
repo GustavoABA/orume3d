@@ -31,6 +31,27 @@ function testSetup() {
   return result;
 }
 
+function testEmail() {
+  const subject = "[ORUME 3D] Teste de notificação";
+  const body = [
+    "Teste de e-mail do sistema de orçamentos da Orume 3D.",
+    "",
+    "Se esta mensagem chegou, o Apps Script está autorizado a enviar as notificações de novos pedidos.",
+    "",
+    "Planilha: " + SPREADSHEET_URL,
+  ].join("\n");
+
+  MailApp.sendEmail({
+    to: NOTIFICATION_EMAIL,
+    subject: subject,
+    body: body,
+    name: "Orume 3D — Orçamentos",
+  });
+
+  Logger.log("E-mail de teste enviado para " + NOTIFICATION_EMAIL);
+  return { ok: true, sentTo: NOTIFICATION_EMAIL };
+}
+
 function doGet() {
   return json_({ ok: true, service: "orume-intake" });
 }
