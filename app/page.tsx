@@ -128,9 +128,9 @@ export default function Home() {
             <SocialLink href={INSTAGRAM_URL} label="Instagram" />
             <SocialLink href={TIKTOK_URL} label="TikTok" />
           </div>
-          <a className="header-budget" href={WHATSAPP_URL} target="_blank" rel="noreferrer">
+          <a className="header-budget" href="./orcamento/">
             <span className="status-dot" aria-hidden="true" />
-            Orçar agora
+            Montar orçamento
           </a>
           <button
             className="menu-button"
@@ -152,12 +152,13 @@ export default function Home() {
 
         <nav id="site-navigation" className="nav">
           <div className="nav-label">Navegue pela Orume</div>
-          <a href="#feed"><span>01</span> Projetos recentes</a>
-          <a href="#sobre"><span>02</span> Sobre nós</a>
-          <a href="#solucoes"><span>03</span> O que fazemos</a>
-          <a href="#processo"><span>04</span> Como funciona</a>
-          <a href="./parcerias/"><span>05</span> Parcerias</a>
-          <a href="./termos/"><span>06</span> Termos da encomenda</a>
+          <a href="./orcamento/"><span>01</span> Montar orçamento</a>
+          <a href="#feed"><span>02</span> Projetos recentes</a>
+          <a href="#sobre"><span>03</span> Sobre nós</a>
+          <a href="#solucoes"><span>04</span> O que fazemos</a>
+          <a href="#processo"><span>05</span> Como funciona</a>
+          <a href="./parcerias/"><span>06</span> Parcerias</a>
+          <a href="./termos/"><span>07</span> Termos da encomenda</a>
           <div className="nav-socials">
             <SocialLink href={INSTAGRAM_URL} label="Instagram" />
             <SocialLink href={TIKTOK_URL} label="TikTok" />
@@ -184,11 +185,11 @@ export default function Home() {
             <p className="hero-copy">
               Objetos, presentes e soluções que saem da tela e chegam na sua mão — do seu jeito.
             </p>
-            <a className="big-budget" href={WHATSAPP_URL} target="_blank" rel="noreferrer">
-              <span><small>Resposta rápida no WhatsApp</small>Quero meu orçamento</span>
+            <a className="big-budget" href="./orcamento/">
+              <span><small>Envie tudo organizado</small>Montar meu orçamento</span>
               <b aria-hidden="true">↗</b>
             </a>
-            <a className="scroll-link" href="#feed">Ver projetos recentes <span aria-hidden="true">↓</span></a>
+            <a className="scroll-link" href={WHATSAPP_URL} target="_blank" rel="noreferrer">Ou falar direto no WhatsApp <span aria-hidden="true">↗</span></a>
           </div>
 
           <div className="hero-visual" aria-hidden="true">
@@ -446,9 +447,9 @@ export default function Home() {
         <div className="final-orbit" aria-hidden="true"><i /><i /><i /></div>
         <p className="section-tag">Tem uma ideia em mente?</p>
         <h2>Vamos dar<br />forma a ela.</h2>
-        <p>Mande uma foto, um desenho ou explique o que você precisa. O orçamento começa pelo WhatsApp.</p>
-        <a className="big-budget final-budget" href={WHATSAPP_URL} target="_blank" rel="noreferrer">
-          <span><small>Falar direto com a Orume</small>Abrir WhatsApp</span>
+        <p>Mande uma foto, um desenho ou explique o que você precisa. Você pode organizar as informações antes de abrir o WhatsApp.</p>
+        <a className="big-budget final-budget" href="./orcamento/">
+          <span><small>Formulário rápido</small>Montar orçamento</span>
           <b aria-hidden="true">↗</b>
         </a>
       </section>
@@ -462,6 +463,7 @@ export default function Home() {
           <a href={INSTAGRAM_URL} target="_blank" rel="noreferrer"><FaInstagram aria-hidden="true" /> Instagram ↗</a>
           <a href={TIKTOK_URL} target="_blank" rel="noreferrer"><FaTiktok aria-hidden="true" /> TikTok ↗</a>
           <a href={WHATSAPP_URL} target="_blank" rel="noreferrer"><FaWhatsapp aria-hidden="true" /> WhatsApp ↗</a>
+          <a href="./orcamento/">Montar orçamento ↗</a>
           <a href="./parcerias/">Parcerias ↗</a>
           <a href="./termos/">Termos da encomenda ↗</a>
         </div>
