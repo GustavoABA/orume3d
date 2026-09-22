@@ -32,8 +32,8 @@ function doPost(e) {
     const siteId = "SITE-" + Utilities.getUuid().split("-")[0].toUpperCase();
     intakeRow = appendIntake_(intake, payload, siteId);
 
-    const clientRow = upsertClient_(clients, payload);
-    const order = createOrder_(orders, payload);
+    const client = upsertClient_(clients, payload);
+    const order = createOrder_(orders, payload, client.name);
 
     const notify = notifyOwner_(payload, order.id, siteId);
 
@@ -50,7 +50,7 @@ function doPost(e) {
       ok: true,
       siteId,
       orderId: order.id,
-      clientRow,
+      clientRow: client.row,
       whatsappNotificationSent: notify.sent,
     });
   } catch (error) {
@@ -155,9 +155,24 @@ function firstBlankRow_(sheet, column, maxRow) {
   return limit + 1;
 }
 
+function copyTemplate_(sheet, row, width) {
+  if (row === 2) return;
+  const source = sheet.getRange(2, 1, 1, width);
+  const target = sheet.getRange(row, 1, 1, width);
+  source.copyTo(target, SpreadsheetApp.CopyPasteType.PASTE_FORMULA, false);
+  source.copyTo(target, SpreadsheetApp.CopyPasteType.PASTE_FORMAT, false);
+}
+
+function parseIsoDate_(value) {
+  const match = String(value || "").match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (!match) return null;
+  return new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]), 12, 0, 0);
+}
+
 function upsertClient_(sheet, p) {
   const phone = normalizePhone_(p.phone);
   const phones = sheet.getRange(2, 2, sheet.getMaxRows() - 1, 1).getDisplayValues();
+  const names = sheet.getRange(2, 1, sheet.getMaxRows() - 1, 1).getDisplayValues();
   let row = 0;
 
   for (let i = 0; i < phones.length; i++) {
@@ -167,6 +182,18 @@ function upsertClient_(sheet, p) {
     }
   }
 
+  let displayName = safeText_(p.name);
+  if (!row) {
+    const sameName = names.findIndex(function(item, index) {
+      return safeText_(item[0]).toLowerCase() === displayName.toLowerCase()
+        && normalizePhone_(phones[index][0])
+        && normalizePhone_(phones[index][0]) !== phone;
+    });
+    if (sameName >= 0) displayName += " (" + phone.slice(-4) + ")";
+  } else {
+    displayName = safeText_(sheet.getRange(row, 1).getDisplayValue()) || displayName;
+  }
+
   const address = [safeText_(p.city), p.cep ? "CEP " + safeText_(p.cep) : ""].filter(Boolean).join(" — ");
   const cleanNote = p.cleanService
     ? "Preferência de atendimento: CLEAN / mínimo de interação."
@@ -174,14 +201,14 @@ function upsertClient_(sheet, p) {
 
   if (!row) {
     row = firstBlankRow_(sheet, 1, 1000);
+    copyTemplate_(sheet, row, 8);
     sheet.getRange(row, 1, 1, 4).setValues([[
-      safeText_(p.name),
+      displayName,
       phone,
       address,
       "Cliente cadastrado pelo formulário do site. " + cleanNote,
     ]]);
   } else {
-    if (safeText_(p.name)) sheet.getRange(row, 1).setValue(safeText_(p.name));
     if (address) sheet.getRange(row, 3).setValue(address);
     const current = String(sheet.getRange(row, 4).getDisplayValue() || "").trim();
     if (!current.includes(cleanNote)) {
@@ -189,11 +216,12 @@ function upsertClient_(sheet, p) {
     }
   }
 
-  return row;
+  return { row: row, name: displayName };
 }
 
-function createOrder_(sheet, p) {
+function createOrder_(sheet, p, clientName) {
   const row = firstBlankRow_(sheet, 4, 1000);
+  copyTemplate_(sheet, row, 37);
   const quantity = safeText_(p.quantity);
   const product = safeText_(p.product) + (quantity ? " — Qtd. " + quantity : "");
   const notes = [
@@ -207,8 +235,11 @@ function createOrder_(sheet, p) {
   sheet.getRange(row, 2).setValue("Orçamento");
   sheet.getRange(row, 3).setValue("Normal");
   sheet.getRange(row, 4).setValue(new Date());
-  if (p.deadline) sheet.getRange(row, 5).setValue(safeText_(p.deadline));
-  sheet.getRange(row, 8).setValue(safeText_(p.name));
+  if (p.deadline) {
+    const deadline = parseIsoDate_(p.deadline);
+    if (deadline) sheet.getRange(row, 5).setValue(deadline);
+  }
+  sheet.getRange(row, 8).setValue(clientName || safeText_(p.name));
   sheet.getRange(row, 9).setValue(product);
   if (p.links) sheet.getRange(row, 11).setValue(safeText_(p.links));
 
