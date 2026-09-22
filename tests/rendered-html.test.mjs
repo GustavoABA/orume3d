@@ -101,7 +101,8 @@ test("exporta todos os arquivos do GitHub Pages no caminho correto", async () =>
 
   assert.match(budgetHtml, /id="quote-form"/i);
   assert.match(budgetHtml, /id="q-phone"[^>]*required/i);
-  assert.match(budgetHtml, /id="q-qty"[^>]*<option value="1">1<\/option>/i);
+  assert.match(budgetHtml, /<select id="q-qty"[^>]*>/i);
+  assert.match(budgetHtml, /<option value="1"[^>]*>1<\/option>/i);
   assert.match(budgetHtml, /<option value="Outro">Outros<\/option>/i);
   assert.match(budgetHtml, /id="q-description"/i);
   assert.doesNotMatch(budgetHtml, /id="q-description"[^>]*required/i);
