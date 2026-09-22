@@ -59,6 +59,34 @@ const executionContext = {
   passThroughOnException() {},
 };
 
+function stripClientRuntime(html) {
+  return html
+    .replace(/<link\\b[^>]*rel=["']modulepreload["'][^>]*>/gi, "")
+    .replace(/<script\\b[^>]*>[\\s\\S]*?<\\/script>/gi, "");
+}
+
+const homeMenuScript = `<script>
+(function(){
+  var button=document.querySelector(".menu-button");
+  var nav=document.getElementById("site-navigation");
+  var scrim=document.querySelector(".nav-scrim");
+  if(!button||!nav||!scrim)return;
+  function setOpen(open){
+    button.classList.toggle("is-active",open);
+    nav.classList.toggle("is-open",open);
+    scrim.classList.toggle("is-open",open);
+    button.setAttribute("aria-expanded",String(open));
+    button.setAttribute("aria-label",open?"Fechar menu":"Abrir menu");
+    scrim.tabIndex=open?0:-1;
+    document.body.classList.toggle("modal-open",open);
+  }
+  button.addEventListener("click",function(){setOpen(button.getAttribute("aria-expanded")!=="true");});
+  scrim.addEventListener("click",function(){setOpen(false);});
+  nav.querySelectorAll("a").forEach(function(link){link.addEventListener("click",function(){setOpen(false);});});
+  document.addEventListener("keydown",function(event){if(event.key==="Escape")setOpen(false);});
+})();
+</script>`;
+
 async function renderPage(route) {
   const response = await worker.fetch(
     new Request(`http://localhost${basePath}${route}`, {
@@ -72,7 +100,11 @@ async function renderPage(route) {
     throw new Error(`Falha ao renderizar a página estática ${route}: ${response.status}`);
   }
 
-  let html = await response.text();
+  let html = stripClientRuntime(await response.text());
+
+  if (route === "/") {
+    html = html.replace("</body>", homeMenuScript + "</body>");
+  }
 
   if (basePath) {
     if (html.includes('"/_next/') || !html.includes(`${basePath}/_next/`)) {
