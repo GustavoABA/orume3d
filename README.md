@@ -34,3 +34,18 @@ Formatos aceitos: JPG, JPEG, PNG, WEBP, AVIF e GIF.
 - Instagram: @orume3d
 - TikTok: @orume3d
 - WhatsApp: +55 19 98934-2212
+
+
+## Parcerias com criadores
+
+O site também apresenta o modelo de colaboração da Orume 3D com criadores, streamers e VTubers. Esse fluxo segue o documento-base ORU-PAR-001 mantido na operação da empresa:
+
+- conceito e identidade da coleção;
+- avaliação técnica, desenvolvimento e protótipo;
+- aprovação do produto antes da venda pública;
+- definição por produto de pré-venda, produção sob demanda, estoque ou outro modelo acordado;
+- definição prévia de preço, participação do criador e base de cálculo;
+- uso de IA no desenvolvimento somente quando informado e autorizado para o produto;
+- acompanhamento de vendas e repasses conforme o acordo da coleção.
+
+O primeiro contato para uma parceria é direcionado a uma mensagem específica no WhatsApp, separada do orçamento comum de clientes.
