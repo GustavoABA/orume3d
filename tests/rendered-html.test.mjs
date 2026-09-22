@@ -38,7 +38,8 @@ test("renderiza a landing page da Orume 3D", async () => {
   assert.match(html, /A gente imprime\./i);
   assert.match(html, /Abrir Instagram/i);
   assert.match(html, /Santa Cruz da Conceição/i);
-  assert.match(html, /Abrir contrato completo/i);
+  assert.match(html, /Abrir termos completos/i);
+  assert.match(html, /Ver programa de parcerias/i);
   assert.match(html, /Todos os orçamentos e fechamentos são realizados pelo WhatsApp/i);
   assert.match(html, /orume-logo-mark\.webp/i);
   assert.match(html, /service-triptych\.webp/i);
@@ -59,6 +60,9 @@ test("exporta todos os arquivos do GitHub Pages no caminho correto", async () =>
   assert.doesNotMatch(html, /["']\/_next\/static\//i);
   await access(path.join(docsDir, "404.html"));
   await access(path.join(docsDir, ".nojekyll"));
+  await access(path.join(docsDir, "parcerias", "index.html"));
+  await access(path.join(docsDir, "termos", "index.html"));
+  await access(path.join(docsDir, "favicon.svg"));
 
   const references = [
     ...html.matchAll(/(?:src|href)="([^"]*\/_next\/static\/[^"]+)"/g),
