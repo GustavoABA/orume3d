@@ -70,7 +70,10 @@ test("exporta todos os arquivos do GitHub Pages no caminho correto", async () =>
     ...html.matchAll(/(?:src|href)="([^"]*\/_next\/static\/[^"]+)"/g),
   ].map((match) => match[1]);
 
-  assert.ok(references.length >= 5, "A página deve carregar seus arquivos de estilo e interação.");
+  assert.ok(references.length >= 1, "A página deve carregar pelo menos a folha de estilos gerada.");
+  assert.doesNotMatch(html, /<script[^>]+src=/i, "A home publicada não deve depender do runtime React.");
+  assert.doesNotMatch(html, /rel=["']modulepreload["']/i, "A home publicada não deve pré-carregar bundles JavaScript.");
+  assert.match(html, /querySelector\("\\.menu-button"\)/i, "O menu deve manter apenas o script inline mínimo.");
 
   for (const reference of new Set(references)) {
     const pathname = reference.startsWith("http")
