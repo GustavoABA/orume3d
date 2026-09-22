@@ -3044,3 +3044,104 @@ main {
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 }
+
+
+/* Lightweight project gallery: local images replace Instagram embeds on the home page. */
+.project-image-grid {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: .75rem;
+}
+
+.project-image-card {
+  position: relative;
+  min-width: 0;
+  aspect-ratio: 1;
+  overflow: hidden;
+  border-radius: .9rem;
+  background: #d7d9d8;
+  animation: feedPhotoIn 520ms var(--delay, 0ms) cubic-bezier(.2,.8,.2,1) both;
+  box-shadow: 0 .6rem 1.8rem rgba(15,24,34,.08);
+}
+
+.project-image-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border: 1px solid rgba(255,255,255,.28);
+  border-radius: inherit;
+  box-shadow: inset 0 -4rem 4rem -4rem rgba(8,17,31,.42);
+  pointer-events: none;
+}
+
+.project-image-card img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+  transition: transform 280ms ease;
+}
+
+.project-image-card > span {
+  position: absolute;
+  z-index: 2;
+  right: .65rem;
+  bottom: .65rem;
+  width: 2.35rem;
+  height: 2.35rem;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  color: var(--ink);
+  background: rgba(246,244,239,.92);
+  font-weight: 950;
+}
+
+.project-image-card:hover img {
+  transform: scale(1.025);
+}
+
+.creator-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .85rem 1.1rem;
+  margin-top: 1.3rem;
+}
+
+.creator-actions .creator-cta {
+  margin-top: 0;
+}
+
+.creator-more {
+  display: inline-flex;
+  align-items: center;
+  gap: .5rem;
+  color: var(--cream);
+  font-size: .72rem;
+  font-weight: 900;
+  letter-spacing: .055em;
+  text-transform: uppercase;
+}
+
+@media (min-width: 760px) {
+  .project-image-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+/* Skip most paint/layout work for sections that start below the fold. */
+@supports (content-visibility: auto) {
+  .feed-section,
+  .intro-section,
+  .services,
+  .process,
+  .creator-section,
+  .contract-section,
+  .final-cta,
+  .footer {
+    content-visibility: auto;
+    contain-intrinsic-size: 1px 820px;
+  }
+}
