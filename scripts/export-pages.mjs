@@ -88,7 +88,7 @@ const homeMenuScript = `<script>
   nav.querySelectorAll("a").forEach(function(link){link.addEventListener("click",function(){setOpen(false);});});
   document.addEventListener("keydown",function(event){if(event.key==="Escape")setOpen(false);});
 })();
-</script>
+</script>`;
 
 const budgetFormScript = `<script>
 (function(){
@@ -122,7 +122,7 @@ const budgetFormScript = `<script>
     add(lines,"Detalhes do projeto",data.get("description"));
     add(lines,"Observações",data.get("notes"));
     lines.push("","Mensagem montada pelo formulário do site da Orume 3D.");
-    var url="https://wa.me/5519989342212?text="+encodeURIComponent(lines.join("\n"));
+    var url="https://wa.me/5519989342212?text="+encodeURIComponent(lines.join("\\n"));
     if(status)status.textContent="Mensagem pronta. Abrindo o WhatsApp para sua conferência…";
     var opened=window.open(url,"_blank","noopener,noreferrer");
     if(!opened)window.location.href=url;
@@ -169,13 +169,13 @@ const creatorFormScript = `<script>
     add(lines,"Estado do protótipo / render",data.get("preview"));
     add(lines,"Observações",data.get("notes"));
     lines.push("","Esta é uma pré-ficha de conversa e não substitui o Anexo A aprovado/assinado.");
-    var url="https://wa.me/5519989342212?text="+encodeURIComponent(lines.join("\n"));
+    var url="https://wa.me/5519989342212?text="+encodeURIComponent(lines.join("\\n"));
     if(status)status.textContent="Pré-ficha pronta. Abrindo o WhatsApp para sua conferência…";
     var opened=window.open(url,"_blank","noopener,noreferrer");
     if(!opened)window.location.href=url;
   });
 })();
-</script>`;`;
+</script>`;
 
 async function renderPage(route) {
   const response = await worker.fetch(
