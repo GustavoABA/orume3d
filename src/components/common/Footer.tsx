@@ -25,22 +25,23 @@ const Footer = () => {
             </div>
           </div>
 
-          <div className="flex flex-wrap gap-4 text-[0.65rem] font-semibold uppercase tracking-[0.17em] text-stone-500">
+          <div className="flex flex-wrap items-center gap-3">
             <a
               href="https://wa.me/5519989342212"
               target="_blank"
               rel="noreferrer"
-              className="text-stone-500 hover:text-accentLight"
+              className="rounded-full border border-accent/16 px-4 py-2 text-[0.65rem] font-semibold uppercase tracking-[0.16em] text-stone-400 transition hover:border-accent/45 hover:text-accentLight"
             >
               WhatsApp
             </a>
             <a
-              href="https://github.com/GustavoABA/orume3d"
+              href="https://shopee.com.br/orume3d?entryPoint=ShopBySearch&searchKeyword=orume3d"
               target="_blank"
               rel="noreferrer"
-              className="text-stone-500 hover:text-accentLight"
+              className="group relative overflow-hidden rounded-full bg-gradient-to-r from-[#b77b2d] via-[#e3b65b] to-[#b6792b] px-5 py-2.5 text-[0.65rem] font-bold uppercase tracking-[0.14em] text-black shadow-glow transition hover:brightness-110"
             >
-              GitHub
+              <span className="relative z-10">Comprar na Shopee</span>
+              <span className="absolute inset-y-0 -left-1/2 w-1/3 skew-x-[-18deg] bg-white/30 blur-sm transition-all duration-700 group-hover:left-[120%]" />
             </a>
           </div>
         </div>
