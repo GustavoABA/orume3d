@@ -1,12 +1,9 @@
 import { createContext, useContext, useEffect, useMemo, type ReactNode } from 'react';
 import { useLocalStorage } from '../hooks/useLocalStorage';
-import { products } from '../data/products';
 
-const WISHLIST_KEY = 'shoplite-wishlist';
-const RECENT_KEY = 'shoplite-recent';
+const WISHLIST_KEY = 'orume-wishlist';
+const RECENT_KEY = 'orume-recent';
 const RECENT_LIMIT = 8;
-
-const VALID_PRODUCT_IDS = new Set(products.map((product) => product.id));
 
 const normalizeProductIds = (ids: number[], limit?: number) => {
   let changed = false;
@@ -14,7 +11,7 @@ const normalizeProductIds = (ids: number[], limit?: number) => {
   const normalized: number[] = [];
 
   for (const id of ids) {
-    if (!VALID_PRODUCT_IDS.has(id) || seen.has(id)) {
+    if (!Number.isInteger(id) || id <= 0 || seen.has(id)) {
       changed = true;
       continue;
     }
@@ -23,17 +20,12 @@ const normalizeProductIds = (ids: number[], limit?: number) => {
     normalized.push(id);
 
     if (limit && normalized.length === limit) {
-      if (normalized.length !== ids.length) {
-        changed = true;
-      }
+      if (normalized.length !== ids.length) changed = true;
       break;
     }
   }
 
-  if (!changed && normalized.length === ids.length) {
-    return ids;
-  }
-
+  if (!changed && normalized.length === ids.length) return ids;
   return normalized;
 };
 
@@ -57,9 +49,7 @@ export const PreferencesProvider = ({ children }: { children: ReactNode }) => {
   );
 
   useEffect(() => {
-    if (normalizedWishlist !== wishlist) {
-      setWishlist(normalizedWishlist);
-    }
+    if (normalizedWishlist !== wishlist) setWishlist(normalizedWishlist);
   }, [wishlist, normalizedWishlist, setWishlist]);
 
   useEffect(() => {
@@ -70,21 +60,14 @@ export const PreferencesProvider = ({ children }: { children: ReactNode }) => {
 
   const value = useMemo<PreferencesContextValue>(() => {
     const toggleWishlist = (productId: number) => {
-      if (!VALID_PRODUCT_IDS.has(productId)) {
-        return false;
-      }
+      if (!Number.isInteger(productId) || productId <= 0) return false;
 
       let addedToWishlist = false;
       setWishlist((prev) => {
         const base = normalizeProductIds(prev);
         const exists = base.includes(productId);
         addedToWishlist = !exists;
-
-        if (exists) {
-          return base.filter((id) => id !== productId);
-        }
-
-        return [...base, productId];
+        return exists ? base.filter((id) => id !== productId) : [...base, productId];
       });
       return addedToWishlist;
     };
@@ -92,9 +75,7 @@ export const PreferencesProvider = ({ children }: { children: ReactNode }) => {
     const isInWishlist = (productId: number) => normalizedWishlist.includes(productId);
 
     const addRecentlyViewed = (productId: number) => {
-      if (!VALID_PRODUCT_IDS.has(productId)) {
-        return;
-      }
+      if (!Number.isInteger(productId) || productId <= 0) return;
 
       setRecentlyViewed((prev) => {
         const base = normalizeProductIds(prev, RECENT_LIMIT);
@@ -110,20 +91,13 @@ export const PreferencesProvider = ({ children }: { children: ReactNode }) => {
       recentlyViewed: normalizedRecentlyViewed,
       addRecentlyViewed,
     };
-  }, [
-    normalizedWishlist,
-    normalizedRecentlyViewed,
-    setWishlist,
-    setRecentlyViewed,
-  ]);
+  }, [normalizedWishlist, normalizedRecentlyViewed, setWishlist, setRecentlyViewed]);
 
   return <PreferencesContext.Provider value={value}>{children}</PreferencesContext.Provider>;
 };
 
 export const usePreferences = () => {
   const context = useContext(PreferencesContext);
-  if (!context) {
-    throw new Error('usePreferences must be used within a PreferencesProvider');
-  }
+  if (!context) throw new Error('usePreferences must be used within a PreferencesProvider');
   return context;
 };
