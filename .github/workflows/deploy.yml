@@ -33,10 +33,11 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: Prepare static admin route
+      - name: Prepare static routes
         run: |
-          mkdir -p dist/admin
+          mkdir -p dist/admin dist/checkout
           cp dist/index.html dist/admin/index.html
+          cp dist/index.html dist/checkout/index.html
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
