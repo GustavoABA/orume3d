@@ -4,29 +4,116 @@
 
 :root {
   color-scheme: dark;
+  --orume-gold: #d8a84e;
+  --orume-gold-light: #f4d58a;
+  --orume-bronze: #8d6228;
+  --orume-black: #050504;
+}
+
+html {
+  scroll-behavior: smooth;
+  background: var(--orume-black);
 }
 
 body {
-  @apply bg-background text-slate-100 min-h-screen font-sans antialiased;
+  @apply min-h-screen bg-background text-stone-100 font-sans antialiased;
+  background-image:
+    radial-gradient(circle at 12% -10%, rgba(216, 168, 78, 0.12), transparent 32rem),
+    radial-gradient(circle at 95% 18%, rgba(141, 98, 40, 0.08), transparent 28rem),
+    linear-gradient(180deg, #050504 0%, #080706 45%, #050504 100%);
+}
+
+body::selection {
+  background: rgba(216, 168, 78, 0.36);
+  color: #fff8e8;
 }
 
 a {
-  @apply text-accent hover:text-sky-300 transition-colors;
+  @apply text-accent transition-colors hover:text-accentLight;
+}
+
+button,
+a,
+input {
+  -webkit-tap-highlight-color: transparent;
 }
 
 ::-webkit-scrollbar {
-  width: 8px;
+  width: 9px;
 }
 
 ::-webkit-scrollbar-track {
-  background: rgba(15, 23, 42, 0.6);
+  background: #080706;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(56, 189, 248, 0.5);
+  background: linear-gradient(180deg, #f4d58a, #8d6228);
+  border: 2px solid #080706;
   border-radius: 9999px;
+}
+
+.orume-metal-text {
+  color: transparent;
+  background: linear-gradient(105deg, #7e5520 0%, #d8a84e 28%, #fff0bc 48%, #c58a32 70%, #f4d58a 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+}
+
+.orume-panel {
+  background:
+    linear-gradient(145deg, rgba(26, 21, 14, 0.94), rgba(10, 9, 7, 0.96)),
+    radial-gradient(circle at top left, rgba(216, 168, 78, 0.09), transparent 40%);
+  border: 1px solid rgba(216, 168, 78, 0.16);
+  box-shadow: inset 0 1px 0 rgba(255, 237, 184, 0.04), 0 24px 80px rgba(0, 0, 0, 0.28);
+}
+
+.orume-gold-line {
+  background: linear-gradient(90deg, transparent, rgba(244, 213, 138, 0.7), transparent);
+}
+
+.orume-shine {
+  position: relative;
+  overflow: hidden;
+}
+
+.orume-shine::after {
+  content: '';
+  position: absolute;
+  inset: -80% -45%;
+  pointer-events: none;
+  background: linear-gradient(105deg, transparent 42%, rgba(255, 238, 190, 0.13) 49%, transparent 56%);
+  transform: translateX(-42%);
+  animation: orume-sweep 7s ease-in-out infinite;
+}
+
+.orume-grid {
+  background-image:
+    linear-gradient(rgba(216, 168, 78, 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(216, 168, 78, 0.025) 1px, transparent 1px);
+  background-size: 40px 40px;
+  mask-image: linear-gradient(to bottom, black, transparent 86%);
+}
+
+@keyframes orume-sweep {
+  0%, 18% { transform: translateX(-42%); opacity: 0; }
+  28% { opacity: 1; }
+  50% { transform: translateX(42%); opacity: 0.75; }
+  64%, 100% { transform: translateX(42%); opacity: 0; }
 }
 
 .fade-in {
   @apply transition-opacity duration-500 ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
