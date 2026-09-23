@@ -8,11 +8,7 @@ type WishlistButtonProps = {
   size?: 'sm' | 'md';
 };
 
-const sizeClass = {
-  sm: 'h-4 w-4',
-  md: 'h-5 w-5',
-};
-
+const sizeClass = { sm: 'h-4 w-4', md: 'h-5 w-5' };
 const MotionHeartIcon = motion(HeartIcon);
 
 const WishlistButton = ({ productId, size = 'md' }: WishlistButtonProps) => {
@@ -27,30 +23,26 @@ const WishlistButton = ({ productId, size = 'md' }: WishlistButtonProps) => {
       onClick={(event) => {
         event.stopPropagation();
         const added = toggleWishlist(productId);
-        showToast(added ? 'Added to wishlist' : 'Removed from wishlist');
+        showToast(added ? 'Adicionado aos favoritos' : 'Removido dos favoritos');
       }}
-      whileTap={{ scale: 0.92 }}
+      whileTap={{ scale: 0.9 }}
       animate={{
-        backgroundColor: active ? 'rgba(56, 189, 248, 0.14)' : 'rgba(15, 23, 42, 0.45)',
-        borderColor: active ? 'rgba(56, 189, 248, 0.55)' : 'rgba(255, 255, 255, 0.12)',
+        backgroundColor: active ? 'rgba(216,168,78,.16)' : 'rgba(5,5,4,.65)',
+        borderColor: active ? 'rgba(216,168,78,.5)' : 'rgba(216,168,78,.14)',
       }}
-      transition={{ type: 'spring', stiffness: 220, damping: 18 }}
-      className="rounded-full border bg-black/30 p-2 text-white shadow-lg shadow-black/10 transition hover:bg-black/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/60"
+      transition={{ type: 'spring', stiffness: 240, damping: 18 }}
+      className="rounded-full border p-2 shadow-lg shadow-black/20 backdrop-blur transition hover:border-accent/45 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/50"
     >
       <MotionHeartIcon
         className={sizeClass[size]}
         aria-hidden="true"
         animate={{
-          scale: active ? [1, 1.2, 1.05] : 1,
-          color: active ? '#38bdf8' : '#94a3b8',
-          opacity: active ? 1 : 0.9,
+          scale: active ? [1, 1.22, 1.03] : 1,
+          color: active ? '#f4d58a' : '#78716c',
         }}
-        transition={{
-          duration: active ? 0.4 : 0.3,
-          ease: active ? 'easeOut' : 'easeInOut',
-        }}
+        transition={{ duration: 0.35 }}
       />
-      <span className="sr-only">{active ? 'Remove from wishlist' : 'Save to wishlist'}</span>
+      <span className="sr-only">{active ? 'Remover dos favoritos' : 'Salvar nos favoritos'}</span>
     </motion.button>
   );
 };
