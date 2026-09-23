@@ -1,60 +1,100 @@
-# Orume 3D
+# ShopLite Store
 
-Site de prospecção e vendas da Orume 3D, com foco em impressão 3D sob medida e experiência mobile.
+![Deploy](https://github.com/Salama-Malek/shoplite-store/actions/workflows/deploy.yml/badge.svg)
 
-A versão atual apresenta os projetos logo após a abertura, a história da empresa em Santa Cruz da Conceição/SP, o fluxo de atendimento pelo WhatsApp e um contrato geral consultável e imprimível dentro do site.
+Live demo: https://salama-malek.github.io/shoplite-store/
 
-## Feed automático do Instagram
+![Screenshot of the app](docs/screenshot.jpg)
 
-O site consulta a API oficial do Instagram uma vez a cada 24 horas. Quando encontra uma publicação diferente, baixa a imagem original fornecida pela API, atualiza a galeria e aciona uma nova publicação do GitHub Pages. Fotos, capas de Reels/vídeos e capas de carrosséis são aceitas. Os arquivos não são recomprimidos pelo projeto.
+A fast, dark-themed React storefront demo for browsing, filtering, and buying a curated product catalog.
 
-Configuração única:
+## Overview
 
-1. Use uma conta profissional (Empresa ou Criador) no perfil `@orume3d`.
-2. No painel Meta for Developers, crie ou conecte um aplicativo com a API do Instagram e gere uma credencial que possa ler as mídias da própria conta.
-3. No repositório GitHub, abra `Settings > Secrets and variables > Actions`, crie o secret `INSTAGRAM_ACCESS_TOKEN` e cole somente a credencial.
-4. Em `Actions`, execute manualmente `Atualizar feed do Instagram` uma vez para validar. Depois disso, a verificação fica agendada.
+ShopLite Store is a single-page e-commerce front end built with React, TypeScript, and Tailwind CSS. It showcases a product catalog with search, category filtering, sorting, pagination, a wishlist, a shopping cart with tax/total calculation, and a mock checkout flow, all persisted to `localStorage` so the cart and preferences survive a page reload.
 
-A credencial nunca é enviada ao navegador nem gravada no repositório. Se a Meta expirar ou invalidar a credencial, ela precisa ser renovada no mesmo secret.
+## Features
 
-## Feed local de reserva
+- Product catalog with client-side search, category filtering, and sorting (price/name, ascending/descending)
+- Infinite-scroll style pagination ("load more") via a reusable `usePagination` hook
+- Product detail modal with a "recently viewed" rail
+- Wishlist page with persisted favorites, synced through `localStorage`
+- Shopping cart drawer with quantity controls, subtotal/tax/total calculation, and a mock checkout confirmation
+- Toast notifications for cart actions
+- Responsive mobile filter/sort modal (built on Headless UI) separate from the desktop filter bar
+- Keyboard shortcut (Cmd/Ctrl+K) to focus the search bar
+- Scroll-aware header and a "back to top" button
+- Skeleton loading states and Framer Motion animations throughout
+- Dark theme by default via Tailwind's class-based dark mode
 
-1. Coloque novas fotos em `public/feed`.
-2. Use nomes em ordem, por exemplo: `02-chaveiro-personalizado.jpg`.
-3. Envie a alteração para o GitHub.
+## Tech stack
 
-A publicação encontra as imagens automaticamente e mostra somente as fotos, sem legenda. Não é preciso editar a página. As imagens vindas do Instagram aparecem primeiro e a foto local continua servindo como reserva se a integração ainda não estiver configurada.
+- React 18 + TypeScript
+- Vite (dev server and build)
+- Tailwind CSS (with a custom color/animation theme)
+- Framer Motion (animations)
+- Headless UI (accessible dialogs/menus)
+- Heroicons (icon set)
+- react-hot-toast (toast notifications)
 
-Para vincular uma imagem a um post específico do Instagram, inclua o código do post no nome: `02-instagram-CODIGO_DO_POST.jpg`. Imagens com qualquer outro nome levam ao perfil da Orume.
+## Getting started
 
-Formatos aceitos: JPG, JPEG, PNG, WEBP, AVIF e GIF.
+### Prerequisites
 
-## Contatos configurados
+- Node.js (LTS recommended) and npm
 
-- Instagram: @orume3d
-- TikTok: @orume3d
-- WhatsApp: +55 19 98934-2212
+### Install
 
+```bash
+npm install
+```
 
-## Parcerias com criadores
+### Run in development
 
-O site também apresenta o modelo de colaboração da Orume 3D com criadores, streamers e VTubers. Esse fluxo segue o documento-base ORU-PAR-001 mantido na operação da empresa:
+```bash
+npm run dev
+```
 
-- conceito e identidade da coleção;
-- avaliação técnica, desenvolvimento e protótipo;
-- aprovação do produto antes da venda pública;
-- definição por produto de pré-venda, produção sob demanda, estoque ou outro modelo acordado;
-- definição prévia de preço, participação do criador e base de cálculo;
-- uso de IA no desenvolvimento somente quando informado e autorizado para o produto;
-- acompanhamento de vendas e repasses conforme o acordo da coleção.
+Starts the Vite dev server (default: http://localhost:5173).
 
-O primeiro contato para uma parceria é direcionado a uma mensagem específica no WhatsApp, separada do orçamento comum de clientes.
+### Build for production
 
+```bash
+npm run build
+```
 
-## Desempenho da home
+Type-checks the project with `tsc` and produces an optimized build in `dist/`.
 
-A home usa o manifesto local gerado durante o build para exibir os projetos. O navegador não precisa consultar proxies nem carregar o JavaScript de embed do Instagram para montar a galeria.
+### Preview a production build
 
-O workflow de Instagram continua responsável por consultar a API, salvar as mídias no repositório, atualizar o manifesto e disparar novo deploy. O estado da live também entra no build após a alteração do arquivo de configuração.
+```bash
+npm run preview
+```
 
-Os termos completos ficam em `/termos/` e o programa de criadores/afiliados em `/parcerias/`, reduzindo o conteúdo e o JavaScript necessários na página inicial.
+There is no test script configured in this project. No environment variables are required to run it.
+
+## Project structure
+
+```
+index.html                 Vite entry HTML
+src/
+  main.tsx                 App bootstrap: mounts React and wraps App in context providers
+  App.tsx                  Top-level layout, routing between Home and Wishlist, cart drawer
+  pages/
+    Home.tsx               Catalog page: search, filters, sort, pagination, product modal
+    Wishlist.tsx           Saved products page
+  components/
+    common/                Header, Footer, SearchBar, CategoryFilter, SortMenu, FilterModal,
+                            SkeletonCard, BackToTopButton
+    shop/                  ProductCard, ProductGrid, ProductModal, CartDrawer,
+                            WishlistButton, RecentlyViewed
+  context/                 CartContext, PreferencesContext (wishlist/recently viewed), ToastContext
+  data/products.ts         Static product catalog and categories
+  hooks/                   useLocalStorage, usePagination
+  styles/index.css         Tailwind entry point
+```
+
+Build configuration lives in `vite.config.ts`, `tailwind.config.js`, `postcss.config.js`, and `tsconfig.json`.
+
+## License
+
+MIT. See [LICENSE](LICENSE).

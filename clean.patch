@@ -1,0 +1,900 @@
+ (cd "$(git rev-parse --show-toplevel)" && git apply --3way <<'EOF' 
+diff --git a/.gitignore b/.gitignore
+new file mode 100644
+index 0000000000000000000000000000000000000000..3bdd52eb2e05a5bd79dbb843a3f85f68274d73d9
+--- /dev/null
++++ b/.gitignore
+@@ -0,0 +1,3 @@
++node_modules/
++dist/
++.DS_Store
+
+diff --git a/favicon.svg b/favicon.svg
+new file mode 100644
+index 0000000000000000000000000000000000000000..cfba7684df47a941945b50f8f4fd8b803fc1fd73
+--- /dev/null
++++ b/favicon.svg
+@@ -0,0 +1,12 @@
++<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
++  <defs>
++    <linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
++      <stop offset="0%" stop-color="#38bdf8" />
++      <stop offset="100%" stop-color="#818cf8" />
++    </linearGradient>
++  </defs>
++  <rect width="64" height="64" rx="12" fill="#0f172a" />
++  <path d="M18 18h28l-4 20H22z" fill="url(#g)" />
++  <circle cx="26" cy="46" r="4" fill="#f8fafc" />
++  <circle cx="38" cy="46" r="4" fill="#f8fafc" />
++</svg>
+diff --git a/index.html b/index.html
+new file mode 100644
+index 0000000000000000000000000000000000000000..19d23f4c5a959f955055a9020b3a4c6d37fc9476
+--- /dev/null
++++ b/index.html
+@@ -0,0 +1,13 @@
++<!doctype html>
++<html lang="en" class="dark">
++  <head>
++    <meta charset="UTF-8" />
++    <link rel="icon" type="image/svg+xml" href="/shoplite-store/favicon.svg" />
++    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
++    <title>ShopLite Store</title>
++  </head>
++  <body class="bg-background text-slate-100">
++    <div id="root"></div>
++    <script type="module" src="/src/main.tsx"></script>
++  </body>
++</html>
+diff --git a/package.json b/package.json
+new file mode 100644
+index 0000000000000000000000000000000000000000..ca7db882a860051aee39bf03b28e3d3ae346bb1b
+--- /dev/null
++++ b/package.json
+@@ -0,0 +1,28 @@
++{
++  "name": "shoplite-store",
++  "private": true,
++  "version": "0.0.1",
++  "type": "module",
++  "scripts": {
++    "dev": "vite",
++    "build": "tsc && vite build",
++    "preview": "vite preview"
++  },
++  "dependencies": {
++    "@headlessui/react": "^1.7.19",
++    "@heroicons/react": "^2.1.5",
++    "framer-motion": "^11.0.8",
++    "react": "^18.2.0",
++    "react-dom": "^18.2.0"
++  },
++  "devDependencies": {
++    "@types/react": "^18.2.73",
++    "@types/react-dom": "^18.2.22",
++    "@vitejs/plugin-react": "^4.2.1",
++    "autoprefixer": "^10.4.17",
++    "postcss": "^8.4.35",
++    "tailwindcss": "^3.4.3",
++    "typescript": "^5.4.0",
++    "vite": "^5.1.0"
++  }
++}
+diff --git a/postcss.config.js b/postcss.config.js
+new file mode 100644
+index 0000000000000000000000000000000000000000..2aa7205d4b402a1bdfbe07110c61df920b370066
+--- /dev/null
++++ b/postcss.config.js
+@@ -0,0 +1,6 @@
++export default {
++  plugins: {
++    tailwindcss: {},
++    autoprefixer: {},
++  },
++};
+diff --git a/src/App.tsx b/src/App.tsx
+new file mode 100644
+index 0000000000000000000000000000000000000000..cc3be245ff222a567b4c32c37da454c4de3cde3c
+--- /dev/null
++++ b/src/App.tsx
+@@ -0,0 +1,23 @@
++import { useState } from 'react';
++import Header from './components/Header';
++import Home from './pages/Home';
++import CartDrawer from './components/CartDrawer';
++
++const App = () => {
++  const [isCartOpen, setIsCartOpen] = useState(false);
++
++  return (
++    <div className="min-h-screen flex flex-col bg-background">
++      <Header onCartToggle={() => setIsCartOpen(true)} />
++      <main className="flex-1">
++        <Home />
++      </main>
++      <footer className="border-t border-slate-800 bg-surface/60 backdrop-blur py-6 text-center text-sm text-slate-400">
++        © 2025 Salama Malek — Full-Stack Developer.
++      </footer>
++      <CartDrawer open={isCartOpen} onClose={() => setIsCartOpen(false)} />
++    </div>
++  );
++};
++
++export default App;
+diff --git a/src/components/CartDrawer.tsx b/src/components/CartDrawer.tsx
+new file mode 100644
+index 0000000000000000000000000000000000000000..7fa953cc90530adfa5a1879a27373fafe44c10ca
+--- /dev/null
++++ b/src/components/CartDrawer.tsx
+@@ -0,0 +1,149 @@
++import { Fragment } from 'react';
++import { Dialog, Transition } from '@headlessui/react';
++import { XMarkIcon, MinusIcon, PlusIcon, TrashIcon } from '@heroicons/react/24/outline';
++import { useCart } from '../context/CartContext';
++
++type CartDrawerProps = {
++  open: boolean;
++  onClose: () => void;
++};
++
++const CartDrawer = ({ open, onClose }: CartDrawerProps) => {
++  const { items, totalItems, totalPrice, updateQuantity, removeFromCart, resetCart } = useCart();
++
++  const handleCheckout = () => {
++    if (items.length === 0) {
++      alert('Your cart is empty. Add some items before checking out.');
++      return;
++    }
++
++    alert('Thank you for shopping with ShopLite Store! Your order is being processed.');
++    resetCart();
++    onClose();
++  };
++
++  return (
++    <Transition.Root show={open} as={Fragment}>
++      <Dialog as="div" className="relative z-30" onClose={onClose}>
++        <Transition.Child
++          as={Fragment}
++          enter="transition-opacity ease-out duration-300"
++          enterFrom="opacity-0"
++          enterTo="opacity-100"
++          leave="transition-opacity ease-in duration-200"
++          leaveFrom="opacity-100"
++          leaveTo="opacity-0"
++        >
++          <div className="fixed inset-0 bg-black/60" />
++        </Transition.Child>
++
++        <div className="fixed inset-0 overflow-hidden">
++          <div className="absolute inset-y-0 right-0 flex max-w-full pl-10">
++            <Transition.Child
++              as={Fragment}
++              enter="transform transition ease-in-out duration-300"
++              enterFrom="translate-x-full"
++              enterTo="translate-x-0"
++              leave="transform transition ease-in-out duration-200"
++              leaveFrom="translate-x-0"
++              leaveTo="translate-x-full"
++            >
++              <Dialog.Panel className="pointer-events-auto w-screen max-w-md bg-surface/95 backdrop-blur shadow-xl shadow-black/30">
++                <div className="flex h-full flex-col">
++                  <div className="flex items-center justify-between border-b border-slate-800 px-6 py-5">
++                    <div>
++                      <Dialog.Title className="text-lg font-semibold text-white">Shopping Cart</Dialog.Title>
++                      <p className="text-sm text-slate-400">{totalItems} items</p>
++                    </div>
++                    <button
++                      type="button"
++                      onClick={onClose}
++                      className="rounded-full p-2 text-slate-400 transition hover:text-slate-200"
++                    >
++                      <XMarkIcon className="h-5 w-5" />
++                    </button>
++                  </div>
++
++                  <div className="flex-1 space-y-4 overflow-y-auto px-6 py-6">
++                    {items.length === 0 ? (
++                      <p className="text-sm text-slate-400">Your cart is empty. Start adding your favorite products!</p>
++                    ) : (
++                      items.map((item) => (
++                        <div
++                          key={item.id}
++                          className="flex gap-4 rounded-2xl border border-slate-800 bg-background/70 p-4 shadow-inner shadow-black/20"
++                        >
++                          <img
++                            src={item.image}
++                            alt={item.name}
++                            className="h-20 w-20 rounded-xl object-cover"
++                          />
++                          <div className="flex flex-1 flex-col gap-3">
++                            <div className="flex items-start justify-between gap-4">
++                              <div>
++                                <h3 className="text-sm font-semibold text-white">{item.name}</h3>
++                                <p className="text-sm text-accent">${item.price.toFixed(2)}</p>
++                              </div>
++                              <button
++                                type="button"
++                                onClick={() => removeFromCart(item.id)}
++                                className="rounded-full p-2 text-slate-500 transition hover:text-rose-400"
++                                aria-label={`Remove ${item.name}`}
++                              >
++                                <TrashIcon className="h-4 w-4" />
++                              </button>
++                            </div>
++                            <div className="flex items-center justify-between">
++                              <div className="inline-flex items-center gap-3 rounded-full border border-slate-700 px-3 py-1">
++                                <button
++                                  type="button"
++                                  className="rounded-full p-1 text-slate-400 transition hover:text-accent"
++                                  onClick={() => updateQuantity(item.id, item.quantity - 1)}
++                                  aria-label={`Decrease quantity of ${item.name}`}
++                                >
++                                  <MinusIcon className="h-4 w-4" />
++                                </button>
++                                <span className="text-sm font-medium text-white">{item.quantity}</span>
++                                <button
++                                  type="button"
++                                  className="rounded-full p-1 text-slate-400 transition hover:text-accent"
++                                  onClick={() => updateQuantity(item.id, item.quantity + 1)}
++                                  aria-label={`Increase quantity of ${item.name}`}
++                                >
++                                  <PlusIcon className="h-4 w-4" />
++                                </button>
++                              </div>
++                              <span className="text-sm font-semibold text-slate-300">
++                                ${(item.price * item.quantity).toFixed(2)}
++                              </span>
++                            </div>
++                          </div>
++                        </div>
++                      ))
++                    )}
++                  </div>
++
++                  <div className="border-t border-slate-800 px-6 py-6">
++                    <div className="flex items-center justify-between text-sm text-slate-300">
++                      <span>Total</span>
++                      <span className="text-lg font-semibold text-white">${totalPrice.toFixed(2)}</span>
++                    </div>
++                    <button
++                      type="button"
++                      onClick={handleCheckout}
++                      className="mt-4 w-full rounded-full bg-accent px-6 py-3 text-sm font-semibold text-slate-900 shadow-glow transition hover:bg-sky-300"
++                    >
++                      Checkout
++                    </button>
++                  </div>
++                </div>
++              </Dialog.Panel>
++            </Transition.Child>
++          </div>
++        </div>
++      </Dialog>
++    </Transition.Root>
++  );
++};
++
++export default CartDrawer;
+diff --git a/src/components/CategoryFilter.tsx b/src/components/CategoryFilter.tsx
+new file mode 100644
+index 0000000000000000000000000000000000000000..1d49ac25e919acdf5dc70256904b2523e02d9326
+--- /dev/null
++++ b/src/components/CategoryFilter.tsx
+@@ -0,0 +1,24 @@
++import { categories } from '../data/products';
++
++type CategoryFilterProps = {
++  value: (typeof categories)[number];
++  onChange: (value: (typeof categories)[number]) => void;
++};
++
++const CategoryFilter = ({ value, onChange }: CategoryFilterProps) => {
++  return (
++    <select
++      value={value}
++      onChange={(event) => onChange(event.target.value as (typeof categories)[number])}
++      className="rounded-full border border-slate-700 bg-surface px-5 py-3 text-sm text-slate-200 shadow-inner shadow-black/20 transition focus:outline-none focus:ring-2 focus:ring-accent/60"
++    >
++      {categories.map((category) => (
++        <option key={category} value={category}>
++          {category}
++        </option>
++      ))}
++    </select>
++  );
++};
++
++export default CategoryFilter;
+diff --git a/src/components/Header.tsx b/src/components/Header.tsx
+new file mode 100644
+index 0000000000000000000000000000000000000000..c4ea3b5a05a0c44d539cbe8dd1736ad84418fa55
+--- /dev/null
++++ b/src/components/Header.tsx
+@@ -0,0 +1,36 @@
++import { ShoppingBagIcon } from '@heroicons/react/24/outline';
++import { useCart } from '../context/CartContext';
++
++type HeaderProps = {
++  onCartToggle: () => void;
++};
++
++const Header = ({ onCartToggle }: HeaderProps) => {
++  const { totalItems, totalPrice } = useCart();
++
++  return (
++    <header className="sticky top-0 z-20 border-b border-slate-800 bg-surface/80 backdrop-blur">
++      <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-5">
++        <div>
++          <h1 className="text-2xl font-semibold tracking-tight text-white">ShopLite Store</h1>
++          <p className="text-sm text-slate-400">Curated essentials for your everyday adventures.</p>
++        </div>
++        <button
++          type="button"
++          onClick={onCartToggle}
++          className="relative flex items-center gap-2 rounded-full bg-accent/10 px-4 py-2 text-accent transition hover:bg-accent/20"
++        >
++          <ShoppingBagIcon className="h-6 w-6" />
++          <span className="text-sm font-medium text-white">${totalPrice.toFixed(2)}</span>
++          {totalItems > 0 && (
++            <span className="absolute -right-2 -top-2 flex h-6 w-6 items-center justify-center rounded-full bg-accent text-xs font-semibold text-slate-900 shadow-glow">
++              {totalItems}
++            </span>
++          )}
++        </button>
++      </div>
++    </header>
++  );
++};
++
++export default Header;
+diff --git a/src/components/ProductCard.tsx b/src/components/ProductCard.tsx
+new file mode 100644
+index 0000000000000000000000000000000000000000..0a4850bc75a10300bc4606c992a26d9626e670c7
+--- /dev/null
++++ b/src/components/ProductCard.tsx
+@@ -0,0 +1,48 @@
++import { motion } from 'framer-motion';
++import type { Product } from '../data/products';
++import { useCart } from '../context/CartContext';
++
++type ProductCardProps = {
++  product: Product;
++};
++
++const ProductCard = ({ product }: ProductCardProps) => {
++  const { addToCart } = useCart();
++
++  return (
++    <motion.article
++      layout
++      whileHover={{ y: -6 }}
++      className="group flex flex-col overflow-hidden rounded-3xl border border-slate-800 bg-surface/80 shadow-lg shadow-black/20 transition"
++    >
++      <div className="relative overflow-hidden">
++        <img
++          src={product.image}
++          alt={product.name}
++          loading="lazy"
++          className="h-56 w-full object-cover transition duration-500 group-hover:scale-105"
++        />
++        <span className="absolute left-4 top-4 rounded-full bg-black/40 px-3 py-1 text-xs font-medium uppercase tracking-wide text-slate-200">
++          {product.category}
++        </span>
++      </div>
++      <div className="flex flex-1 flex-col gap-4 p-6">
++        <div>
++          <h3 className="text-lg font-semibold text-white">{product.name}</h3>
++          <p className="mt-2 text-2xl font-bold text-accent">
++            ${product.price.toFixed(2)}
++          </p>
++        </div>
++        <button
++          type="button"
++          onClick={() => addToCart(product)}
++          className="mt-auto inline-flex items-center justify-center rounded-full bg-accent px-5 py-3 text-sm font-semibold text-slate-900 shadow-glow transition hover:bg-sky-300"
++        >
++          Add to Cart
++        </button>
++      </div>
++    </motion.article>
++  );
++};
++
++export default ProductCard;
+diff --git a/src/components/SearchBar.tsx b/src/components/SearchBar.tsx
+new file mode 100644
+index 0000000000000000000000000000000000000000..5e45f9cbafe14417d37c6e19a530f9581e9545e9
+--- /dev/null
++++ b/src/components/SearchBar.tsx
+@@ -0,0 +1,23 @@
++import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
++
++type SearchBarProps = {
++  value: string;
++  onChange: (value: string) => void;
++};
++
++const SearchBar = ({ value, onChange }: SearchBarProps) => {
++  return (
++    <label className="group relative flex w-full max-w-md items-center">
++      <MagnifyingGlassIcon className="pointer-events-none absolute left-4 h-5 w-5 text-slate-400 transition group-focus-within:text-accent" />
++      <input
++        type="text"
++        value={value}
++        onChange={(event) => onChange(event.target.value)}
++        placeholder="Search products..."
++        className="w-full rounded-full bg-surface px-12 py-3 text-sm text-slate-100 shadow-inner shadow-black/20 transition focus:outline-none focus:ring-2 focus:ring-accent/60"
++      />
++    </label>
++  );
++};
++
++export default SearchBar;
+diff --git a/src/context/CartContext.tsx b/src/context/CartContext.tsx
+new file mode 100644
+index 0000000000000000000000000000000000000000..b8ebbaa833b4653ec65dfe1ab124ea8c13c9c0bc
+--- /dev/null
++++ b/src/context/CartContext.tsx
+@@ -0,0 +1,148 @@
++import {
++  createContext,
++  useContext,
++  useEffect,
++  useMemo,
++  useReducer,
++  ReactNode,
++} from 'react';
++import type { Product } from '../data/products';
++
++export type CartItem = {
++  id: number;
++  name: string;
++  price: number;
++  image: string;
++  quantity: number;
++};
++
++type CartState = {
++  items: CartItem[];
++};
++
++type CartAction =
++  | { type: 'ADD_ITEM'; payload: Product }
++  | { type: 'REMOVE_ITEM'; payload: { id: number } }
++  | { type: 'UPDATE_QUANTITY'; payload: { id: number; quantity: number } }
++  | { type: 'RESET' }
++  | { type: 'HYDRATE'; payload: CartItem[] };
++
++const STORAGE_KEY = 'shoplite-cart';
++
++const cartReducer = (state: CartState, action: CartAction): CartState => {
++  switch (action.type) {
++    case 'ADD_ITEM': {
++      const existing = state.items.find((item) => item.id === action.payload.id);
++      if (existing) {
++        return {
++          items: state.items.map((item) =>
++            item.id === action.payload.id
++              ? { ...item, quantity: Math.min(item.quantity + 1, 9) }
++              : item
++          ),
++        };
++      }
++      return {
++        items: [
++          ...state.items,
++          {
++            id: action.payload.id,
++            name: action.payload.name,
++            price: action.payload.price,
++            image: action.payload.image,
++            quantity: 1,
++          },
++        ],
++      };
++    }
++    case 'REMOVE_ITEM': {
++      return { items: state.items.filter((item) => item.id !== action.payload.id) };
++    }
++    case 'UPDATE_QUANTITY': {
++      return {
++        items: state.items
++          .map((item) => {
++            if (item.id !== action.payload.id) return item;
++            const nextQuantity = Math.max(0, Math.min(action.payload.quantity, 9));
++            return { ...item, quantity: nextQuantity };
++          })
++          .filter((item) => item.quantity > 0),
++      };
++    }
++    case 'RESET': {
++      return { items: [] };
++    }
++    case 'HYDRATE': {
++      return {
++        items: action.payload
++          .filter((item) => item.quantity > 0)
++          .map((item) => ({ ...item, quantity: Math.min(item.quantity, 9) })),
++      };
++    }
++    default:
++      return state;
++  }
++};
++
++type CartContextValue = {
++  items: CartItem[];
++  totalItems: number;
++  totalPrice: number;
++  addToCart: (product: Product) => void;
++  removeFromCart: (id: number) => void;
++  updateQuantity: (id: number, quantity: number) => void;
++  resetCart: () => void;
++};
++
++const CartContext = createContext<CartContextValue | undefined>(undefined);
++
++export const CartProvider = ({ children }: { children: ReactNode }) => {
++  const [state, dispatch] = useReducer(cartReducer, { items: [] });
++
++  useEffect(() => {
++    if (typeof window === 'undefined') return;
++    const stored = localStorage.getItem(STORAGE_KEY);
++    if (stored) {
++      try {
++        const parsed: CartItem[] = JSON.parse(stored);
++        dispatch({ type: 'HYDRATE', payload: parsed });
++      } catch (error) {
++        console.error('Failed to parse cart data', error);
++      }
++    }
++  }, []);
++
++  useEffect(() => {
++    if (typeof window === 'undefined') return;
++    localStorage.setItem(STORAGE_KEY, JSON.stringify(state.items));
++  }, [state.items]);
++
++  const value = useMemo(() => {
++    const totalItems = state.items.reduce((acc, item) => acc + item.quantity, 0);
++    const totalPrice = state.items.reduce(
++      (acc, item) => acc + item.quantity * item.price,
++      0
++    );
++
++    return {
++      items: state.items,
++      totalItems,
++      totalPrice,
++      addToCart: (product: Product) => dispatch({ type: 'ADD_ITEM', payload: product }),
++      removeFromCart: (id: number) => dispatch({ type: 'REMOVE_ITEM', payload: { id } }),
++      updateQuantity: (id: number, quantity: number) =>
++        dispatch({ type: 'UPDATE_QUANTITY', payload: { id, quantity } }),
++      resetCart: () => dispatch({ type: 'RESET' }),
++    };
++  }, [state.items]);
++
++  return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
++};
++
++export const useCart = () => {
++  const context = useContext(CartContext);
++  if (!context) {
++    throw new Error('useCart must be used within a CartProvider');
++  }
++  return context;
++};
+diff --git a/src/data/products.ts b/src/data/products.ts
+new file mode 100644
+index 0000000000000000000000000000000000000000..9f4dceda1ba0064a941228cf607dc38360424f6b
+--- /dev/null
++++ b/src/data/products.ts
+@@ -0,0 +1,108 @@
++export type Product = {
++  id: number;
++  name: string;
++  price: number;
++  category: 'Accessories' | 'Apparel' | 'Tech' | 'Home' | 'Outdoor';
++  image: string;
++};
++
++export const products: Product[] = [
++  {
++    id: 1,
++    name: 'Nebula Wireless Headphones',
++    price: 149.99,
++    category: 'Tech',
++    image:
++      'https://images.unsplash.com/photo-1516110833967-5787bba5b0c7?auto=format&fit=crop&w=800&q=80',
++  },
++  {
++    id: 2,
++    name: 'Lumos Smart Lamp',
++    price: 89.5,
++    category: 'Home',
++    image:
++      'https://images.unsplash.com/photo-1545243424-0ce743321e11?auto=format&fit=crop&w=800&q=80',
++  },
++  {
++    id: 3,
++    name: 'AeroFit Running Sneakers',
++    price: 119.0,
++    category: 'Apparel',
++    image:
++      'https://images.unsplash.com/photo-1608231387042-66d1773070a5?auto=format&fit=crop&w=800&q=80',
++  },
++  {
++    id: 4,
++    name: 'Cascade Water Bottle',
++    price: 28.75,
++    category: 'Outdoor',
++    image:
++      'https://images.unsplash.com/photo-1526404079168-8a5b5a71373a?auto=format&fit=crop&w=800&q=80',
++  },
++  {
++    id: 5,
++    name: 'Orbit Bluetooth Speaker',
++    price: 69.99,
++    category: 'Tech',
++    image:
++      'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=800&q=80',
++  },
++  {
++    id: 6,
++    name: 'Luxe Leather Backpack',
++    price: 179.49,
++    category: 'Accessories',
++    image:
++      'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=800&q=80',
++  },
++  {
++    id: 7,
++    name: 'Aurora Knit Sweater',
++    price: 94.25,
++    category: 'Apparel',
++    image:
++      'https://images.unsplash.com/photo-1530023367847-a683933f4177?auto=format&fit=crop&w=800&q=80',
++  },
++  {
++    id: 8,
++    name: 'ZenBrew Pour Over Set',
++    price: 56.0,
++    category: 'Home',
++    image:
++      'https://images.unsplash.com/photo-1485808191679-5f86510681a2?auto=format&fit=crop&w=800&q=80',
++  },
++  {
++    id: 9,
++    name: 'Summit Trail Jacket',
++    price: 210.0,
++    category: 'Outdoor',
++    image:
++      'https://images.unsplash.com/photo-1489515217757-5fd1be406fef?auto=format&fit=crop&w=800&q=80',
++  },
++  {
++    id: 10,
++    name: 'Pulse Fitness Tracker',
++    price: 134.95,
++    category: 'Tech',
++    image:
++      'https://images.unsplash.com/photo-1524592094714-0f0654e20314?auto=format&fit=crop&w=800&q=80',
++  },
++  {
++    id: 11,
++    name: 'Skyline Sunglasses',
++    price: 64.99,
++    category: 'Accessories',
++    image:
++      'https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&w=800&q=80',
++  },
++  {
++    id: 12,
++    name: 'Terra Yoga Mat',
++    price: 48.5,
++    category: 'Outdoor',
++    image:
++      'https://images.unsplash.com/photo-1549068106-b024baf5062d?auto=format&fit=crop&w=800&q=80',
++  },
++];
++
++export const categories = ['All', 'Accessories', 'Apparel', 'Tech', 'Home', 'Outdoor'] as const;
+diff --git a/src/main.tsx b/src/main.tsx
+new file mode 100644
+index 0000000000000000000000000000000000000000..10009fda8bf23b39b993560c4815e856226b0a31
+--- /dev/null
++++ b/src/main.tsx
+@@ -0,0 +1,13 @@
++import React from 'react';
++import ReactDOM from 'react-dom/client';
++import App from './App';
++import './styles/index.css';
++import { CartProvider } from './context/CartContext';
++
++ReactDOM.createRoot(document.getElementById('root')!).render(
++  <React.StrictMode>
++    <CartProvider>
++      <App />
++    </CartProvider>
++  </React.StrictMode>
++);
+diff --git a/src/pages/Home.tsx b/src/pages/Home.tsx
+new file mode 100644
+index 0000000000000000000000000000000000000000..d97fe5a55e2d38507d6edb53c44cc99255a68e6c
+--- /dev/null
++++ b/src/pages/Home.tsx
+@@ -0,0 +1,54 @@
++import { useMemo, useState } from 'react';
++import ProductCard from '../components/ProductCard';
++import SearchBar from '../components/SearchBar';
++import CategoryFilter from '../components/CategoryFilter';
++import { products, categories } from '../data/products';
++import { motion, AnimatePresence } from 'framer-motion';
++
++const Home = () => {
++  const [searchTerm, setSearchTerm] = useState('');
++  const [selectedCategory, setSelectedCategory] = useState<(typeof categories)[number]>('All');
++
++  const filteredProducts = useMemo(() => {
++    return products.filter((product) => {
++      const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase());
++      const matchesCategory = selectedCategory === 'All' || product.category === selectedCategory;
++      return matchesSearch && matchesCategory;
++    });
++  }, [searchTerm, selectedCategory]);
++
++  return (
++    <div className="mx-auto max-w-6xl px-6 py-12">
++      <section className="mb-10 flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
++        <SearchBar value={searchTerm} onChange={setSearchTerm} />
++        <CategoryFilter value={selectedCategory} onChange={setSelectedCategory} />
++      </section>
++
++      <AnimatePresence>
++        {filteredProducts.length === 0 ? (
++          <motion.p
++            key="empty"
++            initial={{ opacity: 0, y: 8 }}
++            animate={{ opacity: 1, y: 0 }}
++            exit={{ opacity: 0, y: -8 }}
++            className="rounded-3xl border border-slate-800 bg-surface/80 p-10 text-center text-sm text-slate-400"
++          >
++            No products match your search. Try a different keyword or category.
++          </motion.p>
++        ) : (
++          <motion.div
++            key="grid"
++            layout
++            className="grid gap-8 sm:grid-cols-2 xl:grid-cols-3"
++          >
++            {filteredProducts.map((product) => (
++              <ProductCard key={product.id} product={product} />
++            ))}
++          </motion.div>
++        )}
++      </AnimatePresence>
++    </div>
++  );
++};
++
++export default Home;
+diff --git a/src/styles/index.css b/src/styles/index.css
+new file mode 100644
+index 0000000000000000000000000000000000000000..fd4626f5912015f0f83f93851764017edd72992b
+--- /dev/null
++++ b/src/styles/index.css
+@@ -0,0 +1,32 @@
++@tailwind base;
++@tailwind components;
++@tailwind utilities;
++
++:root {
++  color-scheme: dark;
++}
++
++body {
++  @apply bg-background text-slate-100 min-h-screen font-sans antialiased;
++}
++
++a {
++  @apply text-accent hover:text-sky-300 transition-colors;
++}
++
++::-webkit-scrollbar {
++  width: 8px;
++}
++
++::-webkit-scrollbar-track {
++  background: rgba(15, 23, 42, 0.6);
++}
++
++::-webkit-scrollbar-thumb {
++  background: rgba(56, 189, 248, 0.5);
++  border-radius: 9999px;
++}
++
++.fade-in {
++  @apply transition-opacity duration-500 ease-out;
++}
+diff --git a/tailwind.config.js b/tailwind.config.js
+new file mode 100644
+index 0000000000000000000000000000000000000000..11f35d9985dba7656c7ec536b942843c09c4cadf
+--- /dev/null
++++ b/tailwind.config.js
+@@ -0,0 +1,18 @@
++/** @type {import('tailwindcss').Config} */
++export default {
++  content: ['./index.html', './src/**/*.{ts,tsx}'],
++  darkMode: 'class',
++  theme: {
++    extend: {
++      colors: {
++        background: '#0f172a',
++        surface: '#1e293b',
++        accent: '#38bdf8',
++      },
++      boxShadow: {
++        glow: '0 0 20px rgba(56, 189, 248, 0.35)',
++      },
++    },
++  },
++  plugins: [],
++};
+diff --git a/tsconfig.json b/tsconfig.json
+new file mode 100644
+index 0000000000000000000000000000000000000000..f9810fd1c4d2ae6b8b362b5dc9e5c595f591c848
+--- /dev/null
++++ b/tsconfig.json
+@@ -0,0 +1,21 @@
++{
++  "compilerOptions": {
++    "target": "ES2020",
++    "useDefineForClassFields": true,
++    "lib": ["DOM", "DOM.Iterable", "ES2020"],
++    "module": "ESNext",
++    "skipLibCheck": true,
++    "allowJs": false,
++    "esModuleInterop": true,
++    "allowSyntheticDefaultImports": true,
++    "strict": true,
++    "forceConsistentCasingInFileNames": true,
++    "moduleResolution": "Bundler",
++    "resolveJsonModule": true,
++    "isolatedModules": true,
++    "noEmit": true,
++    "jsx": "react-jsx"
++  },
++  "include": ["src"],
++  "references": [{ "path": "tsconfig.node.json" }]
++}
+diff --git a/tsconfig.node.json b/tsconfig.node.json
+new file mode 100644
+index 0000000000000000000000000000000000000000..16dfedc6a6ffc6183d7d74dfd920d7f963ce79a8
+--- /dev/null
++++ b/tsconfig.node.json
+@@ -0,0 +1,9 @@
++{
++  "compilerOptions": {
++    "composite": true,
++    "module": "ESNext",
++    "moduleResolution": "Bundler",
++    "allowSyntheticDefaultImports": true
++  },
++  "include": ["vite.config.ts"]
++}
+diff --git a/vite.config.ts b/vite.config.ts
+new file mode 100644
+index 0000000000000000000000000000000000000000..1a154c8458a601126efe0f62ed3a1ea7e92ec37e
+--- /dev/null
++++ b/vite.config.ts
+@@ -0,0 +1,7 @@
++import { defineConfig } from 'vite';
++import react from '@vitejs/plugin-react';
++
++export default defineConfig({
++  base: '/shoplite-store/',
++  plugins: [react()],
++});
+ 
+EOF
+)
