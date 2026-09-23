@@ -14,6 +14,7 @@ import {
 import { usePagination } from "../hooks/usePagination";
 import { usePreferences } from "../context/PreferencesContext";
 import FilterModal from "../components/common/FilterModal";
+import { jsonp, loadBackendConfig } from "../lib/backend";
 
 const PAGE_SIZE = 9;
 
@@ -23,9 +24,8 @@ type HomeProps = {
 
 const Home = ({ onCartOpen }: HomeProps) => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState<
-    ProductCategory | "All"
-  >("All");
+  const [selectedCategory, setSelectedCategory] = useState<ProductCategory | "All">("All");
+  const [remoteCatalog, setRemoteCatalog] = useState<Product[] | null>(null);
   const [sortOption, setSortOption] = useState<SortOption>("price-asc");
   const [isLoading, setIsLoading] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
@@ -33,9 +33,54 @@ const Home = ({ onCartOpen }: HomeProps) => {
   const { addRecentlyViewed, recentlyViewed } = usePreferences();
   const hero = '/orume3d/brand/orume-hero.webp';
 
+  useEffect(() => {
+    let cancelled = false;
+    loadBackendConfig()
+      .then((config) =>
+        jsonp<{ ok: boolean; products?: Array<Record<string, unknown>> }>(
+          config.endpoint,
+          { action: "catalog" },
+          12000
+        )
+      )
+      .then((result) => {
+        if (cancelled || !result.ok || !Array.isArray(result.products) || !result.products.length) return;
+        const mapped = result.products
+          .map((item) => ({
+            id: Number(item.id || 0),
+            name: String(item.name || ""),
+            price: Number(item.price || 0),
+            category: String(item.category || "Outros"),
+            image: String(item.image || ""),
+            description: String(item.description || ""),
+            sku: String(item.sku || ""),
+            stock: Number(item.stock || 0),
+            productionDays: Number(item.productionDays || 0),
+            shopeeUrl: String(item.shopeeUrl || ""),
+            images: Array.isArray(item.images) ? item.images.map(String) : [],
+            originalPrice: Number(item.originalPrice || 0),
+          }))
+          .filter((item) => item.id > 0 && item.name && item.image);
+        if (mapped.length) setRemoteCatalog(mapped);
+      })
+      .catch(() => {
+        // fallback local permanece disponível até o backend v2 ser implantado.
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const activeCatalog = remoteCatalog && remoteCatalog.length ? remoteCatalog : catalog;
+  const categoryOptions = useMemo(
+    () => ["All", ...Array.from(new Set(activeCatalog.map((product) => product.category).filter(Boolean)))],
+    [activeCatalog]
+  );
+
   const filteredProducts = useMemo(() => {
     const normalizedSearch = searchTerm.toLowerCase().trim();
-    return catalog.filter((product) => {
+    return activeCatalog.filter((product) => {
       const matchesCategory =
         selectedCategory === "All" || product.category === selectedCategory;
       const matchesSearch =
@@ -43,7 +88,7 @@ const Home = ({ onCartOpen }: HomeProps) => {
         product.name.toLowerCase().includes(normalizedSearch);
       return matchesCategory && matchesSearch;
     });
-  }, [searchTerm, selectedCategory]);
+  }, [activeCatalog, searchTerm, selectedCategory]);
 
   const sortedProducts = useMemo(() => {
     const cloned = [...filteredProducts];
@@ -216,7 +261,7 @@ const Home = ({ onCartOpen }: HomeProps) => {
 
               <div className="mt-4 flex flex-wrap items-center gap-4">
                 <div className="min-w-0 flex-1">
-                  <CategoryFilter value={selectedCategory} onChange={setSelectedCategory} />
+                  <CategoryFilter value={selectedCategory} onChange={setSelectedCategory} options={categoryOptions} />
                 </div>
                 <SortMenu value={sortOption} onChange={setSortOption} />
               </div>
@@ -247,7 +292,7 @@ const Home = ({ onCartOpen }: HomeProps) => {
         </div>
 
         <RecentlyViewed
-          allProducts={catalog}
+          allProducts={activeCatalog}
           productIds={recentlyViewed}
           onSelect={handleViewProduct}
         />
@@ -268,6 +313,7 @@ const Home = ({ onCartOpen }: HomeProps) => {
           onCategoryChange={setSelectedCategory}
           sortOption={sortOption}
           onSortChange={setSortOption}
+          categories={categoryOptions}
         />
       </div>
     </>
