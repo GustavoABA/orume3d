@@ -31,7 +31,7 @@ const Home = ({ onCartOpen }: HomeProps) => {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const { addRecentlyViewed, recentlyViewed } = usePreferences();
-  const hero = `${import.meta.env.BASE_URL}brand/orume-hero.webp`;
+  const hero = '/orume3d/brand/orume-hero.webp';
 
   const filteredProducts = useMemo(() => {
     const normalizedSearch = searchTerm.toLowerCase().trim();
