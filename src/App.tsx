@@ -9,9 +9,11 @@ import { ToastViewport } from './context/ToastContext';
 const Home = lazy(() => import('./pages/Home'));
 const Wishlist = lazy(() => import('./pages/Wishlist'));
 const Admin = lazy(() => import('./pages/Admin'));
+const Checkout = lazy(() => import('./pages/Checkout'));
 
 const App = () => {
   const isAdminRoute = window.location.pathname === '/orume3d/admin' || window.location.pathname === '/orume3d/admin/';
+  const isCheckoutRoute = window.location.pathname === '/orume3d/checkout' || window.location.pathname === '/orume3d/checkout/';
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isQuoteOpen, setIsQuoteOpen] = useState(false);
   const [activePage, setActivePage] = useState<'home' | 'wishlist'>('home');
@@ -27,6 +29,14 @@ const App = () => {
     return (
       <Suspense fallback={<div className="min-h-screen bg-background p-10 text-center text-stone-500">CARREGANDO ADMIN ORUME…</div>}>
         <Admin />
+      </Suspense>
+    );
+  }
+
+  if (isCheckoutRoute) {
+    return (
+      <Suspense fallback={<div className="min-h-screen bg-background p-10 text-center text-stone-500">CARREGANDO CHECKOUT ORUME…</div>}>
+        <Checkout />
       </Suspense>
     );
   }
