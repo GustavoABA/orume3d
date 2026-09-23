@@ -1,26 +1,19 @@
 import { useEffect } from 'react';
 import { motion } from 'framer-motion';
 
-const SCRIPT_ID = 'orume-sociablekit-instagram';
-const SCRIPT_SRC = 'https://widgets.sociablekit.com/instagram-feed/widget.js';
+const SCRIPT_ID = 'orume-elfsight-instagram';
+const SCRIPT_SRC = 'https://elfsightcdn.com/platform.js';
+const APP_CLASS = 'elfsight-app-9f259760-45e7-4cae-a481-b388c3758c80';
 
 const InstagramProjects = () => {
   useEffect(() => {
-    const container = document.querySelector('.sk-instagram-feed[data-embed-id="25716212"]');
-    if (!container) return;
-
-    document.getElementById(SCRIPT_ID)?.remove();
+    if (document.getElementById(SCRIPT_ID)) return;
 
     const script = document.createElement('script');
     script.id = SCRIPT_ID;
     script.src = SCRIPT_SRC;
-    script.defer = true;
     script.async = true;
     document.body.appendChild(script);
-
-    return () => {
-      script.remove();
-    };
   }, []);
 
   return (
@@ -56,7 +49,7 @@ const InstagramProjects = () => {
 
       <div className="orume-panel overflow-hidden rounded-[1.5rem] p-3 sm:p-5">
         <div className="min-h-[260px] overflow-hidden rounded-[1.1rem] bg-black/35">
-          <div className="sk-instagram-feed" data-embed-id="25716212" />
+          <div className={APP_CLASS} data-elfsight-app-lazy />
         </div>
       </div>
 
