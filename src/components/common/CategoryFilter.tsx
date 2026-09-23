@@ -1,5 +1,4 @@
 import { memo } from 'react';
-import { categories as defaultCategories } from '../../data/products';
 import { categoryLabel } from '../../lib/format';
 
 type CategoryFilterProps = {
@@ -9,7 +8,7 @@ type CategoryFilterProps = {
 };
 
 const CategoryFilterComponent = ({ value, onChange, options }: CategoryFilterProps) => {
-  const categories = options && options.length ? options : [...defaultCategories];
+  const categories = options && options.length ? options : ['All'];
 
   return (
     <div className="max-w-full">
