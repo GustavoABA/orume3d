@@ -1,4 +1,4 @@
-import { FormEvent, useMemo, useState } from 'react';
+import { FormEvent, useEffect, useMemo, useState } from 'react';
 import { ArrowLeftIcon, EnvelopeIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 import { motion } from 'framer-motion';
 import { useCart } from '../context/CartContext';
@@ -13,6 +13,8 @@ const Checkout = () => {
   const [submitting, setSubmitting] = useState(false);
   const [successId, setSuccessId] = useState('');
   const [error, setError] = useState('');
+  const [pendingWhatsAppUrl, setPendingWhatsAppUrl] = useState('');
+  const [redirectSeconds, setRedirectSeconds] = useState(15);
 
   const cartLines = useMemo(
     () =>
@@ -22,6 +24,7 @@ const Checkout = () => {
         quantity: item.quantity,
         unitPrice: item.price,
         total: item.price * item.quantity,
+        image: item.image,
       })),
     [items]
   );
@@ -34,6 +37,22 @@ const Checkout = () => {
     Date.now().toString(36).toUpperCase() +
     '-' +
     Math.random().toString(36).slice(2, 7).toUpperCase();
+
+
+  useEffect(() => {
+    if (!pendingWhatsAppUrl) return;
+
+    if (redirectSeconds <= 0) {
+      window.location.href = pendingWhatsAppUrl;
+      return;
+    }
+
+    const timer = window.setTimeout(() => {
+      setRedirectSeconds((current) => Math.max(0, current - 1));
+    }, 1000);
+
+    return () => window.clearTimeout(timer);
+  }, [pendingWhatsAppUrl, redirectSeconds]);
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -102,35 +121,60 @@ const Checkout = () => {
       }
 
       const itemText = cartLines
-        .map((item) => '• ' + item.quantity + 'x ' + item.name + ' — ' + formatBRL(item.total))
-        .join('\n');
+        .map((item, index) => {
+          const lines = [
+            '📦 *' + (index + 1) + '. ' + item.name + '*',
+            '   🔢 Quantidade: *' + item.quantity + 'x*',
+            '   💰 Unitário: *' + formatBRL(item.unitPrice) + '*',
+            '   💵 Subtotal: *' + formatBRL(item.total) + '*',
+          ];
+
+          if (item.image) {
+            lines.push('   🖼️ Imagem: ' + item.image);
+          }
+
+          return lines.join('\n');
+        })
+        .join('\n\n');
 
       const message = [
-        'Olá! Quero finalizar meu pedido na Orume 3D.',
+        '✨ *ORUME 3D — NOVO PEDIDO* ✨',
+        '━━━━━━━━━━━━━━━━━━━━',
         '',
-        'Checkout: ' + checkoutId,
-        'Nome: ' + name,
-        'WhatsApp: ' + phone,
-        email ? 'E-mail: ' + email : '',
+        '🧾 *DADOS DO PEDIDO*',
+        'Pedido: *' + checkoutId + '*',
+        '👤 Cliente: *' + name + '*',
+        '📱 WhatsApp: ' + phone,
+        email ? '📧 E-mail: ' + email : '',
         '',
-        'ITENS DO CARRINHO',
+        '🛍️ *ITENS DO CARRINHO*',
+        '━━━━━━━━━━━━━━━━━━━━',
         itemText,
         '',
-        'Subtotal dos itens: ' + formatBRL(subtotal),
-        '⚠️ O FRETE AINDA NÃO ESTÁ INCLUÍDO NESTE VALOR.',
+        '💳 *RESUMO*',
+        'Subtotal dos produtos: *' + formatBRL(subtotal) + '*',
         '',
-        'CEP: ' + cep,
-        'Cidade / UF: ' + city,
-        'Forma de entrega: ' + (delivery || 'A combinar'),
-        notes ? 'Observações: ' + notes : '',
+        '🚨 *ATENÇÃO: FRETE NÃO INCLUÍDO*',
+        'O valor acima corresponde somente aos produtos.',
+        'O frete será calculado e confirmado pela Orume antes do envio do PIX.',
         '',
-        'Gostaria de confirmar o frete e receber o PIX para pagamento.',
+        '📍 *ENTREGA*',
+        'CEP: *' + cep + '*',
+        'Cidade / UF: *' + city + '*',
+        'Forma de entrega: *' + (delivery || 'A combinar') + '*',
+        notes ? '📝 Observações: ' + notes : '',
+        '',
+        '━━━━━━━━━━━━━━━━━━━━',
+        '✅ Gostaria de confirmar o frete e receber o PIX para pagamento.',
       ]
         .filter(Boolean)
         .join('\n');
 
-      window.location.href =
+      const whatsappUrl =
         'https://wa.me/' + ORUME_WHATSAPP + '?text=' + encodeURIComponent(message);
+
+      setRedirectSeconds(15);
+      setPendingWhatsAppUrl(whatsappUrl);
     } catch (reason) {
       console.error(reason);
       setError('Não foi possível registrar o checkout. Tente novamente em alguns instantes.');
@@ -172,6 +216,56 @@ const Checkout = () => {
   return (
     <div className="relative min-h-screen overflow-hidden bg-background text-stone-100">
       <div className="orume-grid pointer-events-none fixed inset-0 opacity-55" />
+
+      {pendingWhatsAppUrl && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/72 px-5 backdrop-blur-xl">
+          <motion.div
+            initial={{ opacity: 0, y: 18, scale: 0.96 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            className="w-full max-w-xl rounded-[1.8rem] border border-red-500/35 bg-[#160909]/95 p-7 text-center shadow-[0_0_80px_rgba(220,38,38,.18)] sm:p-9"
+          >
+            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full border border-red-500/45 bg-red-500/10">
+              <ExclamationTriangleIcon className="h-9 w-9 text-red-400" />
+            </div>
+
+            <p className="mt-5 text-[0.62rem] font-bold uppercase tracking-[0.28em] text-red-400">
+              Atenção antes de continuar
+            </p>
+
+            <h2 className="mt-2 font-display text-3xl text-white">
+              O frete ainda não está incluído.
+            </h2>
+
+            <p className="mx-auto mt-4 max-w-md text-sm leading-6 text-red-100/70">
+              O valor mostrado no carrinho corresponde somente aos produtos. A Orume vai calcular
+              e confirmar o frete com você antes de enviar o PIX para pagamento.
+            </p>
+
+            <div className="mt-6 rounded-2xl border border-red-500/20 bg-red-950/30 px-5 py-4">
+              <p className="text-sm font-semibold text-red-200">
+                Abrindo seu pedido no WhatsApp em
+              </p>
+              <strong className="mt-1 block text-4xl font-bold text-red-400">
+                {redirectSeconds}s
+              </strong>
+            </div>
+
+            <div className="mt-6 h-1.5 overflow-hidden rounded-full bg-red-950/50">
+              <motion.div
+                className="h-full origin-left bg-red-500"
+                initial={{ scaleX: 1 }}
+                animate={{ scaleX: Math.max(0, redirectSeconds / 15) }}
+                transition={{ duration: 0.35 }}
+              />
+            </div>
+
+            <p className="mt-5 text-xs leading-5 text-stone-500">
+              Seu pedido já foi registrado. A próxima tela abrirá uma mensagem pronta com os itens,
+              quantidades, valores e links das imagens dos produtos.
+            </p>
+          </motion.div>
+        </div>
+      )}
 
       <header className="relative z-10 border-b border-accent/10 bg-black/70 backdrop-blur-xl">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-4 sm:px-8">
