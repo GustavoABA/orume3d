@@ -94,7 +94,18 @@ const ProductModal = ({ product, open, onClose, onCartOpen }: ProductModalProps)
                     <p>Itens sob demanda entram em produção após a confirmação do pedido.</p>
                   </div>
 
-                  <div className="mt-auto flex flex-col gap-3 pt-8 sm:flex-row">
+                  <div className="mt-auto flex flex-col gap-3 pt-8">
+                    {product.shopeeUrl && (
+                      <a
+                        href={product.shopeeUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="rounded-full border border-accent/25 bg-accent/10 px-6 py-3 text-center text-sm font-semibold text-accentLight transition hover:bg-accent hover:text-black"
+                      >
+                        Comprar este item na Shopee
+                      </a>
+                    )}
+                    <div className="flex flex-col gap-3 sm:flex-row">
                     <motion.button
                       type="button"
                       whileTap={{ scale: 0.97 }}
@@ -116,6 +127,7 @@ const ProductModal = ({ product, open, onClose, onCartOpen }: ProductModalProps)
                     >
                       Continuar vendo
                     </button>
+                    </div>
                   </div>
                 </div>
               </div>
