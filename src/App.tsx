@@ -8,8 +8,10 @@ import { ToastViewport } from './context/ToastContext';
 
 const Home = lazy(() => import('./pages/Home'));
 const Wishlist = lazy(() => import('./pages/Wishlist'));
+const Admin = lazy(() => import('./pages/Admin'));
 
 const App = () => {
+  const isAdminRoute = /^\\/orume3d\\/admin\\/?$/.test(window.location.pathname);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isQuoteOpen, setIsQuoteOpen] = useState(false);
   const [activePage, setActivePage] = useState<'home' | 'wishlist'>('home');
@@ -20,6 +22,14 @@ const App = () => {
 
   const handleCartOpen = () => setIsCartOpen(true);
   const pageView = useMemo(() => activePage, [activePage]);
+
+  if (isAdminRoute) {
+    return (
+      <Suspense fallback={<div className="min-h-screen bg-background p-10 text-center text-stone-500">CARREGANDO ADMIN ORUME…</div>}>
+        <Admin />
+      </Suspense>
+    );
+  }
 
   return (
     <div className="relative min-h-screen overflow-x-hidden bg-background text-stone-100">
