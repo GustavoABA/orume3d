@@ -2,6 +2,7 @@ import { Suspense, lazy, useEffect, useMemo, useState } from 'react';
 import Header from './components/common/Header';
 import Footer from './components/common/Footer';
 import CartDrawer from './components/shop/CartDrawer';
+import QuoteModal from './components/quote/QuoteModal';
 import BackToTopButton from './components/common/BackToTopButton';
 import { ToastViewport } from './context/ToastContext';
 
@@ -10,6 +11,7 @@ const Wishlist = lazy(() => import('./pages/Wishlist'));
 
 const App = () => {
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const [isQuoteOpen, setIsQuoteOpen] = useState(false);
   const [activePage, setActivePage] = useState<'home' | 'wishlist'>('home');
 
   useEffect(() => {
@@ -30,6 +32,7 @@ const App = () => {
       <div className="relative z-10">
         <Header
           onCartToggle={handleCartOpen}
+          onQuoteOpen={() => setIsQuoteOpen(true)}
           onNavigate={setActivePage}
           activePage={pageView}
         />
@@ -53,6 +56,7 @@ const App = () => {
         <Footer />
         <BackToTopButton />
         <CartDrawer open={isCartOpen} onClose={() => setIsCartOpen(false)} />
+        <QuoteModal open={isQuoteOpen} onClose={() => setIsQuoteOpen(false)} />
         <ToastViewport />
       </div>
     </div>
