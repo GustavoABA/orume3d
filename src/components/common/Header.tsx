@@ -15,7 +15,7 @@ const Header = ({ onCartToggle, onNavigate, activePage }: HeaderProps) => {
   const { totalItems, total } = useCart();
   const { wishlist } = usePreferences();
   const [isScrolled, setIsScrolled] = useState(false);
-  const logo = `${import.meta.env.BASE_URL}brand/orume-mark.webp`;
+  const logo = '/orume3d/brand/orume-mark.webp';
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 18);
