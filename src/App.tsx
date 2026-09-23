@@ -11,7 +11,7 @@ const Wishlist = lazy(() => import('./pages/Wishlist'));
 const Admin = lazy(() => import('./pages/Admin'));
 
 const App = () => {
-  const isAdminRoute = /^\\/orume3d\\/admin\\/?$/.test(window.location.pathname);
+  const isAdminRoute = window.location.pathname === '/orume3d/admin' || window.location.pathname === '/orume3d/admin/';
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isQuoteOpen, setIsQuoteOpen] = useState(false);
   const [activePage, setActivePage] = useState<'home' | 'wishlist'>('home');
