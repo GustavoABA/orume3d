@@ -1,6 +1,7 @@
 import { memo, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import type { Product } from '../../data/products';
+import { categoryLabel, formatBRL } from '../../lib/format';
 
 interface RecentlyViewedProps {
   allProducts: Product[];
@@ -17,35 +18,32 @@ const RecentlyViewedComponent = ({ allProducts, productIds, onSelect }: Recently
     [allProducts, productIds]
   );
 
-  if (items.length === 0) {
-    return null;
-  }
+  if (items.length === 0) return null;
 
   return (
-    <section className="mt-16 space-y-6">
-      <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold text-white">Recently Viewed</h2>
-        <span className="text-xs uppercase tracking-[0.3em] text-slate-500">Just for you</span>
+    <section className="mt-20">
+      <div className="mb-5 flex items-end justify-between">
+        <div>
+          <p className="text-[0.58rem] font-bold uppercase tracking-[0.26em] text-accent/60">Seu histórico</p>
+          <h2 className="mt-1 font-display text-2xl text-white">Vistos recentemente</h2>
+        </div>
       </div>
-      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {items.map((product) => (
           <motion.button
             key={product.id}
             type="button"
             onClick={() => onSelect(product)}
             whileHover={{ y: -4 }}
-            className="flex flex-col overflow-hidden rounded-2xl border border-white/10 bg-surface/50 text-left shadow-lg shadow-black/30 transition hover:border-accent/40 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/60"
+            className="overflow-hidden rounded-2xl border border-accent/10 bg-white/[0.018] text-left transition hover:border-accent/30"
           >
-            <img
-              src={product.image}
-              alt={product.name}
-              loading="lazy"
-              className="h-36 w-full object-cover"
-            />
-            <div className="flex flex-1 flex-col gap-2 px-4 py-4">
-              <span className="text-xs uppercase tracking-[0.2em] text-accent/80">{product.category}</span>
-              <p className="text-sm font-medium text-white line-clamp-1">{product.name}</p>
-              <span className="text-sm font-semibold text-slate-300">${product.price.toFixed(2)}</span>
+            <img src={product.image} alt={product.name} loading="lazy" className="h-36 w-full object-cover opacity-85" />
+            <div className="p-4">
+              <span className="text-[0.58rem] font-bold uppercase tracking-[0.18em] text-accent/60">
+                {categoryLabel(product.category)}
+              </span>
+              <p className="mt-1 line-clamp-1 text-sm font-semibold text-stone-200">{product.name}</p>
+              <span className="mt-2 block text-sm font-bold text-accentLight">{formatBRL(product.price)}</span>
             </div>
           </motion.button>
         ))}
@@ -54,6 +52,4 @@ const RecentlyViewedComponent = ({ allProducts, productIds, onSelect }: Recently
   );
 };
 
-const RecentlyViewed = memo(RecentlyViewedComponent);
-
-export default RecentlyViewed;
+export default memo(RecentlyViewedComponent);
