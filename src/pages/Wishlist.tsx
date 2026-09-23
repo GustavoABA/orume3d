@@ -2,8 +2,9 @@ import { useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import ProductCard from '../components/shop/ProductCard';
 import ProductModal from '../components/shop/ProductModal';
-import { products as catalog, type Product } from '../data/products';
+import type { Product } from '../data/products';
 import { usePreferences } from '../context/PreferencesContext';
+import { useCatalog } from '../hooks/useCatalog';
 
 type WishlistProps = {
   onCartOpen: () => void;
@@ -11,11 +12,12 @@ type WishlistProps = {
 
 const Wishlist = ({ onCartOpen }: WishlistProps) => {
   const { wishlist, addRecentlyViewed } = usePreferences();
+  const { products: catalog, loading } = useCatalog();
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
   const savedProducts = useMemo(
     () => catalog.filter((product) => wishlist.includes(product.id)),
-    [wishlist]
+    [catalog, wishlist]
   );
 
   const handleViewProduct = (product: Product) => {
@@ -43,7 +45,11 @@ const Wishlist = ({ onCartOpen }: WishlistProps) => {
         </span>
       </motion.section>
 
-      {savedProducts.length === 0 ? (
+      {loading ? (
+        <div className="orume-panel rounded-3xl p-10 text-center text-sm text-stone-500">
+          Carregando favoritos…
+        </div>
+      ) : savedProducts.length === 0 ? (
         <motion.div
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
