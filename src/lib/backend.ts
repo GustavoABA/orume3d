@@ -24,28 +24,47 @@ export const jsonp = <T>(
     const script = document.createElement('script');
     const host = window as unknown as Record<string, ((data: T) => void) | undefined>;
 
-    const cleanup = () => {
+    let settled = false;
+
+    const cleanup = (keepNoop = false) => {
       window.clearTimeout(timer);
-      try {
-        delete host[callback];
-      } catch {
-        host[callback] = undefined;
+      if (keepNoop) {
+        host[callback] = (() => undefined) as (data: T) => void;
+        window.setTimeout(() => {
+          try {
+            delete host[callback];
+          } catch {
+            host[callback] = undefined;
+          }
+        }, 60000);
+      } else {
+        try {
+          delete host[callback];
+        } catch {
+          host[callback] = undefined;
+        }
       }
       script.remove();
     };
 
     host[callback] = (data: T) => {
+      if (settled) return;
+      settled = true;
       cleanup();
       resolve(data);
     };
 
     script.onerror = () => {
+      if (settled) return;
+      settled = true;
       cleanup();
       reject(new Error('Falha ao consultar o backend.'));
     };
 
     const timer = window.setTimeout(() => {
-      cleanup();
+      if (settled) return;
+      settled = true;
+      cleanup(true);
       reject(new Error('Tempo de resposta do backend excedido.'));
     }, timeoutMs);
 
