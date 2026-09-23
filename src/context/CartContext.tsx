@@ -18,8 +18,8 @@ export type CartItem = {
   quantity: number;
 };
 
-const TAX_RATE = 0.08;
-const STORAGE_KEY = 'shoplite-cart';
+const TAX_RATE = 0;
+const STORAGE_KEY = 'orume-cart';
 const MAX_QUANTITY = 99;
 
 type CartState = {
