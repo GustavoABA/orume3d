@@ -1,12 +1,16 @@
-import { Fragment, useState } from 'react';
+import { Fragment } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
-import { MinusIcon, PlusIcon, TrashIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import { ExclamationTriangleIcon, MinusIcon, PlusIcon, TrashIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { useCart } from '../../context/CartContext';
 import { formatBRL } from '../../lib/format';
 
 const CartDrawer = ({ open, onClose }: { open: boolean; onClose: () => void }) => {
-  const { items, totalItems, subtotal, total, updateQuantity, removeFromCart } = useCart();
-  const [checkoutNotice, setCheckoutNotice] = useState(false);
+  const { items, totalItems, subtotal, updateQuantity, removeFromCart } = useCart();
+
+  const goToCheckout = () => {
+    onClose();
+    window.location.href = '/orume3d/checkout/';
+  };
 
   return (
     <>
@@ -142,22 +146,31 @@ const CartDrawer = ({ open, onClose }: { open: boolean; onClose: () => void }) =
                         </div>
                         <div className="flex items-center justify-between">
                           <span>Frete</span>
-                          <span className="text-xs">calculado no checkout</span>
+                          <span className="text-xs font-semibold text-amber-300">a confirmar</span>
                         </div>
                         <div className="mt-3 flex items-center justify-between border-t border-accent/10 pt-3 text-base font-semibold text-white">
                           <span>Total dos itens</span>
-                          <span className="orume-metal-text">{formatBRL(total)}</span>
+                          <span className="orume-metal-text">{formatBRL(subtotal)}</span>
                         </div>
                       </div>
+
+                      {items.length > 0 && (
+                        <div className="mt-4 flex gap-3 rounded-2xl border border-amber-500/20 bg-amber-500/[0.06] p-3.5">
+                          <ExclamationTriangleIcon className="mt-0.5 h-5 w-5 shrink-0 text-amber-300" />
+                          <p className="text-xs leading-5 text-amber-100/70">
+                            <strong className="text-amber-200">Frete não incluído.</strong> O valor final será confirmado pela Orume antes do envio do PIX.
+                          </p>
+                        </div>
+                      )}
 
                       <div className="mt-5 flex flex-col gap-3">
                         <button
                           type="button"
                           disabled={items.length === 0}
-                          onClick={() => setCheckoutNotice(true)}
+                          onClick={goToCheckout}
                           className="w-full rounded-full bg-gradient-to-r from-[#b77b2d] via-[#e3b65b] to-[#b6792b] px-6 py-3 text-sm font-bold text-black shadow-glow transition enabled:hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-35"
                         >
-                          Continuar para checkout
+                          Finalizar pedido
                         </button>
                         <button
                           type="button"
@@ -176,31 +189,6 @@ const CartDrawer = ({ open, onClose }: { open: boolean; onClose: () => void }) =
         </Dialog>
       </Transition.Root>
 
-      <Transition.Root show={checkoutNotice} as={Fragment}>
-        <Dialog as="div" className="relative z-[60]" onClose={() => setCheckoutNotice(false)}>
-          <Transition.Child as={Fragment} enter="ease-out duration-200" enterFrom="opacity-0" enterTo="opacity-100" leave="ease-in duration-150" leaveFrom="opacity-100" leaveTo="opacity-0">
-            <div className="fixed inset-0 bg-black/82 backdrop-blur-sm" />
-          </Transition.Child>
-          <div className="fixed inset-0 flex items-center justify-center px-4">
-            <Transition.Child as={Fragment} enter="ease-out duration-250" enterFrom="opacity-0 translate-y-4 scale-95" enterTo="opacity-100 translate-y-0 scale-100" leave="ease-in duration-150" leaveFrom="opacity-100" leaveTo="opacity-0 scale-95">
-              <Dialog.Panel className="orume-panel w-full max-w-md rounded-3xl p-7 text-center">
-                <p className="text-[0.6rem] font-bold uppercase tracking-[0.28em] text-accent/70">Checkout Orume</p>
-                <Dialog.Title className="mt-3 font-display text-2xl text-white">Carrinho preservado.</Dialog.Title>
-                <Dialog.Description className="mt-3 text-sm leading-6 text-stone-500">
-                  A etapa de entrega, frete e pagamento será conectada ao carrinho na próxima implementação. Nenhum pedido foi enviado ou cobrado agora.
-                </Dialog.Description>
-                <button
-                  type="button"
-                  onClick={() => setCheckoutNotice(false)}
-                  className="mt-6 rounded-full border border-accent/25 bg-accent/10 px-6 py-3 text-sm font-semibold text-accentLight transition hover:bg-accent hover:text-black"
-                >
-                  Voltar ao carrinho
-                </button>
-              </Dialog.Panel>
-            </Transition.Child>
-          </div>
-        </Dialog>
-      </Transition.Root>
     </>
   );
 };
