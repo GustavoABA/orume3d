@@ -43,7 +43,23 @@ const Checkout = () => {
     if (!pendingWhatsAppUrl) return;
 
     if (redirectSeconds <= 0) {
-      window.location.href = pendingWhatsAppUrl;
+      const whatsappWindow = window.open(pendingWhatsAppUrl, '_blank', 'noopener,noreferrer');
+      resetCart();
+
+      try {
+        localStorage.removeItem('orume-cart');
+      } catch {
+        // O contexto do carrinho já foi limpo; storage é uma segurança extra.
+      }
+
+      setPendingWhatsAppUrl('');
+
+      if (!whatsappWindow) {
+        window.location.href = pendingWhatsAppUrl;
+        return;
+      }
+
+      window.location.href = '/orume3d/';
       return;
     }
 
@@ -52,7 +68,7 @@ const Checkout = () => {
     }, 1000);
 
     return () => window.clearTimeout(timer);
-  }, [pendingWhatsAppUrl, redirectSeconds]);
+  }, [pendingWhatsAppUrl, redirectSeconds, resetCart]);
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
