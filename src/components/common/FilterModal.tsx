@@ -15,6 +15,7 @@ type FilterModalProps = {
   onCategoryChange: (value: ProductCategory | 'All') => void;
   sortOption: SortOption;
   onSortChange: (value: SortOption) => void;
+  categories?: string[];
 };
 
 const FilterModal = ({
@@ -26,6 +27,7 @@ const FilterModal = ({
   onCategoryChange,
   sortOption,
   onSortChange,
+  categories,
 }: FilterModalProps) => (
   <AnimatePresence>
     {open && (
@@ -61,7 +63,7 @@ const FilterModal = ({
 
             <div className="mt-5 space-y-5">
               <SearchBar value={searchTerm} onChange={onSearchChange} />
-              <CategoryFilter value={category} onChange={onCategoryChange} />
+              <CategoryFilter value={category} onChange={onCategoryChange} options={categories} />
               <SortMenu variant="list" value={sortOption} onChange={onSortChange} />
             </div>
           </Dialog.Panel>
