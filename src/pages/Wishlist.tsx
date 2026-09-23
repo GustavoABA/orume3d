@@ -24,19 +24,22 @@ const Wishlist = ({ onCartOpen }: WishlistProps) => {
   };
 
   return (
-    <div className="mx-auto max-w-6xl px-6 py-12">
+    <div className="mx-auto max-w-7xl px-5 py-14 sm:px-8">
       <motion.section
-        initial={{ opacity: 0, y: 12 }}
+        initial={{ opacity: 0, y: 14 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, ease: 'easeOut' }}
-        className="mb-12 space-y-3"
+        transition={{ duration: 0.55 }}
+        className="mb-10"
       >
-        <h2 className="text-3xl font-semibold text-white">Your saved favorites</h2>
-        <p className="text-sm text-slate-400">
-          Keep track of pieces you love and revisit them any time. Items remain synced across your devices.
+        <p className="text-[0.62rem] font-bold uppercase tracking-[0.3em] text-accent/70">Sua seleção</p>
+        <h1 className="mt-2 font-display text-4xl text-white">
+          Favoritos <span className="orume-metal-text">Orume</span>
+        </h1>
+        <p className="mt-3 max-w-xl text-sm leading-6 text-stone-500">
+          Salve produtos para comparar ou voltar depois. Os favoritos ficam neste navegador.
         </p>
-        <span className="text-xs uppercase tracking-[0.3em] text-slate-500">
-          {savedProducts.length} saved {savedProducts.length === 1 ? 'item' : 'items'}
+        <span className="mt-4 block text-[0.62rem] font-semibold uppercase tracking-[0.22em] text-stone-700">
+          {savedProducts.length} {savedProducts.length === 1 ? 'item salvo' : 'itens salvos'}
         </span>
       </motion.section>
 
@@ -44,12 +47,12 @@ const Wishlist = ({ onCartOpen }: WishlistProps) => {
         <motion.div
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
-          className="rounded-3xl border border-white/10 bg-surface/80 p-10 text-center text-sm text-slate-400"
+          className="orume-panel rounded-3xl p-10 text-center text-sm text-stone-500"
         >
-          You haven&rsquo;t added anything yet. Tap the heart icon on a product to save it for later.
+          Você ainda não salvou nenhum produto. Use o coração nos cards para montar sua seleção.
         </motion.div>
       ) : (
-        <motion.div layout className="grid gap-8 sm:grid-cols-2 xl:grid-cols-3">
+        <motion.div layout className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
           {savedProducts.map((product) => (
             <ProductCard key={product.id} product={product} onView={handleViewProduct} />
           ))}
@@ -67,4 +70,3 @@ const Wishlist = ({ onCartOpen }: WishlistProps) => {
 };
 
 export default Wishlist;
-
