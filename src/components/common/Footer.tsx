@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
 
 const Footer = () => {
-  const logo = `${import.meta.env.BASE_URL}brand/orume-mark.webp`;
+  const logo = '/orume3d/brand/orume-mark.webp';
 
   return (
     <motion.footer
