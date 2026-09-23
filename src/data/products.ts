@@ -1,11 +1,4 @@
-export type ProductCategory =
-  | 'Accessories'
-  | 'Apparel'
-  | 'Tech'
-  | 'Home'
-  | 'Outdoor'
-  | 'Wellness'
-  | 'Travel';
+export type ProductCategory = string;
 
 export type Product = {
   id: number;
@@ -16,6 +9,12 @@ export type Product = {
   description: string;
   rating?: number;
   discount?: number;
+  sku?: string;
+  stock?: number;
+  productionDays?: number;
+  shopeeUrl?: string;
+  images?: string[];
+  originalPrice?: number;
 };
 
 const rawProducts: Product[] = [
