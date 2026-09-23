@@ -3,6 +3,11 @@ import { motion } from 'framer-motion';
 const Footer = () => {
   const logo = '/orume3d/brand/orume-mark.webp';
 
+  const socialLinks = [
+    { label: 'Instagram', handle: '@orume3d', href: 'https://www.instagram.com/orume3d/' },
+    { label: 'TikTok', handle: '@orume3d', href: 'https://www.tiktok.com/@orume3d' },
+  ];
+
   return (
     <motion.footer
       initial={{ opacity: 0 }}
@@ -12,16 +17,41 @@ const Footer = () => {
       className="border-t border-accent/10 bg-black/70 backdrop-blur"
     >
       <div className="mx-auto max-w-7xl px-6 py-10 sm:px-8">
-        <div className="flex flex-col gap-8 sm:flex-row sm:items-end sm:justify-between">
-          <div className="flex items-center gap-4">
-            <span className="flex h-12 w-12 items-center justify-center rounded-xl border border-accent/15 bg-[#0c0a07]">
-              <img src={logo} alt="" className="h-8 w-8 object-contain" />
-            </span>
-            <div>
-              <p className="orume-metal-text font-display text-xl tracking-[0.16em]">ORUME</p>
-              <p className="mt-1 text-[0.62rem] font-semibold uppercase tracking-[0.24em] text-stone-600">
-                impressão 3D • design • coleções
+        <div className="grid gap-8 lg:grid-cols-[1fr_auto] lg:items-end">
+          <div>
+            <div className="flex items-center gap-4">
+              <span className="flex h-12 w-12 items-center justify-center rounded-xl border border-accent/15 bg-[#0c0a07]">
+                <img src={logo} alt="" className="h-8 w-8 object-contain" />
+              </span>
+              <div>
+                <p className="orume-metal-text font-display text-xl tracking-[0.16em]">ORUME</p>
+                <p className="mt-1 text-[0.62rem] font-semibold uppercase tracking-[0.24em] text-stone-600">
+                  impressão 3D • design • coleções
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-6">
+              <p className="text-[0.58rem] font-bold uppercase tracking-[0.26em] text-accent/55">
+                Siga a Orume
               </p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {socialLinks.map((social) => (
+                  <a
+                    key={social.label}
+                    href={social.href}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="group rounded-full border border-accent/12 bg-white/[0.018] px-4 py-2 text-xs transition hover:border-accent/38 hover:bg-accent/[0.06]"
+                    aria-label={`Seguir a Orume no ${social.label}`}
+                  >
+                    <span className="font-semibold text-stone-300 group-hover:text-accentLight">
+                      {social.label}
+                    </span>
+                    <span className="ml-2 text-stone-700">{social.handle}</span>
+                  </a>
+                ))}
+              </div>
             </div>
           </div>
 
