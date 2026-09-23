@@ -112,8 +112,14 @@ const Home = ({ onCartOpen }: HomeProps) => {
             animate={{ scale: 1 }}
             transition={{ duration: 1.8, ease: [0.22, 1, 0.36, 1] }}
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-black/92 via-black/52 to-black/20" />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-transparent to-black/20" />
+          <div
+            className="absolute inset-0"
+            style={{
+              background:
+                'linear-gradient(90deg, rgba(0,0,0,.99) 0%, rgba(0,0,0,.96) 24%, rgba(0,0,0,.80) 40%, rgba(0,0,0,.42) 55%, rgba(0,0,0,.08) 70%, rgba(0,0,0,0) 82%)',
+            }}
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/10" />
           <div className="absolute inset-x-0 bottom-0 h-px orume-gold-line opacity-70" />
 
           <div className="relative flex min-h-[440px] max-w-3xl flex-col justify-end px-7 pb-9 pt-24 sm:min-h-[510px] sm:px-12 sm:pb-12 lg:px-16">
@@ -138,10 +144,9 @@ const Home = ({ onCartOpen }: HomeProps) => {
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.38, duration: 0.65 }}
-              className="mt-5 max-w-xl text-sm leading-6 text-stone-300 sm:text-base"
+              className="mt-5 max-w-lg text-sm leading-6 text-stone-300 sm:text-base"
             >
-              Catálogo de peças impressas em 3D, objetos autorais e soluções produzidas
-              com acabamento pensado para durar e ocupar espaço com identidade.
+              Peças impressas em 3D e objetos produzidos com identidade Orume.
             </motion.p>
 
             <motion.div
@@ -168,18 +173,6 @@ const Home = ({ onCartOpen }: HomeProps) => {
               </a>
             </motion.div>
 
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.65, duration: 0.7 }}
-              className="mt-8 flex flex-wrap gap-x-6 gap-y-2 text-[0.62rem] font-semibold uppercase tracking-[0.2em] text-stone-500"
-            >
-              <span>Produção local</span>
-              <span className="text-accent/50">◆</span>
-              <span>Peças sob demanda</span>
-              <span className="text-accent/50">◆</span>
-              <span>Impressão 3D</span>
-            </motion.div>
           </div>
         </motion.div>
       </section>
