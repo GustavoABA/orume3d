@@ -117,3 +117,15 @@ input {
     scroll-behavior: auto !important;
   }
 }
+
+
+/* Elfsight / Instagram — force readable text over Orume Black */
+.elfsight-app-9f259760-45e7-4cae-a481-b388c3758c80,
+.elfsight-app-9f259760-45e7-4cae-a481-b388c3758c80 * {
+  color: #ffffff !important;
+}
+
+.elfsight-app-9f259760-45e7-4cae-a481-b388c3758c80 a,
+.elfsight-app-9f259760-45e7-4cae-a481-b388c3758c80 button {
+  color: #ffffff !important;
+}
