@@ -7,11 +7,12 @@ import { formatBRL } from '../../lib/format';
 
 type HeaderProps = {
   onCartToggle: () => void;
+  onQuoteOpen: () => void;
   onNavigate: (page: 'home' | 'wishlist') => void;
   activePage: 'home' | 'wishlist';
 };
 
-const Header = ({ onCartToggle, onNavigate, activePage }: HeaderProps) => {
+const Header = ({ onCartToggle, onQuoteOpen, onNavigate, activePage }: HeaderProps) => {
   const { totalItems, total } = useCart();
   const { wishlist } = usePreferences();
   const [isScrolled, setIsScrolled] = useState(false);
@@ -88,23 +89,35 @@ const Header = ({ onCartToggle, onNavigate, activePage }: HeaderProps) => {
           </button>
         </nav>
 
-        <motion.button
-          type="button"
-          whileHover={{ y: -1 }}
-          whileTap={{ scale: 0.97 }}
-          onClick={onCartToggle}
-          className="group relative inline-flex items-center gap-2 overflow-hidden rounded-full border border-accent/30 bg-gradient-to-r from-[#b77b2d] via-[#e3b65b] to-[#b6792b] px-4 py-2.5 text-xs font-bold text-black shadow-glow transition hover:brightness-110 sm:px-5"
-        >
-          <span className="pointer-events-none absolute inset-y-0 -left-1/2 w-1/3 skew-x-[-18deg] bg-white/30 blur-sm transition-all duration-700 group-hover:left-[120%]" />
-          <ShoppingBagIcon className="relative h-4 w-4" aria-hidden="true" />
-          <span className="relative hidden sm:inline">{formatBRL(total)}</span>
-          <span className="relative sm:hidden">Carrinho</span>
-          {totalItems > 0 && (
-            <span className="relative flex h-5 min-w-5 items-center justify-center rounded-full bg-black px-1 text-[0.65rem] text-accentLight">
-              {totalItems}
-            </span>
-          )}
-        </motion.button>
+        <div className="flex items-center gap-2">
+          <motion.button
+            type="button"
+            whileHover={{ y: -1 }}
+            whileTap={{ scale: 0.97 }}
+            onClick={onQuoteOpen}
+            className="hidden rounded-full border border-accent/22 bg-black/45 px-4 py-2.5 text-xs font-bold uppercase tracking-[0.12em] text-accentLight transition hover:border-accent/50 hover:bg-accent/10 sm:inline-flex"
+          >
+            Orçamento
+          </motion.button>
+
+          <motion.button
+            type="button"
+            whileHover={{ y: -1 }}
+            whileTap={{ scale: 0.97 }}
+            onClick={onCartToggle}
+            className="group relative inline-flex items-center gap-2 overflow-hidden rounded-full border border-accent/30 bg-gradient-to-r from-[#b77b2d] via-[#e3b65b] to-[#b6792b] px-4 py-2.5 text-xs font-bold text-black shadow-glow transition hover:brightness-110 sm:px-5"
+          >
+            <span className="pointer-events-none absolute inset-y-0 -left-1/2 w-1/3 skew-x-[-18deg] bg-white/30 blur-sm transition-all duration-700 group-hover:left-[120%]" />
+            <ShoppingBagIcon className="relative h-4 w-4" aria-hidden="true" />
+            <span className="relative hidden sm:inline">{formatBRL(total)}</span>
+            <span className="relative sm:hidden">Carrinho</span>
+            {totalItems > 0 && (
+              <span className="relative flex h-5 min-w-5 items-center justify-center rounded-full bg-black px-1 text-[0.65rem] text-accentLight">
+                {totalItems}
+              </span>
+            )}
+          </motion.button>
+        </div>
       </div>
 
       <div className="flex border-t border-white/[0.04] md:hidden">
@@ -125,6 +138,13 @@ const Header = ({ onCartToggle, onNavigate, activePage }: HeaderProps) => {
           }`}
         >
           Favoritos {wishlist.length ? `(${wishlist.length})` : ''}
+        </button>
+        <button
+          type="button"
+          onClick={onQuoteOpen}
+          className="flex-1 py-2.5 text-[0.65rem] font-semibold uppercase tracking-[0.16em] text-accentLight"
+        >
+          Orçamento
         </button>
       </div>
     </motion.header>
