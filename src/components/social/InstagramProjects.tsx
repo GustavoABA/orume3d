@@ -32,7 +32,7 @@ const InstagramProjects = () => {
           <h2 className="mt-1 font-display text-2xl text-white sm:text-3xl">
             Projetos da <span className="orume-metal-text">Orume</span>
           </h2>
-          <p className="mt-2 max-w-xl text-sm leading-6 text-stone-500">
+          <p className="mt-2 max-w-xl text-sm leading-6 text-white/75">
             Peças, testes e projetos que já saíram das nossas impressoras.
           </p>
         </div>
