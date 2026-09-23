@@ -6,6 +6,7 @@ import SortMenu, { type SortOption } from "../components/common/SortMenu";
 import ProductGrid from "../components/shop/ProductGrid";
 import ProductModal from "../components/shop/ProductModal";
 import RecentlyViewed from "../components/shop/RecentlyViewed";
+import InstagramProjects from "../components/social/InstagramProjects";
 import { type Product, type ProductCategory } from "../data/products";
 import { usePagination } from "../hooks/usePagination";
 import { usePreferences } from "../context/PreferencesContext";
@@ -260,6 +261,8 @@ const Home = ({ onCartOpen }: HomeProps) => {
           productIds={recentlyViewed}
           onSelect={handleViewProduct}
         />
+
+        <InstagramProjects />
 
         <ProductModal
           product={selectedProduct}
