@@ -114,10 +114,14 @@ const Admin = () => {
 
   const getSnapshot = async (key: string, targetEndpoint = endpoint) => {
     if (!targetEndpoint) throw new Error('Endpoint não carregado.');
-    const data = await jsonp<Snapshot>(targetEndpoint, {
-      action: 'adminSnapshot',
-      adminKey: key,
-    });
+    const data = await jsonp<Snapshot>(
+      targetEndpoint,
+      {
+        action: 'adminSnapshot',
+        adminKey: key,
+      },
+      60000
+    );
     if (!data.ok) throw new Error(data.error || 'Falha ao carregar administração.');
     setOrders(data.orders || []);
     setProducts(data.products || []);
