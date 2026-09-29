@@ -27,8 +27,8 @@ const WishlistButton = ({ productId, size = 'md' }: WishlistButtonProps) => {
       }}
       whileTap={{ scale: 0.9 }}
       animate={{
-        backgroundColor: active ? 'rgba(216,168,78,.16)' : 'rgba(5,5,4,.65)',
-        borderColor: active ? 'rgba(216,168,78,.5)' : 'rgba(216,168,78,.14)',
+        backgroundColor: active ? 'rgba(36,221,117,.16)' : 'rgba(7,16,23,.78)',
+        borderColor: active ? 'rgba(36,221,117,.5)' : 'rgba(241,238,231,.14)',
       }}
       transition={{ type: 'spring', stiffness: 240, damping: 18 }}
       className="rounded-full border p-2 shadow-lg shadow-black/20 backdrop-blur transition hover:border-accent/45 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/50"
