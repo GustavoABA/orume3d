@@ -78,7 +78,7 @@ const SortMenuComponent = ({ value, onChange, variant = 'dropdown', className }:
 
       <div
         role="listbox"
-        className={`absolute right-0 z-30 mt-2 w-full min-w-[205px] origin-top-right rounded-2xl border border-accent/15 bg-[#0b0907] p-2 shadow-2xl shadow-black/60 transition ${
+        className={`absolute right-0 z-30 mt-2 w-full min-w-[205px] origin-top-right rounded-2xl border border-accent/15 bg-surface p-2 shadow-2xl shadow-black/60 transition ${
           open ? 'scale-100 opacity-100' : 'pointer-events-none scale-95 opacity-0'
         }`}
       >
