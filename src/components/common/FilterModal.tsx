@@ -38,7 +38,7 @@ const FilterModal = ({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-ink/86 backdrop-blur-sm"
+            className="fixed inset-0 bg-ink/[0.86] backdrop-blur-sm"
           />
           <Dialog.Panel
             as={motion.div}
