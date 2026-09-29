@@ -5,28 +5,32 @@ export default {
   theme: {
     extend: {
       colors: {
-        background: '#050504',
-        surface: '#0f0e0c',
-        surface2: '#17130d',
-        accent: '#d8a84e',
-        accentLight: '#f4d58a',
-        bronze: '#8d6228',
-        ink: '#080706',
+        background: '#071017',
+        surface: '#0B171E',
+        surface2: '#102129',
+        accent: '#24DD75',
+        accentLight: '#72F2A8',
+        gold: '#DFAA4E',
+        bronze: '#A9792E',
+        paper: '#F1EEE7',
+        muted: '#92A0AA',
+        ink: '#071017',
       },
       fontFamily: {
-        display: ['Georgia', 'Cambria', '"Times New Roman"', 'serif'],
+        display: ['Arial', 'Helvetica', 'sans-serif'],
       },
       boxShadow: {
-        glow: '0 0 32px rgba(216, 168, 78, 0.25)',
-        'gold-soft': '0 18px 60px rgba(118, 79, 26, 0.22)',
+        glow: '0 0 34px rgba(36, 221, 117, 0.20)',
+        'gold-soft': '0 18px 60px rgba(223, 170, 78, 0.18)',
+        'panel-soft': '0 24px 80px rgba(0, 0, 0, 0.28)',
       },
       keyframes: {
         shimmer: {
           '0%': { transform: 'translateX(-120%)' },
           '100%': { transform: 'translateX(120%)' },
         },
-        'gold-pulse': {
-          '0%, 100%': { opacity: '0.32', transform: 'scale(1)' },
+        'accent-pulse': {
+          '0%, 100%': { opacity: '0.34', transform: 'scale(1)' },
           '50%': { opacity: '0.62', transform: 'scale(1.04)' },
         },
         'ambient-float': {
@@ -36,7 +40,7 @@ export default {
       },
       animation: {
         shimmer: 'shimmer 2.6s ease-in-out infinite',
-        'gold-pulse': 'gold-pulse 5s ease-in-out infinite',
+        'accent-pulse': 'accent-pulse 5s ease-in-out infinite',
         'ambient-float': 'ambient-float 7s ease-in-out infinite',
       },
     },
