@@ -34,26 +34,26 @@ const Wishlist = ({ onCartOpen }: WishlistProps) => {
         className="mb-10"
       >
         <p className="text-[0.62rem] font-bold uppercase tracking-[0.3em] text-accent/70">Sua seleção</p>
-        <h1 className="mt-2 font-display text-4xl text-white">
+        <h1 className="mt-2 font-display text-4xl text-paper">
           Favoritos <span className="orume-metal-text">Orume</span>
         </h1>
-        <p className="mt-3 max-w-xl text-sm leading-6 text-stone-500">
+        <p className="mt-3 max-w-xl text-sm leading-6 text-muted">
           Salve produtos para comparar ou voltar depois. Os favoritos ficam neste navegador.
         </p>
-        <span className="mt-4 block text-[0.62rem] font-semibold uppercase tracking-[0.22em] text-stone-700">
+        <span className="mt-4 block text-[0.62rem] font-semibold uppercase tracking-[0.22em] text-muted/55">
           {savedProducts.length} {savedProducts.length === 1 ? 'item salvo' : 'itens salvos'}
         </span>
       </motion.section>
 
       {loading ? (
-        <div className="orume-panel rounded-3xl p-10 text-center text-sm text-stone-500">
+        <div className="orume-panel rounded-3xl p-10 text-center text-sm text-muted">
           Carregando favoritos…
         </div>
       ) : savedProducts.length === 0 ? (
         <motion.div
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
-          className="orume-panel rounded-3xl p-10 text-center text-sm text-stone-500"
+          className="orume-panel rounded-3xl p-10 text-center text-sm text-muted"
         >
           Você ainda não salvou nenhum produto. Use o coração nos cards para montar sua seleção.
         </motion.div>
