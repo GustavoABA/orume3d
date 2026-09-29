@@ -28,7 +28,7 @@ const Header = ({ onCartToggle, onQuoteOpen, onNavigate, activePage }: HeaderPro
   const navClass = (active: boolean) =>
     `rounded-full px-4 py-2 text-[0.68rem] font-bold uppercase tracking-[0.14em] transition ${
       active
-        ? 'bg-accent/12 text-accentLight'
+        ? 'bg-accent/[0.12] text-accentLight'
         : 'text-muted hover:bg-paper/[0.04] hover:text-paper'
     }`;
 
@@ -39,8 +39,8 @@ const Header = ({ onCartToggle, onQuoteOpen, onNavigate, activePage }: HeaderPro
       transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
       className={`sticky top-0 z-40 border-b backdrop-blur-xl transition-all duration-300 ${
         isScrolled
-          ? 'border-paper/10 bg-background/94 shadow-[0_18px_60px_rgba(0,0,0,.38)]'
-          : 'border-paper/[0.06] bg-background/82'
+          ? 'border-paper/10 bg-background/[0.94] shadow-[0_18px_60px_rgba(0,0,0,.38)]'
+          : 'border-paper/[0.06] bg-background/[0.82]'
       }`}
     >
       <div className="mx-auto flex h-[72px] max-w-7xl items-center justify-between gap-4 px-5 sm:px-8">
@@ -50,7 +50,7 @@ const Header = ({ onCartToggle, onQuoteOpen, onNavigate, activePage }: HeaderPro
           className="group flex min-w-0 items-center gap-3 text-left"
           aria-label="Ir para o início da Orume 3D"
         >
-          <span className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-accent/18 bg-surface shadow-glow transition group-hover:border-accent/36">
+          <span className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-accent/[0.18] bg-surface shadow-glow transition group-hover:border-accent/[0.36]">
             <img src={logo} alt="" className="h-7 w-7 object-contain" />
           </span>
           <span className="min-w-0">
@@ -87,7 +87,7 @@ const Header = ({ onCartToggle, onQuoteOpen, onNavigate, activePage }: HeaderPro
             type="button"
             whileTap={{ scale: 0.97 }}
             onClick={onQuoteOpen}
-            className="hidden rounded-full border border-accent/35 bg-accent/[0.06] px-4 py-2.5 text-[0.68rem] font-bold uppercase tracking-[0.12em] text-accentLight transition hover:border-accent/65 hover:bg-accent/10 sm:inline-flex"
+            className="hidden rounded-full border border-accent/[0.35] bg-accent/[0.06] px-4 py-2.5 text-[0.68rem] font-bold uppercase tracking-[0.12em] text-accentLight transition hover:border-accent/[0.65] hover:bg-accent/10 sm:inline-flex"
           >
             Orçamento
           </motion.button>
