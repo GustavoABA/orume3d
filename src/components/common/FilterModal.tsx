@@ -38,7 +38,7 @@ const FilterModal = ({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/82 backdrop-blur-sm"
+            className="fixed inset-0 bg-ink/86 backdrop-blur-sm"
           />
           <Dialog.Panel
             as={motion.div}
@@ -48,14 +48,14 @@ const FilterModal = ({
             transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
             className="orume-panel relative w-full max-w-xl rounded-[1.5rem] p-5"
           >
-            <div className="flex items-center justify-between border-b border-accent/10 pb-4">
+            <div className="flex items-center justify-between border-b border-paper/10 pb-4">
               <div className="flex items-center gap-3">
                 <FunnelIcon className="h-5 w-5 text-accent/75" />
-                <Dialog.Title className="text-sm font-bold uppercase tracking-[0.2em] text-stone-300">
+                <Dialog.Title className="text-sm font-bold uppercase tracking-[0.2em] text-paper">
                   Filtros e ordenação
                 </Dialog.Title>
               </div>
-              <button type="button" onClick={onClose} className="rounded-full p-2 text-stone-600 hover:text-accentLight">
+              <button type="button" onClick={onClose} className="rounded-full p-2 text-muted hover:text-accentLight">
                 <span className="sr-only">Fechar filtros</span>
                 <XMarkIcon className="h-5 w-5" />
               </button>
