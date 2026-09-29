@@ -96,7 +96,7 @@ const emptyProduct = (): Product => ({
 });
 
 const inputClass =
-  'mt-1.5 w-full rounded-xl border border-accent/12 bg-surface/85 px-3.5 py-2.5 text-sm text-paper outline-none transition placeholder:text-muted/55 focus:border-accent/40 focus:ring-2 focus:ring-accent/10';
+  'mt-1.5 w-full rounded-xl border border-accent/[0.12] bg-surface/[0.85] px-3.5 py-2.5 text-sm text-paper outline-none transition placeholder:text-muted/[0.55] focus:border-accent/40 focus:ring-2 focus:ring-accent/10';
 
 const Admin = () => {
   const [endpoint, setEndpoint] = useState('');
@@ -332,7 +332,7 @@ const Admin = () => {
 
   return (
     <main className="min-h-screen bg-background text-paper">
-      <header className="sticky top-0 z-30 border-b border-accent/12 bg-ink/94 backdrop-blur-xl">
+      <header className="sticky top-0 z-30 border-b border-accent/[0.12] bg-ink/[0.94] backdrop-blur-xl">
         <div className="mx-auto flex max-w-[1500px] flex-wrap items-center justify-between gap-3 px-5 py-3 sm:px-8">
           <div className="flex items-center gap-3">
             <img src="/orume3d/brand/orume-mark.webp" alt="" className="h-9 w-9 object-contain" />
@@ -346,7 +346,7 @@ const Admin = () => {
               href="https://docs.google.com/spreadsheets/d/1IGZ0KY2J5E87qdl4Gza3w0v_Tz_vsESCH9EHMGZtPoI/edit"
               target="_blank"
               rel="noreferrer"
-              className="inline-flex items-center gap-2 rounded-full border border-accent/15 px-4 py-2 text-xs text-paper/70 hover:border-accent/40 hover:text-accentLight"
+              className="inline-flex items-center gap-2 rounded-full border border-accent/[0.15] px-4 py-2 text-xs text-paper/70 hover:border-accent/40 hover:text-accentLight"
             >
               Planilha <ArrowTopRightOnSquareIcon className="h-4 w-4" />
             </a>
@@ -354,7 +354,7 @@ const Admin = () => {
               type="button"
               onClick={refresh}
               disabled={busy}
-              className="inline-flex items-center gap-2 rounded-full border border-accent/15 px-4 py-2 text-xs text-paper/70 hover:border-accent/40 hover:text-accentLight disabled:opacity-40"
+              className="inline-flex items-center gap-2 rounded-full border border-accent/[0.15] px-4 py-2 text-xs text-paper/70 hover:border-accent/40 hover:text-accentLight disabled:opacity-40"
             >
               <ArrowPathIcon className="h-4 w-4" /> Atualizar
             </button>
@@ -376,20 +376,20 @@ const Admin = () => {
         <div className="mb-6 flex gap-2">
           <button
             onClick={() => setTab('orders')}
-            className={'inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-xs font-bold uppercase tracking-[0.12em] ' + (tab === 'orders' ? 'bg-accent text-ink' : 'border border-accent/15 text-paper/70')}
+            className={'inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-xs font-bold uppercase tracking-[0.12em] ' + (tab === 'orders' ? 'bg-accent text-ink' : 'border border-accent/[0.15] text-paper/70')}
           >
             <ShoppingBagIcon className="h-4 w-4" /> Pedidos
           </button>
           <button
             onClick={() => setTab('products')}
-            className={'inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-xs font-bold uppercase tracking-[0.12em] ' + (tab === 'products' ? 'bg-accent text-ink' : 'border border-accent/15 text-paper/70')}
+            className={'inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-xs font-bold uppercase tracking-[0.12em] ' + (tab === 'products' ? 'bg-accent text-ink' : 'border border-accent/[0.15] text-paper/70')}
           >
             <CubeIcon className="h-4 w-4" /> Produtos
           </button>
         </div>
 
         {status && (
-          <div className="mb-5 rounded-2xl border border-accent/12 bg-accent/[0.04] px-4 py-3 text-sm text-paper/70">
+          <div className="mb-5 rounded-2xl border border-accent/[0.12] bg-accent/[0.04] px-4 py-3 text-sm text-paper/70">
             {status}
           </div>
         )}
@@ -397,7 +397,7 @@ const Admin = () => {
         {tab === 'orders' ? (
           <div className="grid gap-5 lg:grid-cols-[390px_1fr]">
             <section className="orume-panel max-h-[75vh] overflow-auto rounded-2xl p-3">
-              <div className="px-2 pb-3 text-[0.62rem] font-bold uppercase tracking-[0.22em] text-accent/65">
+              <div className="px-2 pb-3 text-[0.62rem] font-bold uppercase tracking-[0.22em] text-accent/[0.65]">
                 Pedidos 0000–1000
               </div>
               <div className="space-y-2">
@@ -429,7 +429,7 @@ const Admin = () => {
                 <>
                   <div className="mb-6 flex flex-wrap items-end justify-between gap-3 border-b border-accent/10 pb-5">
                     <div>
-                      <p className="text-[0.6rem] font-bold uppercase tracking-[0.22em] text-accent/65">Pedido</p>
+                      <p className="text-[0.6rem] font-bold uppercase tracking-[0.22em] text-accent/[0.65]">Pedido</p>
                       <h2 className="mt-1 font-display text-3xl">#{selectedOrder.displayId}</h2>
                     </div>
                     <div className="flex gap-2">
@@ -507,7 +507,7 @@ const Admin = () => {
                     {(product.imageMain || product.detectedImage) ? (
                       <img src={product.imageMain || product.detectedImage} alt="" className="h-14 w-14 rounded-lg object-cover" />
                     ) : (
-                      <div className="flex h-14 w-14 items-center justify-center rounded-lg bg-ink text-muted/55"><CubeIcon className="h-6 w-6" /></div>
+                      <div className="flex h-14 w-14 items-center justify-center rounded-lg bg-ink text-muted/[0.55]"><CubeIcon className="h-6 w-6" /></div>
                     )}
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-sm font-semibold text-paper/90">{product.name || 'Produto sem nome'}</p>
@@ -521,7 +521,7 @@ const Admin = () => {
             <section className="orume-panel rounded-2xl p-5 sm:p-7">
               <div className="mb-6 flex flex-wrap items-end justify-between gap-3 border-b border-accent/10 pb-5">
                 <div>
-                  <p className="text-[0.6rem] font-bold uppercase tracking-[0.22em] text-accent/65">Produto</p>
+                  <p className="text-[0.6rem] font-bold uppercase tracking-[0.22em] text-accent/[0.65]">Produto</p>
                   <h2 className="mt-1 font-display text-3xl">{selectedProduct.id ? selectedProduct.name || 'Editar produto' : 'Novo produto'}</h2>
                 </div>
                 <button onClick={saveProduct} disabled={busy} className="rounded-full bg-accent px-5 py-2.5 text-xs font-bold text-ink disabled:opacity-40">
@@ -529,7 +529,7 @@ const Admin = () => {
                 </button>
               </div>
 
-              <div className="rounded-2xl border border-accent/12 bg-surface/65 p-4">
+              <div className="rounded-2xl border border-accent/[0.12] bg-surface/[0.65] p-4">
                 <label className="text-xs font-semibold text-muted">
                   Link do anúncio na Shopee
                   <input
