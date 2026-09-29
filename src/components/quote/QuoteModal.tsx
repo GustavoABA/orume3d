@@ -224,7 +224,7 @@ const QuoteModal = ({ open, onClose }: QuoteModalProps) => {
   };
 
   const fieldClass =
-    'mt-2 w-full rounded-2xl border border-accent/12 bg-surface/85 px-4 py-3 text-sm text-paper outline-none transition placeholder:text-muted/55 focus:border-accent/40 focus:ring-2 focus:ring-accent/10';
+    'mt-2 w-full rounded-2xl border border-accent/[0.12] bg-surface/[0.85] px-4 py-3 text-sm text-paper outline-none transition placeholder:text-muted/[0.55] focus:border-accent/40 focus:ring-2 focus:ring-accent/10';
 
   return (
     <>
@@ -263,7 +263,7 @@ const QuoteModal = ({ open, onClose }: QuoteModalProps) => {
                 <div className="grid lg:grid-cols-[1fr_300px]">
                   <form ref={formRef} onSubmit={handleSubmit} className="space-y-8 p-6 sm:p-8">
                     <section>
-                      <p className="text-[0.62rem] font-bold uppercase tracking-[0.24em] text-accent/65">
+                      <p className="text-[0.62rem] font-bold uppercase tracking-[0.24em] text-accent/[0.65]">
                         01 — Contato
                       </p>
                       <div className="mt-4 grid gap-4 sm:grid-cols-2">
@@ -287,7 +287,7 @@ const QuoteModal = ({ open, onClose }: QuoteModalProps) => {
                     </section>
 
                     <section className="border-t border-accent/10 pt-7">
-                      <p className="text-[0.62rem] font-bold uppercase tracking-[0.24em] text-accent/65">
+                      <p className="text-[0.62rem] font-bold uppercase tracking-[0.24em] text-accent/[0.65]">
                         02 — Peça / produto
                       </p>
                       <div className="mt-4 grid gap-4 sm:grid-cols-2">
@@ -354,7 +354,7 @@ const QuoteModal = ({ open, onClose }: QuoteModalProps) => {
                     </section>
 
                     <section className="border-t border-accent/10 pt-7">
-                      <p className="text-[0.62rem] font-bold uppercase tracking-[0.24em] text-accent/65">
+                      <p className="text-[0.62rem] font-bold uppercase tracking-[0.24em] text-accent/[0.65]">
                         03 — Entrega
                       </p>
                       <div className="mt-4 grid gap-4 sm:grid-cols-2">
@@ -389,7 +389,7 @@ const QuoteModal = ({ open, onClose }: QuoteModalProps) => {
                     </section>
 
                     <section className="border-t border-accent/10 pt-7">
-                      <p className="text-[0.62rem] font-bold uppercase tracking-[0.24em] text-accent/65">
+                      <p className="text-[0.62rem] font-bold uppercase tracking-[0.24em] text-accent/[0.65]">
                         04 — Preferência de atendimento
                       </p>
                       <button
@@ -400,7 +400,7 @@ const QuoteModal = ({ open, onClose }: QuoteModalProps) => {
                         }}
                         className={`mt-4 flex w-full items-start gap-4 rounded-2xl border p-4 text-left transition ${
                           cleanService
-                            ? 'border-accent/35 bg-accent/10'
+                            ? 'border-accent/[0.35] bg-accent/10'
                             : 'border-accent/10 bg-paper/[0.03] hover:border-accent/25'
                         }`}
                       >
@@ -439,8 +439,8 @@ const QuoteModal = ({ open, onClose }: QuoteModalProps) => {
                     </div>
                   </form>
 
-                  <aside className="hidden border-l border-accent/10 bg-surface/55 p-7 lg:block">
-                    <p className="text-[0.6rem] font-bold uppercase tracking-[0.26em] text-accent/65">
+                  <aside className="hidden border-l border-accent/10 bg-surface/[0.55] p-7 lg:block">
+                    <p className="text-[0.6rem] font-bold uppercase tracking-[0.26em] text-accent/[0.65]">
                       Como funciona
                     </p>
                     <ol className="mt-5 space-y-5 text-sm">
@@ -473,7 +473,7 @@ const QuoteModal = ({ open, onClose }: QuoteModalProps) => {
                   type="button"
                   onClick={onClose}
                   disabled={submitting}
-                  className="absolute right-5 top-5 rounded-full border border-accent/15 bg-ink/80 p-2 text-muted backdrop-blur transition hover:border-accent/40 hover:text-accentLight disabled:opacity-40"
+                  className="absolute right-5 top-5 rounded-full border border-accent/[0.15] bg-ink/80 p-2 text-muted backdrop-blur transition hover:border-accent/40 hover:text-accentLight disabled:opacity-40"
                 >
                   <span className="sr-only">Fechar orçamento</span>
                   <XMarkIcon className="h-5 w-5" />
@@ -539,7 +539,7 @@ const QuoteModal = ({ open, onClose }: QuoteModalProps) => {
                       setCleanService(false);
                       setCleanModalOpen(false);
                     }}
-                    className="flex-1 rounded-full border border-accent/15 px-5 py-3 text-sm font-semibold text-paper/70 transition hover:border-accent/35"
+                    className="flex-1 rounded-full border border-accent/[0.15] px-5 py-3 text-sm font-semibold text-paper/70 transition hover:border-accent/[0.35]"
                   >
                     Não ativar
                   </button>
