@@ -1,37 +1,69 @@
-# Backend Orume v2 (Google Apps Script)
+# Backend Orume (Google Apps Script)
 
-Fonte operacional: `Orume_Controle_Operacional_v2`
+Fonte operacional: `Orume_Controle_Operacional`
 
 Spreadsheet ID: `1IGZ0KY2J5E87qdl4Gza3w0v_Tz_vsESCH9EHMGZtPoI`
 
-## O que o backend v2 faz
+## Backend web atual
 
-- recebe o formulário público de orçamento;
-- usa IDs visuais de pedido entre **0000 e 1000**;
-- quando todos os IDs estiverem ocupados, arquiva em `Histórico` o pedido concluído/cancelado mais antigo e reutiliza o ID;
-- mantém um **UID interno estável** para não confundir pedidos quando o ID visual for reciclado;
-- alimenta a aba `Administração`;
-- permite salvar/concluir pedidos pela planilha;
-- fornece catálogo público para o site;
-- fornece CRUD administrativo de produtos para `/admin`;
-- tenta scraping público de páginas Shopee via JSON-LD/OpenGraph;
-- se houver CAPTCHA, 403, 429 ou ausência de dados, retorna falha e mantém edição manual;
-- não tenta contornar sistemas anti-bot.
+O Web App existente continua responsável por:
 
-## Instalação
+- formulário público de orçamento;
+- IDs visuais de pedido entre **0000 e 1000**;
+- UID interno estável;
+- catálogo público;
+- `/admin`;
+- CRUD de produtos;
+- checkout;
+- scraping público da Shopee quando a página permite.
 
-O arquivo completo pronto para colar é `Orume_Backend_v2.gs` gerado junto da implementação.
+A chave administrativa deve continuar somente em **Script Properties**.
 
-1. Abra o projeto Apps Script usado pela Orume.
-2. Substitua o código antigo pelo backend v2.
-3. Salve.
-4. Execute `configureAdminKey_` ou, ao abrir a planilha, use **Orume → Configurar chave do /admin**.
-5. Implante uma **nova versão** do Web App mantendo a mesma URL `/exec`.
+## Sincronização operacional v3
 
-A chave administrativa deve existir somente em **Script Properties**. Nunca grave a chave no GitHub, em `intake-config.json` ou na própria planilha.
+Arquivo:
+
+`Orume_Operational_Sync_v3.gs`
+
+Este arquivo é um **módulo complementar**. Ele não declara `doGet` nem `doPost`, portanto deve ser adicionado ao projeto Apps Script ORUME sem remover o backend web que já está funcionando.
+
+Ele mantém as abas operacionais sincronizadas:
+
+- `Checkouts` → `Pedidos`;
+- carrinho → `Itens do Pedido`;
+- `Pedidos` → `Clientes`;
+- recalcula quantidade de pedidos e total comprado por cliente;
+- normaliza WhatsApp para evitar duplicidade;
+- vincula `ID Pedido` e `UID Pedido` de volta ao checkout;
+- registra falhas em `Logs`;
+- continua respeitando a faixa de IDs 0000–1000 e arquivamento em `Histórico`.
+
+### Instalação
+
+1. Abra o projeto Apps Script **ORUME** que já atende o endpoint do site.
+2. Crie um novo arquivo de script chamado `Orume_Operational_Sync_v3.gs`.
+3. Copie o conteúdo do arquivo de mesmo nome deste repositório.
+4. Salve.
+5. No seletor de funções do Apps Script, escolha `orusInstallSync_`.
+6. Clique em **Executar** e autorize o acesso solicitado.
+7. A função já executa a primeira sincronização e cria um gatilho para repetir a sincronização **a cada 1 minuto**.
+
+Não é necessário alterar a URL `/exec` do site para esse módulo.
+
+### Funções úteis
+
+- `orusInstallSync_()` — instala/reinstala o gatilho e sincroniza imediatamente.
+- `orusSyncNow_()` — força uma sincronização imediata.
+- `orusUninstallSync_()` — remove apenas o gatilho deste módulo.
+
+### Regra de duplicidade
+
+- checkout é identificado por `ID Checkout`, gravado em `Pedidos > ID Site`;
+- cliente é identificado pelo WhatsApp normalizado;
+- um checkout já convertido não cria outro pedido em execuções futuras.
 
 ## /admin
 
 O frontend público contém somente a tela. A chave é digitada pelo administrador e mantida em `sessionStorage` durante a sessão.
 
-Observação: por ser GitHub Pages falando com Apps Script, as leituras administrativas usam JSONP. A chave viaja na requisição ao Apps Script; para segurança mais forte no futuro, migre o admin para autenticação Google/OAuth ou um backend com sessão HTTP real.
+Por ser GitHub Pages falando com Apps Script, as leituras administrativas usam JSONP. Para segurança mais forte no futuro, migre o admin para autenticação Google/OAuth ou backend com sessão HTTP real.
