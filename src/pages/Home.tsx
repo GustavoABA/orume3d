@@ -100,69 +100,79 @@ const Home = ({ onCartOpen }: HomeProps) => {
 
   return (
     <>
-      <section className="mx-auto max-w-7xl px-5 pb-8 pt-7 sm:px-8 sm:pb-10 sm:pt-10">
+      <section className="mx-auto max-w-[1500px] px-4 pt-5 sm:px-6 sm:pt-7">
         <motion.div
-          initial={{ opacity: 0, y: 14 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
-          className="orume-panel relative overflow-hidden rounded-[1.7rem]"
+          initial={{ opacity: 0, y: 18, scale: 0.992 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ duration: 0.75, ease: [0.22, 1, 0.36, 1] }}
+          className="orume-shine relative min-h-[440px] overflow-hidden rounded-[1.6rem] border border-paper/10 bg-background shadow-[0_30px_100px_rgba(0,0,0,.42)] sm:min-h-[510px]"
         >
-          <div className="pointer-events-none absolute inset-0 orume-dot-grid opacity-[0.16]" />
-          <div className="grid min-h-[500px] lg:grid-cols-[1.02fr_.98fr]">
-            <div className="relative z-10 flex flex-col justify-center px-7 py-12 sm:px-11 lg:px-14 lg:py-16">
-              <p className="orume-eyebrow">Orume 3D • design & impressão</p>
+          <motion.img
+            src={hero}
+            alt="Estúdio Orume com peças de impressão 3D"
+            className="absolute inset-0 h-full w-full object-cover object-center"
+            initial={{ scale: 1.045 }}
+            animate={{ scale: 1 }}
+            transition={{ duration: 1.6, ease: [0.22, 1, 0.36, 1] }}
+          />
 
-              <h1 className="orume-heading mt-4 max-w-2xl text-5xl leading-[0.92] sm:text-6xl lg:text-7xl">
-                Ideias ganham
-                <span className="block text-accent">forma.</span>
-              </h1>
+          <div
+            className="absolute inset-0"
+            style={{
+              background:
+                'linear-gradient(90deg, rgba(7,16,23,.99) 0%, rgba(7,16,23,.96) 24%, rgba(7,16,23,.82) 40%, rgba(7,16,23,.48) 56%, rgba(7,16,23,.12) 72%, rgba(7,16,23,0) 84%)',
+            }}
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-background/65 via-transparent to-background/10" />
+          <div className="absolute -left-20 top-0 h-72 w-72 rounded-full bg-accent/[0.07] blur-3xl" />
+          <div className="absolute inset-x-0 bottom-0 h-px orume-green-line opacity-70" />
 
-              <p className="mt-6 max-w-xl text-sm leading-7 text-muted sm:text-base">
-                Peças funcionais, objetos com personalidade e projetos personalizados produzidos
-                em impressão 3D.
-              </p>
+          <div className="relative flex min-h-[440px] max-w-3xl flex-col justify-end px-7 pb-9 pt-24 sm:min-h-[510px] sm:px-12 sm:pb-12 lg:px-16">
+            <motion.p
+              initial={{ opacity: 0, x: -12 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.15, duration: 0.55 }}
+              className="orume-eyebrow mb-4"
+            >
+              Orume 3D • objetos feitos camada por camada
+            </motion.p>
 
-              <div className="mt-8 flex flex-wrap gap-3">
-                <button type="button" onClick={scrollToCatalog} className="orume-primary">
-                  Ver produtos
-                </button>
-                <a
-                  href="https://wa.me/5519989342212?text=Ol%C3%A1%2C%20gostaria%20de%20fazer%20um%20projeto%20personalizado%20com%20a%20Orume%203D."
-                  target="_blank"
-                  rel="noreferrer"
-                  className="orume-secondary"
-                >
-                  Projeto personalizado
-                </a>
-              </div>
+            <motion.h1
+              initial={{ opacity: 0, y: 14 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.22, duration: 0.65 }}
+              className="max-w-3xl text-4xl font-black leading-[0.94] tracking-[-0.045em] text-paper sm:text-6xl lg:text-7xl"
+            >
+              Forma, função e <span className="text-accent">presença.</span>
+            </motion.h1>
 
-              <div className="mt-10 flex flex-wrap gap-2">
-                <span className="orume-chip">Catálogo</span>
-                <span className="orume-chip">Personalização</span>
-                <span className="orume-chip">Orçamento direto</span>
-              </div>
-            </div>
+            <motion.p
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.32, duration: 0.55 }}
+              className="mt-5 max-w-lg text-sm leading-6 text-paper/70 sm:text-base"
+            >
+              Peças impressas em 3D e projetos personalizados produzidos com identidade Orume.
+            </motion.p>
 
-            <div className="relative min-h-[340px] overflow-hidden border-t border-paper/[0.06] lg:min-h-full lg:border-l lg:border-t-0">
-              <motion.img
-                src={hero}
-                alt="Peças e identidade visual da Orume 3D"
-                className="absolute inset-0 h-full w-full object-cover"
-                initial={{ scale: 1.035 }}
-                animate={{ scale: 1 }}
-                transition={{ duration: 1.4, ease: [0.22, 1, 0.36, 1] }}
-              />
-              <div className="absolute inset-0 bg-gradient-to-r from-background/75 via-background/15 to-transparent lg:from-background/25" />
-              <div className="absolute inset-0 bg-gradient-to-t from-background/75 via-transparent to-transparent" />
-              <div className="absolute bottom-6 left-6 right-6 rounded-2xl border border-paper/10 bg-background/75 p-4 backdrop-blur-md sm:left-8 sm:right-auto sm:max-w-xs">
-                <span className="text-[0.58rem] font-black uppercase tracking-[0.2em] text-gold">
-                  Feito camada por camada
-                </span>
-                <p className="mt-2 text-sm leading-5 text-paper/80">
-                  Do catálogo à peça personalizada, a Orume transforma uma ideia em objeto.
-                </p>
-              </div>
-            </div>
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4, duration: 0.55 }}
+              className="mt-7 flex flex-wrap gap-3"
+            >
+              <button type="button" onClick={scrollToCatalog} className="orume-primary">
+                Explorar catálogo
+              </button>
+              <a
+                href="https://wa.me/5519989342212?text=Ol%C3%A1%2C%20gostaria%20de%20fazer%20um%20projeto%20personalizado%20com%20a%20Orume%203D."
+                target="_blank"
+                rel="noreferrer"
+                className="orume-secondary bg-background/45 backdrop-blur"
+              >
+                Projeto personalizado
+              </a>
+            </motion.div>
           </div>
         </motion.div>
       </section>
