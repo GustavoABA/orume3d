@@ -36,9 +36,9 @@ const SearchBarComponent = ({ value, onChange, className }: SearchBarProps) => {
         value={value}
         onChange={(event) => onChange(event.target.value)}
         placeholder="Buscar no catálogo..."
-        className="w-full rounded-full border border-paper/10 bg-surface/85 py-3.5 pl-14 pr-20 text-sm text-paper shadow-[inset_0_1px_0_rgba(255,255,255,.025)] outline-none backdrop-blur transition placeholder:text-muted/50 focus:border-accent/35 focus:ring-2 focus:ring-accent/10"
+        className="w-full rounded-full border border-paper/10 bg-surface/[0.85] py-3.5 pl-14 pr-20 text-sm text-paper shadow-[inset_0_1px_0_rgba(255,255,255,.025)] outline-none backdrop-blur transition placeholder:text-muted/50 focus:border-accent/[0.35] focus:ring-2 focus:ring-accent/10"
       />
-      <span className="pointer-events-none absolute right-5 hidden text-[0.56rem] font-semibold uppercase tracking-[0.18em] text-muted/55 md:inline">
+      <span className="pointer-events-none absolute right-5 hidden text-[0.56rem] font-semibold uppercase tracking-[0.18em] text-muted/[0.55] md:inline">
         Ctrl K
       </span>
     </label>
