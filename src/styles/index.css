@@ -4,38 +4,50 @@
 
 :root {
   color-scheme: dark;
-  --orume-gold: #d8a84e;
-  --orume-gold-light: #f4d58a;
-  --orume-bronze: #8d6228;
-  --orume-black: #050504;
+  --ink: #071017;
+  --paper: #f1eee7;
+  --green: #24dd75;
+  --green-soft: #72f2a8;
+  --gold: #dfaa4e;
+  --muted: #92a0aa;
+  --surface: #0b171e;
+  --surface-2: #102129;
 }
 
 html {
   scroll-behavior: smooth;
-  background: var(--orume-black);
+  background: var(--ink);
 }
 
 body {
-  @apply min-h-screen bg-background text-stone-100 font-sans antialiased;
+  @apply min-h-screen bg-background font-sans antialiased;
+  color: var(--paper);
   background-image:
-    radial-gradient(circle at 12% -10%, rgba(216, 168, 78, 0.12), transparent 32rem),
-    radial-gradient(circle at 95% 18%, rgba(141, 98, 40, 0.08), transparent 28rem),
-    linear-gradient(180deg, #050504 0%, #080706 45%, #050504 100%);
+    radial-gradient(circle at 12% -8%, rgba(36, 221, 117, 0.10), transparent 30rem),
+    radial-gradient(circle at 92% 12%, rgba(223, 170, 78, 0.08), transparent 28rem),
+    linear-gradient(180deg, #071017 0%, #08141a 52%, #071017 100%);
 }
 
-body::selection {
-  background: rgba(216, 168, 78, 0.36);
-  color: #fff8e8;
+::selection {
+  background: rgba(36, 221, 117, 0.30);
+  color: var(--paper);
 }
 
 a {
-  @apply text-accent transition-colors hover:text-accentLight;
+  color: inherit;
 }
 
 button,
 a,
-input {
+input,
+select,
+textarea {
   -webkit-tap-highlight-color: transparent;
+}
+
+button,
+a {
+  @apply focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/70 focus-visible:ring-offset-2 focus-visible:ring-offset-background;
 }
 
 ::-webkit-scrollbar {
@@ -43,32 +55,59 @@ input {
 }
 
 ::-webkit-scrollbar-track {
-  background: #080706;
+  background: #071017;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: linear-gradient(180deg, #f4d58a, #8d6228);
-  border: 2px solid #080706;
+  background: linear-gradient(180deg, var(--green), var(--gold));
+  border: 2px solid #071017;
   border-radius: 9999px;
+}
+
+.orume-brand-text {
+  color: var(--paper);
+  text-shadow: 0 0 26px rgba(36, 221, 117, 0.08);
 }
 
 .orume-metal-text {
   color: transparent;
-  background: linear-gradient(105deg, #7e5520 0%, #d8a84e 28%, #fff0bc 48%, #c58a32 70%, #f4d58a 100%);
+  background: linear-gradient(105deg, #a9792e 0%, #dfaa4e 32%, #f3dca7 50%, #dfaa4e 72%, #a9792e 100%);
   background-clip: text;
   -webkit-background-clip: text;
 }
 
 .orume-panel {
   background:
-    linear-gradient(145deg, rgba(26, 21, 14, 0.94), rgba(10, 9, 7, 0.96)),
-    radial-gradient(circle at top left, rgba(216, 168, 78, 0.09), transparent 40%);
-  border: 1px solid rgba(216, 168, 78, 0.16);
-  box-shadow: inset 0 1px 0 rgba(255, 237, 184, 0.04), 0 24px 80px rgba(0, 0, 0, 0.28);
+    linear-gradient(145deg, rgba(16, 33, 41, 0.92), rgba(7, 16, 23, 0.97)),
+    radial-gradient(circle at top left, rgba(36, 221, 117, 0.07), transparent 42%);
+  border: 1px solid rgba(241, 238, 231, 0.08);
+  box-shadow:
+    inset 0 1px 0 rgba(241, 238, 231, 0.035),
+    0 24px 80px rgba(0, 0, 0, 0.28);
+}
+
+.orume-panel-interactive {
+  transition:
+    border-color 180ms ease,
+    background-color 180ms ease,
+    transform 180ms ease,
+    box-shadow 180ms ease;
+}
+
+.orume-panel-interactive:hover {
+  border-color: rgba(36, 221, 117, 0.32);
+  box-shadow:
+    inset 0 1px 0 rgba(241, 238, 231, 0.045),
+    0 28px 90px rgba(0, 0, 0, 0.34),
+    0 0 0 1px rgba(36, 221, 117, 0.035);
 }
 
 .orume-gold-line {
-  background: linear-gradient(90deg, transparent, rgba(244, 213, 138, 0.7), transparent);
+  background: linear-gradient(90deg, transparent, rgba(223, 170, 78, 0.7), transparent);
+}
+
+.orume-green-line {
+  background: linear-gradient(90deg, transparent, rgba(36, 221, 117, 0.72), transparent);
 }
 
 .orume-shine {
@@ -79,26 +118,61 @@ input {
 .orume-shine::after {
   content: '';
   position: absolute;
-  inset: -80% -45%;
+  inset: -90% -50%;
   pointer-events: none;
-  background: linear-gradient(105deg, transparent 42%, rgba(255, 238, 190, 0.13) 49%, transparent 56%);
-  transform: translateX(-42%);
-  animation: orume-sweep 7s ease-in-out infinite;
+  background: linear-gradient(105deg, transparent 43%, rgba(114, 242, 168, 0.09) 50%, transparent 57%);
+  transform: translateX(-44%);
+  animation: orume-sweep 8s ease-in-out infinite;
 }
 
 .orume-grid {
   background-image:
-    linear-gradient(rgba(216, 168, 78, 0.025) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(216, 168, 78, 0.025) 1px, transparent 1px);
-  background-size: 40px 40px;
-  mask-image: linear-gradient(to bottom, black, transparent 86%);
+    linear-gradient(rgba(241, 238, 231, 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(241, 238, 231, 0.025) 1px, transparent 1px);
+  background-size: 42px 42px;
+  mask-image: linear-gradient(to bottom, black, transparent 88%);
+}
+
+.orume-dot-grid {
+  background-image: radial-gradient(circle, rgba(36, 221, 117, 0.24) 0 1px, transparent 1.4px);
+  background-size: 28px 28px;
+}
+
+.orume-eyebrow {
+  @apply text-[0.62rem] font-black uppercase tracking-[0.28em] text-accent;
+}
+
+.orume-heading {
+  @apply font-display font-black tracking-[-0.045em] text-paper;
+}
+
+.orume-primary {
+  @apply inline-flex items-center justify-center rounded-full bg-accent px-5 py-3 text-xs font-black uppercase tracking-[0.13em] text-ink transition;
+  box-shadow: 0 12px 34px rgba(36, 221, 117, 0.16);
+}
+
+.orume-primary:hover {
+  filter: brightness(1.08);
+  transform: translateY(-1px);
+}
+
+.orume-secondary {
+  @apply inline-flex items-center justify-center rounded-full border border-paper/15 bg-paper/[0.035] px-5 py-3 text-xs font-bold uppercase tracking-[0.13em] text-paper transition;
+}
+
+.orume-secondary:hover {
+  @apply border-accent/40 bg-accent/[0.07] text-accentLight;
+}
+
+.orume-chip {
+  @apply inline-flex items-center rounded-full border border-paper/10 bg-paper/[0.035] px-3 py-1.5 text-[0.62rem] font-bold uppercase tracking-[0.14em] text-muted;
 }
 
 @keyframes orume-sweep {
-  0%, 18% { transform: translateX(-42%); opacity: 0; }
+  0%, 18% { transform: translateX(-44%); opacity: 0; }
   28% { opacity: 1; }
-  50% { transform: translateX(42%); opacity: 0.75; }
-  64%, 100% { transform: translateX(42%); opacity: 0; }
+  52% { transform: translateX(44%); opacity: 0.75; }
+  66%, 100% { transform: translateX(44%); opacity: 0; }
 }
 
 .fade-in {
@@ -118,14 +192,13 @@ input {
   }
 }
 
-
-/* Elfsight / Instagram — force readable text over Orume Black */
+/* Elfsight / Instagram — mantém o widget legível dentro do tema Orume. */
 .elfsight-app-9f259760-45e7-4cae-a481-b388c3758c80,
 .elfsight-app-9f259760-45e7-4cae-a481-b388c3758c80 * {
-  color: #ffffff !important;
+  color: #f1eee7 !important;
 }
 
 .elfsight-app-9f259760-45e7-4cae-a481-b388c3758c80 a,
 .elfsight-app-9f259760-45e7-4cae-a481-b388c3758c80 button {
-  color: #ffffff !important;
+  color: #f1eee7 !important;
 }
