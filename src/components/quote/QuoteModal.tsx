@@ -424,7 +424,7 @@ const QuoteModal = ({ open, onClose }: QuoteModalProps) => {
                       <button
                         type="submit"
                         disabled={submitting}
-                        className="group relative w-full overflow-hidden rounded-full bg-gradient-to-r from-[#b77b2d] via-[#e3b65b] to-[#b6792b] px-6 py-3.5 text-sm font-bold text-black shadow-glow transition enabled:hover:brightness-110 disabled:cursor-wait disabled:opacity-60"
+                        className="group relative w-full overflow-hidden rounded-full bg-accent px-6 py-3.5 text-sm font-bold text-black shadow-glow transition enabled:hover:brightness-110 disabled:cursor-wait disabled:opacity-60"
                       >
                         <span className="relative z-10">
                           {submitting ? 'Registrando…' : 'Finalizar orçamento'}
@@ -549,7 +549,7 @@ const QuoteModal = ({ open, onClose }: QuoteModalProps) => {
                       setCleanService(true);
                       setCleanModalOpen(false);
                     }}
-                    className="flex-1 rounded-full bg-gradient-to-r from-[#b77b2d] via-[#e3b65b] to-[#b6792b] px-5 py-3 text-sm font-bold text-black shadow-glow"
+                    className="flex-1 rounded-full bg-accent px-5 py-3 text-sm font-bold text-black shadow-glow"
                   >
                     Ativar atendimento clean
                   </button>
