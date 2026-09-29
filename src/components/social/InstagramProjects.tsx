@@ -29,10 +29,10 @@ const InstagramProjects = () => {
           <p className="text-[0.58rem] font-bold uppercase tracking-[0.28em] text-accent/60">
             Projetos reais
           </p>
-          <h2 className="mt-1 font-display text-2xl text-white sm:text-3xl">
+          <h2 className="mt-1 font-display text-2xl text-paper sm:text-3xl">
             Projetos da <span className="orume-metal-text">Orume</span>
           </h2>
-          <p className="mt-2 max-w-xl text-sm leading-6 text-white/75">
+          <p className="mt-2 max-w-xl text-sm leading-6 text-paper/75">
             Peças, testes e projetos que já saíram das nossas impressoras.
           </p>
         </div>
@@ -48,12 +48,12 @@ const InstagramProjects = () => {
       </div>
 
       <div className="orume-panel overflow-hidden rounded-[1.5rem] p-3 sm:p-5">
-        <div className="min-h-[260px] overflow-hidden rounded-[1.1rem] bg-black/35">
+        <div className="min-h-[260px] overflow-hidden rounded-[1.1rem] bg-surface/75">
           <div className={APP_CLASS} data-elfsight-app-lazy />
         </div>
       </div>
 
-      <p className="mt-3 text-center text-[0.6rem] uppercase tracking-[0.15em] text-stone-700">
+      <p className="mt-3 text-center text-[0.6rem] uppercase tracking-[0.15em] text-muted/55">
         Feed sincronizado pelo Instagram
       </p>
     </motion.section>
