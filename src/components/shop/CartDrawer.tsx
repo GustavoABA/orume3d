@@ -25,7 +25,7 @@ const CartDrawer = ({ open, onClose }: { open: boolean; onClose: () => void }) =
             leaveFrom="opacity-100"
             leaveTo="opacity-0"
           >
-            <div className="fixed inset-0 bg-ink/82 backdrop-blur-sm" />
+            <div className="fixed inset-0 bg-ink/[0.82] backdrop-blur-sm" />
           </Transition.Child>
 
           <div className="fixed inset-0 overflow-hidden">
@@ -39,11 +39,11 @@ const CartDrawer = ({ open, onClose }: { open: boolean; onClose: () => void }) =
                 leaveFrom="translate-x-0"
                 leaveTo="translate-x-full"
               >
-                <Dialog.Panel className="pointer-events-auto w-screen max-w-md border-l border-accent/14 bg-surface/98 shadow-2xl shadow-black/70 backdrop-blur-xl">
+                <Dialog.Panel className="pointer-events-auto w-screen max-w-md border-l border-accent/[0.14] bg-surface/[0.98] shadow-2xl shadow-black/70 backdrop-blur-xl">
                   <div className="flex h-full flex-col">
-                    <div className="flex items-center justify-between border-b border-accent/12 px-6 py-5">
+                    <div className="flex items-center justify-between border-b border-accent/[0.12] px-6 py-5">
                       <div>
-                        <p className="text-[0.58rem] font-bold uppercase tracking-[0.28em] text-accent/65">
+                        <p className="text-[0.58rem] font-bold uppercase tracking-[0.28em] text-accent/[0.65]">
                           Orume 3D
                         </p>
                         <Dialog.Title className="mt-1 font-display text-2xl text-paper">
@@ -56,7 +56,7 @@ const CartDrawer = ({ open, onClose }: { open: boolean; onClose: () => void }) =
                       <button
                         type="button"
                         onClick={onClose}
-                        className="rounded-full border border-accent/15 bg-paper/[0.04] p-2 text-muted transition hover:border-accent/40 hover:text-accentLight"
+                        className="rounded-full border border-accent/[0.15] bg-paper/[0.04] p-2 text-muted transition hover:border-accent/40 hover:text-accentLight"
                       >
                         <span className="sr-only">Fechar carrinho</span>
                         <XMarkIcon className="h-5 w-5" aria-hidden="true" />
@@ -98,7 +98,7 @@ const CartDrawer = ({ open, onClose }: { open: boolean; onClose: () => void }) =
                               </div>
 
                               <div className="mt-4 flex items-center justify-between gap-3">
-                                <div className="inline-flex items-center gap-2 rounded-full border border-accent/12 bg-surface/75 px-2 py-1 text-paper/80">
+                                <div className="inline-flex items-center gap-2 rounded-full border border-accent/[0.12] bg-surface/75 px-2 py-1 text-paper/80">
                                   <button
                                     type="button"
                                     className="rounded-full p-1 transition hover:text-accentLight"
@@ -138,7 +138,7 @@ const CartDrawer = ({ open, onClose }: { open: boolean; onClose: () => void }) =
                       )}
                     </div>
 
-                    <div className="border-t border-accent/12 px-6 py-6">
+                    <div className="border-t border-accent/[0.12] px-6 py-6">
                       <div className="space-y-2 text-sm text-muted">
                         <div className="flex items-center justify-between">
                           <span>Subtotal</span>
@@ -175,7 +175,7 @@ const CartDrawer = ({ open, onClose }: { open: boolean; onClose: () => void }) =
                         <button
                           type="button"
                           onClick={onClose}
-                          className="rounded-full border border-accent/14 px-6 py-3 text-sm font-semibold text-paper/70 transition hover:border-accent/35 hover:text-accentLight"
+                          className="rounded-full border border-accent/[0.14] px-6 py-3 text-sm font-semibold text-paper/70 transition hover:border-accent/[0.35] hover:text-accentLight"
                         >
                           Continuar comprando
                         </button>
