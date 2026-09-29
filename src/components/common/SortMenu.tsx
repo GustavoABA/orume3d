@@ -34,7 +34,7 @@ const SortMenuComponent = ({ value, onChange, variant = 'dropdown', className }:
   if (variant === 'list') {
     return (
       <div className={`orume-panel rounded-2xl p-4 ${className ?? ''}`}>
-        <p className="mb-3 text-[0.6rem] font-bold uppercase tracking-[0.24em] text-accent/65">Ordenar por</p>
+        <p className="mb-3 text-[0.6rem] font-bold uppercase tracking-[0.24em] text-accent/[0.65]">Ordenar por</p>
         <div className="grid gap-2">
           {options.map((option) => {
             const active = option.value === value;
@@ -45,7 +45,7 @@ const SortMenuComponent = ({ value, onChange, variant = 'dropdown', className }:
                 onClick={() => onChange(option.value)}
                 className={`flex items-center justify-between rounded-xl border px-4 py-3 text-sm transition ${
                   active
-                    ? 'border-accent/45 bg-accent text-ink'
+                    ? 'border-accent/[0.45] bg-accent text-ink'
                     : 'border-paper/[0.07] text-muted hover:border-accent/25 hover:text-paper'
                 }`}
               >
