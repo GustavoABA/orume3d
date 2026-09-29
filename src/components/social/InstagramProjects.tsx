@@ -41,7 +41,7 @@ const InstagramProjects = () => {
           href="https://www.instagram.com/orume3d/"
           target="_blank"
           rel="noreferrer"
-          className="inline-flex w-fit rounded-full border border-accent/20 bg-accent/[0.05] px-5 py-2.5 text-[0.65rem] font-bold uppercase tracking-[0.14em] text-accentLight transition hover:border-accent/45 hover:bg-accent/10"
+          className="inline-flex w-fit rounded-full border border-accent/20 bg-accent/[0.05] px-5 py-2.5 text-[0.65rem] font-bold uppercase tracking-[0.14em] text-accentLight transition hover:border-accent/[0.45] hover:bg-accent/10"
         >
           Seguir @orume3d
         </a>
@@ -53,7 +53,7 @@ const InstagramProjects = () => {
         </div>
       </div>
 
-      <p className="mt-3 text-center text-[0.6rem] uppercase tracking-[0.15em] text-muted/55">
+      <p className="mt-3 text-center text-[0.6rem] uppercase tracking-[0.15em] text-muted/[0.55]">
         Feed sincronizado pelo Instagram
       </p>
     </motion.section>
