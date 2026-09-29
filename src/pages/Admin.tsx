@@ -317,7 +317,7 @@ const Admin = () => {
           </label>
           <button
             disabled={busy}
-            className="mt-5 w-full rounded-full bg-gradient-to-r from-[#b77b2d] via-[#e3b65b] to-[#b6792b] px-5 py-3 text-sm font-bold text-black shadow-glow disabled:opacity-50"
+            className="mt-5 w-full rounded-full bg-accent px-5 py-3 text-sm font-bold text-black shadow-glow disabled:opacity-50"
           >
             Entrar
           </button>
