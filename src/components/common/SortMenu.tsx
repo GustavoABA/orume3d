@@ -45,8 +45,8 @@ const SortMenuComponent = ({ value, onChange, variant = 'dropdown', className }:
                 onClick={() => onChange(option.value)}
                 className={`flex items-center justify-between rounded-xl border px-4 py-3 text-sm transition ${
                   active
-                    ? 'border-accent/30 bg-accent/10 text-accentLight'
-                    : 'border-white/[0.05] text-stone-500 hover:border-accent/20 hover:text-stone-200'
+                    ? 'border-accent/45 bg-accent text-ink'
+                    : 'border-paper/[0.07] text-muted hover:border-accent/25 hover:text-paper'
                 }`}
               >
                 {option.label}
@@ -66,19 +66,19 @@ const SortMenuComponent = ({ value, onChange, variant = 'dropdown', className }:
         aria-haspopup="listbox"
         aria-expanded={open}
         onClick={() => setOpen((value) => !value)}
-        className="flex h-11 min-w-[190px] items-center gap-3 rounded-full border border-accent/12 bg-black/40 px-4 text-left text-xs text-stone-300 transition hover:border-accent/30"
+        className="flex h-11 min-w-[190px] items-center gap-3 rounded-full border border-paper/10 bg-surface/90 px-4 text-left text-xs text-paper transition hover:border-accent/30"
       >
         <ListBulletIcon className="h-4 w-4 text-accent/70" aria-hidden="true" />
         <span className="flex-1">
-          <span className="block text-[0.52rem] font-bold uppercase tracking-[0.2em] text-stone-700">Ordenar</span>
+          <span className="block text-[0.52rem] font-bold uppercase tracking-[0.2em] text-muted/60">Ordenar</span>
           <span className="font-semibold">{selected.label}</span>
         </span>
-        <ChevronDownIcon className={`h-4 w-4 text-stone-600 transition ${open ? 'rotate-180' : ''}`} />
+        <ChevronDownIcon className={`h-4 w-4 text-muted transition ${open ? 'rotate-180' : ''}`} />
       </button>
 
       <div
         role="listbox"
-        className={`absolute right-0 z-30 mt-2 w-full min-w-[205px] origin-top-right rounded-2xl border border-accent/15 bg-surface p-2 shadow-2xl shadow-black/60 transition ${
+        className={`absolute right-0 z-30 mt-2 w-full min-w-[205px] origin-top-right rounded-2xl border border-paper/10 bg-surface p-2 shadow-2xl shadow-black/60 transition ${
           open ? 'scale-100 opacity-100' : 'pointer-events-none scale-95 opacity-0'
         }`}
       >
@@ -95,7 +95,7 @@ const SortMenuComponent = ({ value, onChange, variant = 'dropdown', className }:
                 setOpen(false);
               }}
               className={`flex w-full items-center justify-between rounded-xl px-3 py-2.5 text-sm transition ${
-                active ? 'bg-accent/10 text-accentLight' : 'text-stone-500 hover:bg-white/[0.035] hover:text-stone-200'
+                active ? 'bg-accent text-ink' : 'text-muted hover:bg-paper/[0.05] hover:text-paper'
               }`}
             >
               {option.label}
