@@ -13,7 +13,7 @@ const CategoryFilterComponent = ({ value, onChange, options }: CategoryFilterPro
   return (
     <div className="max-w-full">
       <div
-        className="flex max-w-full items-center gap-1.5 overflow-x-auto rounded-full border border-accent/12 bg-black/35 p-1.5 text-xs backdrop-blur md:overflow-visible"
+        className="flex max-w-full items-center gap-1.5 overflow-x-auto rounded-full border border-paper/10 bg-surface/80 p-1.5 text-xs backdrop-blur md:overflow-visible"
         aria-label="Filtrar por categoria"
       >
         {categories.map((category) => {
@@ -25,8 +25,8 @@ const CategoryFilterComponent = ({ value, onChange, options }: CategoryFilterPro
               onClick={() => onChange(category)}
               className={'min-w-max whitespace-nowrap rounded-full px-3.5 py-2 text-xs font-semibold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 ' +
                 (isActive
-                  ? 'bg-accent/14 text-accentLight shadow-[inset_0_0_0_1px_rgba(216,168,78,.22)]'
-                  : 'text-stone-500 hover:bg-white/[0.035] hover:text-stone-200')}
+                  ? 'bg-accent text-ink shadow-[0_8px_24px_rgba(36,221,117,.12)]'
+                  : 'text-muted hover:bg-paper/[0.05] hover:text-paper')}
             >
               {categoryLabel(category)}
             </button>
