@@ -19,70 +19,63 @@ const Header = ({ onCartToggle, onQuoteOpen, onNavigate, activePage }: HeaderPro
   const logo = '/orume3d/brand/orume-mark.webp';
 
   useEffect(() => {
-    const handleScroll = () => setIsScrolled(window.scrollY > 18);
+    const handleScroll = () => setIsScrolled(window.scrollY > 14);
     handleScroll();
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  const navClass = (active: boolean) =>
+    `rounded-full px-4 py-2 text-[0.68rem] font-bold uppercase tracking-[0.14em] transition ${
+      active
+        ? 'bg-accent/12 text-accentLight'
+        : 'text-muted hover:bg-paper/[0.04] hover:text-paper'
+    }`;
+
   return (
     <motion.header
-      initial={{ y: -24, opacity: 0 }}
+      initial={{ y: -18, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
-      transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-      className={`sticky top-0 z-40 border-b backdrop-blur-xl transition-all duration-500 ${
+      transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+      className={`sticky top-0 z-40 border-b backdrop-blur-xl transition-all duration-300 ${
         isScrolled
-          ? 'border-accent/20 bg-black/88 shadow-[0_18px_60px_rgba(0,0,0,.55)]'
-          : 'border-accent/10 bg-black/72'
+          ? 'border-paper/10 bg-background/94 shadow-[0_18px_60px_rgba(0,0,0,.38)]'
+          : 'border-paper/[0.06] bg-background/82'
       }`}
     >
-      <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-5 py-3 sm:px-8">
-        <motion.button
+      <div className="mx-auto flex h-[72px] max-w-7xl items-center justify-between gap-4 px-5 sm:px-8">
+        <button
           type="button"
           onClick={() => onNavigate('home')}
-          whileHover={{ scale: 1.015 }}
-          whileTap={{ scale: 0.98 }}
-          className="group flex min-w-0 items-center gap-3 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/60"
+          className="group flex min-w-0 items-center gap-3 text-left"
+          aria-label="Ir para o início da Orume 3D"
         >
-          <span className="relative flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-accent/20 bg-[#090806] shadow-gold-soft">
-            <span className="absolute inset-0 bg-accent/5 opacity-0 transition group-hover:opacity-100" />
-            <img src={logo} alt="" className="relative h-8 w-8 object-contain" />
+          <span className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-accent/18 bg-surface shadow-glow transition group-hover:border-accent/36">
+            <img src={logo} alt="" className="h-7 w-7 object-contain" />
           </span>
           <span className="min-w-0">
-            <span className="orume-metal-text block font-display text-xl font-semibold tracking-[0.18em] sm:text-2xl">
+            <span className="block text-lg font-black tracking-[0.18em] text-paper sm:text-xl">
               ORUME
             </span>
-            <span className="block truncate text-[0.58rem] font-semibold uppercase tracking-[0.28em] text-stone-500">
-              3D • design & impressão
+            <span className="block truncate text-[0.54rem] font-bold uppercase tracking-[0.24em] text-muted">
+              impressão 3D
             </span>
           </span>
-        </motion.button>
+        </button>
 
         <nav className="hidden items-center gap-1 md:flex" aria-label="Navegação principal">
-          <button
-            type="button"
-            onClick={() => onNavigate('home')}
-            className={`rounded-full px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] transition ${
-              activePage === 'home'
-                ? 'bg-accent/12 text-accentLight'
-                : 'text-stone-400 hover:bg-white/[0.035] hover:text-stone-100'
-            }`}
-          >
+          <button type="button" onClick={() => onNavigate('home')} className={navClass(activePage === 'home')}>
             Catálogo
           </button>
           <button
             type="button"
             onClick={() => onNavigate('wishlist')}
-            className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] transition ${
-              activePage === 'wishlist'
-                ? 'bg-accent/12 text-accentLight'
-                : 'text-stone-400 hover:bg-white/[0.035] hover:text-stone-100'
-            }`}
+            className={`${navClass(activePage === 'wishlist')} inline-flex items-center gap-2`}
           >
             <HeartIcon className="h-4 w-4" aria-hidden="true" />
             Favoritos
             {wishlist.length > 0 && (
-              <span className="rounded-full bg-accent/15 px-1.5 py-0.5 text-[0.6rem] text-accentLight">
+              <span className="rounded-full bg-paper/10 px-1.5 py-0.5 text-[0.58rem] text-paper">
                 {wishlist.length}
               </span>
             )}
@@ -92,27 +85,24 @@ const Header = ({ onCartToggle, onQuoteOpen, onNavigate, activePage }: HeaderPro
         <div className="flex items-center gap-2">
           <motion.button
             type="button"
-            whileHover={{ y: -1 }}
             whileTap={{ scale: 0.97 }}
             onClick={onQuoteOpen}
-            className="hidden rounded-full border border-accent/22 bg-black/45 px-4 py-2.5 text-xs font-bold uppercase tracking-[0.12em] text-accentLight transition hover:border-accent/50 hover:bg-accent/10 sm:inline-flex"
+            className="hidden rounded-full border border-gold/35 bg-gold/[0.06] px-4 py-2.5 text-[0.68rem] font-bold uppercase tracking-[0.12em] text-gold transition hover:border-gold/60 hover:bg-gold/10 sm:inline-flex"
           >
             Orçamento
           </motion.button>
 
           <motion.button
             type="button"
-            whileHover={{ y: -1 }}
             whileTap={{ scale: 0.97 }}
             onClick={onCartToggle}
-            className="group relative inline-flex items-center gap-2 overflow-hidden rounded-full border border-accent/30 bg-gradient-to-r from-[#b77b2d] via-[#e3b65b] to-[#b6792b] px-4 py-2.5 text-xs font-bold text-black shadow-glow transition hover:brightness-110 sm:px-5"
+            className="relative inline-flex items-center gap-2 rounded-full bg-accent px-4 py-2.5 text-[0.68rem] font-black uppercase tracking-[0.1em] text-ink shadow-glow transition hover:brightness-110 sm:px-5"
           >
-            <span className="pointer-events-none absolute inset-y-0 -left-1/2 w-1/3 skew-x-[-18deg] bg-white/30 blur-sm transition-all duration-700 group-hover:left-[120%]" />
-            <ShoppingBagIcon className="relative h-4 w-4" aria-hidden="true" />
-            <span className="relative hidden sm:inline">{formatBRL(total)}</span>
-            <span className="relative sm:hidden">Carrinho</span>
+            <ShoppingBagIcon className="h-4 w-4" aria-hidden="true" />
+            <span className="hidden sm:inline">{formatBRL(total)}</span>
+            <span className="sm:hidden">Carrinho</span>
             {totalItems > 0 && (
-              <span className="relative flex h-5 min-w-5 items-center justify-center rounded-full bg-black px-1 text-[0.65rem] text-accentLight">
+              <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-ink px-1 text-[0.62rem] text-accent">
                 {totalItems}
               </span>
             )}
@@ -120,12 +110,12 @@ const Header = ({ onCartToggle, onQuoteOpen, onNavigate, activePage }: HeaderPro
         </div>
       </div>
 
-      <div className="flex border-t border-white/[0.04] md:hidden">
+      <div className="grid grid-cols-3 border-t border-paper/[0.05] md:hidden">
         <button
           type="button"
           onClick={() => onNavigate('home')}
-          className={`flex-1 py-2.5 text-[0.65rem] font-semibold uppercase tracking-[0.16em] ${
-            activePage === 'home' ? 'text-accentLight' : 'text-stone-500'
+          className={`py-2.5 text-[0.62rem] font-bold uppercase tracking-[0.14em] ${
+            activePage === 'home' ? 'text-accent' : 'text-muted'
           }`}
         >
           Catálogo
@@ -133,8 +123,8 @@ const Header = ({ onCartToggle, onQuoteOpen, onNavigate, activePage }: HeaderPro
         <button
           type="button"
           onClick={() => onNavigate('wishlist')}
-          className={`flex-1 py-2.5 text-[0.65rem] font-semibold uppercase tracking-[0.16em] ${
-            activePage === 'wishlist' ? 'text-accentLight' : 'text-stone-500'
+          className={`py-2.5 text-[0.62rem] font-bold uppercase tracking-[0.14em] ${
+            activePage === 'wishlist' ? 'text-accent' : 'text-muted'
           }`}
         >
           Favoritos {wishlist.length ? `(${wishlist.length})` : ''}
@@ -142,7 +132,7 @@ const Header = ({ onCartToggle, onQuoteOpen, onNavigate, activePage }: HeaderPro
         <button
           type="button"
           onClick={onQuoteOpen}
-          className="flex-1 py-2.5 text-[0.65rem] font-semibold uppercase tracking-[0.16em] text-accentLight"
+          className="py-2.5 text-[0.62rem] font-bold uppercase tracking-[0.14em] text-gold"
         >
           Orçamento
         </button>
