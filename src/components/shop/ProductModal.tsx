@@ -115,7 +115,7 @@ const ProductModal = ({ product, open, onClose, onCartOpen }: ProductModalProps)
                         onCartOpen?.();
                         onClose();
                       }}
-                      className="group relative flex-1 overflow-hidden rounded-full bg-gradient-to-r from-[#b77b2d] via-[#e3b65b] to-[#b6792b] px-6 py-3 text-sm font-bold text-black shadow-glow transition hover:brightness-110"
+                      className="group relative flex-1 overflow-hidden rounded-full bg-accent px-6 py-3 text-sm font-bold text-black shadow-glow transition hover:brightness-110"
                     >
                       <span className="relative z-10">Adicionar ao carrinho</span>
                       <span className="absolute inset-y-0 -left-1/2 w-1/3 skew-x-[-18deg] bg-white/30 blur-sm transition-all duration-700 group-hover:left-[120%]" />
