@@ -30,7 +30,7 @@ const Checkout = () => {
   );
 
   const fieldClass =
-    'mt-2 w-full rounded-2xl border border-accent/12 bg-surface/85 px-4 py-3 text-sm text-paper outline-none transition placeholder:text-muted/55 focus:border-accent/40 focus:ring-2 focus:ring-accent/10';
+    'mt-2 w-full rounded-2xl border border-accent/[0.12] bg-surface/[0.85] px-4 py-3 text-sm text-paper outline-none transition placeholder:text-muted/[0.55] focus:border-accent/40 focus:ring-2 focus:ring-accent/10';
 
   const makeCheckoutId = () =>
     'CHK-' +
@@ -220,7 +220,7 @@ const Checkout = () => {
           </p>
           <a
             href="/orume3d/"
-            className="mt-7 inline-flex rounded-full border border-accent/22 bg-accent/[0.06] px-6 py-3 text-sm font-semibold text-accentLight hover:border-accent/45"
+            className="mt-7 inline-flex rounded-full border border-accent/[0.22] bg-accent/[0.06] px-6 py-3 text-sm font-semibold text-accentLight hover:border-accent/[0.45]"
           >
             Voltar para a loja
           </a>
@@ -234,7 +234,7 @@ const Checkout = () => {
       <div className="orume-grid pointer-events-none fixed inset-0 opacity-55" />
 
       {pendingWhatsAppUrl && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-ink/78 px-5 backdrop-blur-xl">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-ink/[0.78] px-5 backdrop-blur-xl">
           <motion.div
             initial={{ opacity: 0, y: 18, scale: 0.96 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -391,7 +391,7 @@ const Checkout = () => {
                 className={
                   'flex w-full items-start gap-4 rounded-2xl border p-4 text-left transition ' +
                   (cleanService
-                    ? 'border-accent/35 bg-accent/10'
+                    ? 'border-accent/[0.35] bg-accent/10'
                     : 'border-accent/10 bg-paper/[0.03] hover:border-accent/25')
                 }
               >
@@ -440,7 +440,7 @@ const Checkout = () => {
 
         <aside className="lg:sticky lg:top-8 lg:self-start">
           <div className="orume-panel rounded-3xl p-5 sm:p-6">
-            <p className="text-[0.58rem] font-bold uppercase tracking-[0.26em] text-accent/65">
+            <p className="text-[0.58rem] font-bold uppercase tracking-[0.26em] text-accent/[0.65]">
               Seu carrinho
             </p>
             <h2 className="mt-1 font-display text-2xl text-paper">
@@ -454,7 +454,7 @@ const Checkout = () => {
                 </p>
               ) : (
                 items.map((item) => (
-                  <div key={item.id} className="flex gap-3 border-b border-accent/8 pb-4 last:border-0">
+                  <div key={item.id} className="flex gap-3 border-b border-accent/[0.08] pb-4 last:border-0">
                     <img src={item.image} alt="" className="h-16 w-16 rounded-xl bg-ink object-cover" />
                     <div className="min-w-0 flex-1">
                       <p className="line-clamp-2 text-sm font-semibold text-paper/90">{item.name}</p>
