@@ -424,7 +424,7 @@ const Checkout = () => {
             <button
               type="submit"
               disabled={submitting || items.length === 0}
-              className="group relative w-full overflow-hidden rounded-full bg-gradient-to-r from-[#b77b2d] via-[#e3b65b] to-[#b6792b] px-6 py-4 text-sm font-bold text-black shadow-glow transition enabled:hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-40"
+              className="group relative w-full overflow-hidden rounded-full bg-accent px-6 py-4 text-sm font-bold text-black shadow-glow transition enabled:hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-40"
             >
               <span className="relative z-10">
                 {submitting
