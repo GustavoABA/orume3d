@@ -29,7 +29,7 @@ const ProductModal = ({ product, open, onClose, onCartOpen }: ProductModalProps)
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/82 backdrop-blur-sm"
+              className="fixed inset-0 bg-ink/86 backdrop-blur-sm"
             />
 
             <Dialog.Panel
@@ -41,7 +41,7 @@ const ProductModal = ({ product, open, onClose, onCartOpen }: ProductModalProps)
               className="orume-panel relative w-full max-w-4xl overflow-hidden rounded-[1.7rem]"
             >
               <div className="grid md:grid-cols-[1.08fr_.92fr]">
-                <div className="relative min-h-[330px] bg-black md:min-h-[540px]">
+                <div className="relative min-h-[330px] bg-ink md:min-h-[540px]">
                   <img
                     src={product.image}
                     alt={product.name}
@@ -49,7 +49,7 @@ const ProductModal = ({ product, open, onClose, onCartOpen }: ProductModalProps)
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-transparent to-black/20" />
                   <div className="absolute left-4 top-4 flex items-center gap-2">
-                    <span className="rounded-full border border-accent/25 bg-black/72 px-3 py-1 text-[0.62rem] font-bold uppercase tracking-[0.16em] text-accentLight backdrop-blur">
+                    <span className="rounded-full border border-accent/25 bg-ink/78 px-3 py-1 text-[0.62rem] font-bold uppercase tracking-[0.16em] text-accentLight backdrop-blur">
                       {categoryLabel(product.category)}
                     </span>
                     <WishlistButton productId={product.id} />
@@ -60,15 +60,15 @@ const ProductModal = ({ product, open, onClose, onCartOpen }: ProductModalProps)
                   <p className="text-[0.6rem] font-bold uppercase tracking-[0.3em] text-accent/70">
                     Orume seleciona
                   </p>
-                  <Dialog.Title className="mt-3 font-display text-3xl leading-tight text-white">
+                  <Dialog.Title className="mt-3 font-display text-3xl leading-tight text-paper">
                     {product.name}
                   </Dialog.Title>
-                  <Dialog.Description className="mt-3 text-sm leading-6 text-stone-400">
+                  <Dialog.Description className="mt-3 text-sm leading-6 text-paper/70">
                     {product.description}
                   </Dialog.Description>
 
                   <div className="mt-7 border-y border-accent/12 py-5">
-                    <span className="text-[0.6rem] font-bold uppercase tracking-[0.24em] text-stone-600">
+                    <span className="text-[0.6rem] font-bold uppercase tracking-[0.24em] text-muted/70">
                       Preço
                     </span>
                     <div className="mt-2 flex flex-wrap items-center gap-3">
@@ -89,7 +89,7 @@ const ProductModal = ({ product, open, onClose, onCartOpen }: ProductModalProps)
                     )}
                   </div>
 
-                  <div className="mt-5 space-y-2 text-xs leading-5 text-stone-500">
+                  <div className="mt-5 space-y-2 text-xs leading-5 text-muted">
                     <p>Disponibilidade, variações e prazo serão exibidos conforme cada item for cadastrado no catálogo Orume.</p>
                     <p>Itens sob demanda entram em produção após a confirmação do pedido.</p>
                   </div>
@@ -100,7 +100,7 @@ const ProductModal = ({ product, open, onClose, onCartOpen }: ProductModalProps)
                         href={product.shopeeUrl}
                         target="_blank"
                         rel="noreferrer"
-                        className="rounded-full border border-accent/25 bg-accent/10 px-6 py-3 text-center text-sm font-semibold text-accentLight transition hover:bg-accent hover:text-black"
+                        className="rounded-full border border-accent/25 bg-accent/10 px-6 py-3 text-center text-sm font-semibold text-accentLight transition hover:bg-accent hover:text-ink"
                       >
                         Comprar este item na Shopee
                       </a>
@@ -115,15 +115,15 @@ const ProductModal = ({ product, open, onClose, onCartOpen }: ProductModalProps)
                         onCartOpen?.();
                         onClose();
                       }}
-                      className="group relative flex-1 overflow-hidden rounded-full bg-accent px-6 py-3 text-sm font-bold text-black shadow-glow transition hover:brightness-110"
+                      className="group relative flex-1 overflow-hidden rounded-full bg-accent px-6 py-3 text-sm font-bold text-ink shadow-glow transition hover:brightness-110"
                     >
                       <span className="relative z-10">Adicionar ao carrinho</span>
-                      <span className="absolute inset-y-0 -left-1/2 w-1/3 skew-x-[-18deg] bg-white/30 blur-sm transition-all duration-700 group-hover:left-[120%]" />
+                      <span className="absolute inset-y-0 -left-1/2 w-1/3 skew-x-[-18deg] bg-paper/30 blur-sm transition-all duration-700 group-hover:left-[120%]" />
                     </motion.button>
                     <button
                       type="button"
                       onClick={onClose}
-                      className="rounded-full border border-accent/18 bg-white/[0.025] px-6 py-3 text-sm font-semibold text-stone-300 transition hover:border-accent/40 hover:text-accentLight"
+                      className="rounded-full border border-accent/18 bg-paper/[0.04] px-6 py-3 text-sm font-semibold text-paper/80 transition hover:border-accent/40 hover:text-accentLight"
                     >
                       Continuar vendo
                     </button>
@@ -135,7 +135,7 @@ const ProductModal = ({ product, open, onClose, onCartOpen }: ProductModalProps)
               <button
                 type="button"
                 onClick={onClose}
-                className="absolute right-4 top-4 rounded-full border border-accent/18 bg-black/70 p-2 text-stone-400 backdrop-blur transition hover:border-accent/45 hover:text-accentLight"
+                className="absolute right-4 top-4 rounded-full border border-accent/18 bg-ink/80 p-2 text-paper/70 backdrop-blur transition hover:border-accent/45 hover:text-accentLight"
               >
                 <span className="sr-only">Fechar</span>
                 <XMarkIcon className="h-5 w-5" aria-hidden="true" />
