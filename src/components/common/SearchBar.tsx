@@ -28,7 +28,7 @@ const SearchBarComponent = ({ value, onChange, className }: SearchBarProps) => {
   return (
     <label className={`group relative flex w-full items-center ${className ?? ''}`}>
       <span className="pointer-events-none absolute left-5 z-10 flex h-5 w-5 items-center justify-center">
-        <MagnifyingGlassIcon className="h-5 w-5 text-stone-600 transition group-focus-within:text-accentLight" />
+        <MagnifyingGlassIcon className="h-5 w-5 text-muted transition group-focus-within:text-accentLight" />
       </span>
       <input
         ref={inputRef}
@@ -36,9 +36,9 @@ const SearchBarComponent = ({ value, onChange, className }: SearchBarProps) => {
         value={value}
         onChange={(event) => onChange(event.target.value)}
         placeholder="Buscar no catálogo..."
-        className="w-full rounded-full border border-accent/12 bg-black/45 py-3.5 pl-14 pr-20 text-sm text-stone-100 shadow-[inset_0_1px_0_rgba(255,255,255,.025)] outline-none backdrop-blur transition placeholder:text-stone-700 focus:border-accent/35 focus:ring-2 focus:ring-accent/10"
+        className="w-full rounded-full border border-paper/10 bg-surface/85 py-3.5 pl-14 pr-20 text-sm text-paper shadow-[inset_0_1px_0_rgba(255,255,255,.025)] outline-none backdrop-blur transition placeholder:text-muted/50 focus:border-accent/35 focus:ring-2 focus:ring-accent/10"
       />
-      <span className="pointer-events-none absolute right-5 hidden text-[0.56rem] font-semibold uppercase tracking-[0.18em] text-stone-700 md:inline">
+      <span className="pointer-events-none absolute right-5 hidden text-[0.56rem] font-semibold uppercase tracking-[0.18em] text-muted/55 md:inline">
         Ctrl K
       </span>
     </label>
