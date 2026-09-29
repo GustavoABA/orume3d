@@ -25,7 +25,7 @@ const CartDrawer = ({ open, onClose }: { open: boolean; onClose: () => void }) =
             leaveFrom="opacity-100"
             leaveTo="opacity-0"
           >
-            <div className="fixed inset-0 bg-black/78 backdrop-blur-sm" />
+            <div className="fixed inset-0 bg-ink/82 backdrop-blur-sm" />
           </Transition.Child>
 
           <div className="fixed inset-0 overflow-hidden">
@@ -46,17 +46,17 @@ const CartDrawer = ({ open, onClose }: { open: boolean; onClose: () => void }) =
                         <p className="text-[0.58rem] font-bold uppercase tracking-[0.28em] text-accent/65">
                           Orume 3D
                         </p>
-                        <Dialog.Title className="mt-1 font-display text-2xl text-white">
+                        <Dialog.Title className="mt-1 font-display text-2xl text-paper">
                           Seu carrinho
                         </Dialog.Title>
-                        <p className="mt-1 text-xs text-stone-600">
+                        <p className="mt-1 text-xs text-muted/70">
                           {totalItems} {totalItems === 1 ? 'item' : 'itens'}
                         </p>
                       </div>
                       <button
                         type="button"
                         onClick={onClose}
-                        className="rounded-full border border-accent/15 bg-white/[0.025] p-2 text-stone-500 transition hover:border-accent/40 hover:text-accentLight"
+                        className="rounded-full border border-accent/15 bg-paper/[0.04] p-2 text-muted transition hover:border-accent/40 hover:text-accentLight"
                       >
                         <span className="sr-only">Fechar carrinho</span>
                         <XMarkIcon className="h-5 w-5" aria-hidden="true" />
@@ -65,15 +65,15 @@ const CartDrawer = ({ open, onClose }: { open: boolean; onClose: () => void }) =
 
                     <div className="flex-1 space-y-4 overflow-y-auto px-5 py-5">
                       {items.length === 0 ? (
-                        <div className="rounded-2xl border border-accent/10 bg-white/[0.02] p-6 text-center">
-                          <p className="font-display text-xl text-stone-300">Seu carrinho está vazio.</p>
-                          <p className="mt-2 text-sm text-stone-600">Explore o catálogo e adicione os itens que quiser.</p>
+                        <div className="rounded-2xl border border-accent/10 bg-paper/[0.03] p-6 text-center">
+                          <p className="font-display text-xl text-paper/80">Seu carrinho está vazio.</p>
+                          <p className="mt-2 text-sm text-muted/70">Explore o catálogo e adicione os itens que quiser.</p>
                         </div>
                       ) : (
                         items.map((item) => (
                           <div
                             key={item.id}
-                            className="flex gap-4 rounded-2xl border border-accent/10 bg-white/[0.022] p-3.5"
+                            className="flex gap-4 rounded-2xl border border-accent/10 bg-paper/[0.035] p-3.5"
                           >
                             <img
                               src={item.image}
@@ -84,13 +84,13 @@ const CartDrawer = ({ open, onClose }: { open: boolean; onClose: () => void }) =
                             <div className="min-w-0 flex-1">
                               <div className="flex items-start justify-between gap-3">
                                 <div className="min-w-0">
-                                  <h3 className="truncate text-sm font-semibold text-stone-100">{item.name}</h3>
+                                  <h3 className="truncate text-sm font-semibold text-paper">{item.name}</h3>
                                   <p className="mt-1 text-xs font-semibold text-accentLight">{formatBRL(item.price)}</p>
                                 </div>
                                 <button
                                   type="button"
                                   onClick={() => removeFromCart(item.id)}
-                                  className="rounded-full p-2 text-stone-600 transition hover:bg-white/[0.04] hover:text-red-300"
+                                  className="rounded-full p-2 text-muted/70 transition hover:bg-paper/[0.05] hover:text-red-300"
                                   aria-label={`Remover ${item.name}`}
                                 >
                                   <TrashIcon className="h-4 w-4" aria-hidden="true" />
@@ -98,7 +98,7 @@ const CartDrawer = ({ open, onClose }: { open: boolean; onClose: () => void }) =
                               </div>
 
                               <div className="mt-4 flex items-center justify-between gap-3">
-                                <div className="inline-flex items-center gap-2 rounded-full border border-accent/12 bg-black/35 px-2 py-1 text-stone-300">
+                                <div className="inline-flex items-center gap-2 rounded-full border border-accent/12 bg-surface/75 px-2 py-1 text-paper/80">
                                   <button
                                     type="button"
                                     className="rounded-full p-1 transition hover:text-accentLight"
@@ -116,7 +116,7 @@ const CartDrawer = ({ open, onClose }: { open: boolean; onClose: () => void }) =
                                       const parsed = Number.parseInt(event.target.value, 10);
                                       updateQuantity(item.id, Number.isNaN(parsed) ? 1 : parsed);
                                     }}
-                                    className="w-9 appearance-none bg-transparent text-center text-xs font-bold text-white outline-none"
+                                    className="w-9 appearance-none bg-transparent text-center text-xs font-bold text-paper outline-none"
                                     aria-label={`Quantidade de ${item.name}`}
                                   />
                                   <button
@@ -128,7 +128,7 @@ const CartDrawer = ({ open, onClose }: { open: boolean; onClose: () => void }) =
                                     <PlusIcon className="h-4 w-4" aria-hidden="true" />
                                   </button>
                                 </div>
-                                <span className="text-xs font-semibold text-stone-400">
+                                <span className="text-xs font-semibold text-paper/70">
                                   {formatBRL(item.price * item.quantity)}
                                 </span>
                               </div>
@@ -139,7 +139,7 @@ const CartDrawer = ({ open, onClose }: { open: boolean; onClose: () => void }) =
                     </div>
 
                     <div className="border-t border-accent/12 px-6 py-6">
-                      <div className="space-y-2 text-sm text-stone-500">
+                      <div className="space-y-2 text-sm text-muted">
                         <div className="flex items-center justify-between">
                           <span>Subtotal</span>
                           <span>{formatBRL(subtotal)}</span>
@@ -148,7 +148,7 @@ const CartDrawer = ({ open, onClose }: { open: boolean; onClose: () => void }) =
                           <span>Frete</span>
                           <span className="text-xs font-semibold text-amber-300">a confirmar</span>
                         </div>
-                        <div className="mt-3 flex items-center justify-between border-t border-accent/10 pt-3 text-base font-semibold text-white">
+                        <div className="mt-3 flex items-center justify-between border-t border-accent/10 pt-3 text-base font-semibold text-paper">
                           <span>Total dos itens</span>
                           <span className="orume-metal-text">{formatBRL(subtotal)}</span>
                         </div>
@@ -168,14 +168,14 @@ const CartDrawer = ({ open, onClose }: { open: boolean; onClose: () => void }) =
                           type="button"
                           disabled={items.length === 0}
                           onClick={goToCheckout}
-                          className="w-full rounded-full bg-accent px-6 py-3 text-sm font-bold text-black shadow-glow transition enabled:hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-35"
+                          className="w-full rounded-full bg-accent px-6 py-3 text-sm font-bold text-ink shadow-glow transition enabled:hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-35"
                         >
                           Finalizar pedido
                         </button>
                         <button
                           type="button"
                           onClick={onClose}
-                          className="rounded-full border border-accent/14 px-6 py-3 text-sm font-semibold text-stone-400 transition hover:border-accent/35 hover:text-accentLight"
+                          className="rounded-full border border-accent/14 px-6 py-3 text-sm font-semibold text-paper/70 transition hover:border-accent/35 hover:text-accentLight"
                         >
                           Continuar comprando
                         </button>
