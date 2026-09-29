@@ -168,7 +168,7 @@ const Home = ({ onCartOpen }: HomeProps) => {
                 href="https://wa.me/5519989342212?text=Ol%C3%A1%2C%20gostaria%20de%20fazer%20um%20projeto%20personalizado%20com%20a%20Orume%203D."
                 target="_blank"
                 rel="noreferrer"
-                className="orume-secondary bg-background/45 backdrop-blur"
+                className="orume-secondary bg-background/[0.45] backdrop-blur"
               >
                 Projeto personalizado
               </a>
@@ -205,7 +205,7 @@ const Home = ({ onCartOpen }: HomeProps) => {
         </div>
 
         <div className="hidden md:block">
-          <div className="sticky top-[72px] z-20 -mx-8 border-y border-paper/[0.06] bg-background/92 px-8 py-4 backdrop-blur-xl">
+          <div className="sticky top-[72px] z-20 -mx-8 border-y border-paper/[0.06] bg-background/[0.92] px-8 py-4 backdrop-blur-xl">
             <div className="mx-auto max-w-7xl">
               <div className="flex items-center gap-4">
                 <div className="min-w-0 flex-1">
