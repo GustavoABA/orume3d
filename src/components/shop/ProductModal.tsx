@@ -29,7 +29,7 @@ const ProductModal = ({ product, open, onClose, onCartOpen }: ProductModalProps)
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-ink/86 backdrop-blur-sm"
+              className="fixed inset-0 bg-ink/[0.86] backdrop-blur-sm"
             />
 
             <Dialog.Panel
@@ -49,7 +49,7 @@ const ProductModal = ({ product, open, onClose, onCartOpen }: ProductModalProps)
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-transparent to-black/20" />
                   <div className="absolute left-4 top-4 flex items-center gap-2">
-                    <span className="rounded-full border border-accent/25 bg-ink/78 px-3 py-1 text-[0.62rem] font-bold uppercase tracking-[0.16em] text-accentLight backdrop-blur">
+                    <span className="rounded-full border border-accent/25 bg-ink/[0.78] px-3 py-1 text-[0.62rem] font-bold uppercase tracking-[0.16em] text-accentLight backdrop-blur">
                       {categoryLabel(product.category)}
                     </span>
                     <WishlistButton productId={product.id} />
@@ -67,7 +67,7 @@ const ProductModal = ({ product, open, onClose, onCartOpen }: ProductModalProps)
                     {product.description}
                   </Dialog.Description>
 
-                  <div className="mt-7 border-y border-accent/12 py-5">
+                  <div className="mt-7 border-y border-accent/[0.12] py-5">
                     <span className="text-[0.6rem] font-bold uppercase tracking-[0.24em] text-muted/70">
                       Preço
                     </span>
@@ -123,7 +123,7 @@ const ProductModal = ({ product, open, onClose, onCartOpen }: ProductModalProps)
                     <button
                       type="button"
                       onClick={onClose}
-                      className="rounded-full border border-accent/18 bg-paper/[0.04] px-6 py-3 text-sm font-semibold text-paper/80 transition hover:border-accent/40 hover:text-accentLight"
+                      className="rounded-full border border-accent/[0.18] bg-paper/[0.04] px-6 py-3 text-sm font-semibold text-paper/80 transition hover:border-accent/40 hover:text-accentLight"
                     >
                       Continuar vendo
                     </button>
@@ -135,7 +135,7 @@ const ProductModal = ({ product, open, onClose, onCartOpen }: ProductModalProps)
               <button
                 type="button"
                 onClick={onClose}
-                className="absolute right-4 top-4 rounded-full border border-accent/18 bg-ink/80 p-2 text-paper/70 backdrop-blur transition hover:border-accent/45 hover:text-accentLight"
+                className="absolute right-4 top-4 rounded-full border border-accent/[0.18] bg-ink/80 p-2 text-paper/70 backdrop-blur transition hover:border-accent/[0.45] hover:text-accentLight"
               >
                 <span className="sr-only">Fechar</span>
                 <XMarkIcon className="h-5 w-5" aria-hidden="true" />
