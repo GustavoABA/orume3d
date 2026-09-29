@@ -40,7 +40,7 @@ const Wishlist = ({ onCartOpen }: WishlistProps) => {
         <p className="mt-3 max-w-xl text-sm leading-6 text-muted">
           Salve produtos para comparar ou voltar depois. Os favoritos ficam neste navegador.
         </p>
-        <span className="mt-4 block text-[0.62rem] font-semibold uppercase tracking-[0.22em] text-muted/55">
+        <span className="mt-4 block text-[0.62rem] font-semibold uppercase tracking-[0.22em] text-muted/[0.55]">
           {savedProducts.length} {savedProducts.length === 1 ? 'item salvo' : 'itens salvos'}
         </span>
       </motion.section>
