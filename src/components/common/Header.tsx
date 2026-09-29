@@ -87,7 +87,7 @@ const Header = ({ onCartToggle, onQuoteOpen, onNavigate, activePage }: HeaderPro
             type="button"
             whileTap={{ scale: 0.97 }}
             onClick={onQuoteOpen}
-            className="hidden rounded-full border border-gold/35 bg-gold/[0.06] px-4 py-2.5 text-[0.68rem] font-bold uppercase tracking-[0.12em] text-gold transition hover:border-gold/60 hover:bg-gold/10 sm:inline-flex"
+            className="hidden rounded-full border border-accent/35 bg-accent/[0.06] px-4 py-2.5 text-[0.68rem] font-bold uppercase tracking-[0.12em] text-accentLight transition hover:border-accent/65 hover:bg-accent/10 sm:inline-flex"
           >
             Orçamento
           </motion.button>
@@ -132,7 +132,7 @@ const Header = ({ onCartToggle, onQuoteOpen, onNavigate, activePage }: HeaderPro
         <button
           type="button"
           onClick={onQuoteOpen}
-          className="py-2.5 text-[0.62rem] font-bold uppercase tracking-[0.14em] text-gold"
+          className="py-2.5 text-[0.62rem] font-bold uppercase tracking-[0.14em] text-accent"
         >
           Orçamento
         </button>
