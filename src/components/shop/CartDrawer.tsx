@@ -39,7 +39,7 @@ const CartDrawer = ({ open, onClose }: { open: boolean; onClose: () => void }) =
                 leaveFrom="translate-x-0"
                 leaveTo="translate-x-full"
               >
-                <Dialog.Panel className="pointer-events-auto w-screen max-w-md border-l border-accent/14 bg-[#090806]/98 shadow-2xl shadow-black/70 backdrop-blur-xl">
+                <Dialog.Panel className="pointer-events-auto w-screen max-w-md border-l border-accent/14 bg-surface/98 shadow-2xl shadow-black/70 backdrop-blur-xl">
                   <div className="flex h-full flex-col">
                     <div className="flex items-center justify-between border-b border-accent/12 px-6 py-5">
                       <div>
@@ -168,7 +168,7 @@ const CartDrawer = ({ open, onClose }: { open: boolean; onClose: () => void }) =
                           type="button"
                           disabled={items.length === 0}
                           onClick={goToCheckout}
-                          className="w-full rounded-full bg-gradient-to-r from-[#b77b2d] via-[#e3b65b] to-[#b6792b] px-6 py-3 text-sm font-bold text-black shadow-glow transition enabled:hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-35"
+                          className="w-full rounded-full bg-accent px-6 py-3 text-sm font-bold text-black shadow-glow transition enabled:hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-35"
                         >
                           Finalizar pedido
                         </button>
