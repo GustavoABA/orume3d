@@ -38,7 +38,7 @@ const WishlistButton = ({ productId, size = 'md' }: WishlistButtonProps) => {
         aria-hidden="true"
         animate={{
           scale: active ? [1, 1.22, 1.03] : 1,
-          color: active ? '#f4d58a' : '#78716c',
+          color: active ? '#72F2A8' : '#78716c',
         }}
         transition={{ duration: 0.35 }}
       />
