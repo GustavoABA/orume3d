@@ -28,28 +28,28 @@ const ProductCardComponent = ({ product, onView }: ProductCardProps) => {
   return (
     <motion.article
       layout
-      whileHover={{ y: -7 }}
+      whileHover={{ y: -4 }}
       transition={{ type: 'spring', stiffness: 260, damping: 24 }}
       onClick={() => onView(product)}
-      className="orume-panel group flex cursor-pointer flex-col overflow-hidden rounded-[1.4rem] p-3.5 transition-colors duration-300 hover:border-accent/38"
+      className="orume-panel orume-panel-interactive group flex cursor-pointer flex-col overflow-hidden rounded-[1.35rem] p-3"
     >
-      <div className="relative overflow-hidden rounded-[1.05rem] bg-black">
+      <div className="relative aspect-[4/3] overflow-hidden rounded-[1rem] bg-surface2">
         <img
           src={product.image}
           alt={product.name}
           loading="lazy"
-          className="h-60 w-full object-cover opacity-90 transition duration-700 group-hover:scale-[1.045] group-hover:opacity-100"
+          className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.035]"
         />
-        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/10" />
-        <div className="pointer-events-none absolute inset-0 opacity-0 ring-1 ring-inset ring-accent/30 transition duration-500 group-hover:opacity-100" />
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent" />
 
-        <div className="absolute inset-x-0 top-0 flex items-start justify-between p-3.5">
-          <span className="rounded-full border border-accent/20 bg-black/72 px-3 py-1 text-[0.6rem] font-bold uppercase tracking-[0.17em] text-accentLight/90 backdrop-blur">
+        <div className="absolute inset-x-0 top-0 flex items-start justify-between gap-2 p-3">
+          <span className="rounded-full border border-paper/10 bg-background/80 px-3 py-1 text-[0.58rem] font-black uppercase tracking-[0.14em] text-paper/80 backdrop-blur">
             {categoryLabel(product.category)}
           </span>
+
           <div className="flex items-center gap-2">
             {product.discount && (
-              <span className="rounded-full border border-accent/25 bg-[#3a260f]/90 px-2.5 py-1 text-[0.6rem] font-bold tracking-wide text-accentLight">
+              <span className="rounded-full bg-gold px-2.5 py-1 text-[0.58rem] font-black text-ink">
                 -{product.discount}%
               </span>
             )}
@@ -58,19 +58,17 @@ const ProductCardComponent = ({ product, onView }: ProductCardProps) => {
         </div>
       </div>
 
-      <div className="flex flex-1 flex-col px-2 pb-2 pt-5">
-        <div className="space-y-2">
-          <h3 className="font-display text-xl font-medium text-stone-100 transition group-hover:text-accentLight">
-            {product.name}
-          </h3>
-          <p className="line-clamp-2 text-sm leading-5 text-stone-500">{product.description}</p>
-        </div>
+      <div className="flex flex-1 flex-col px-2 pb-2 pt-4">
+        <h3 className="text-lg font-black leading-tight tracking-[-0.02em] text-paper transition group-hover:text-accentLight">
+          {product.name}
+        </h3>
+        <p className="mt-2 line-clamp-2 text-sm leading-5 text-muted">{product.description}</p>
 
-        <div className="mt-6 flex items-end justify-between gap-4">
+        <div className="mt-5 flex items-end justify-between gap-4">
           <div>
-            <span className="orume-metal-text text-xl font-bold">{formatBRL(product.price)}</span>
+            <span className="text-xl font-black text-paper">{formatBRL(product.price)}</span>
             {product.rating && (
-              <div className="mt-1.5 flex items-center gap-1 text-[0.68rem] font-semibold text-accent/75">
+              <div className="mt-1.5 flex items-center gap-1 text-[0.68rem] font-semibold text-gold">
                 <StarIcon className="h-3.5 w-3.5" aria-hidden="true" />
                 <span>{product.rating.toFixed(1)} / 5</span>
               </div>
@@ -81,7 +79,7 @@ const ProductCardComponent = ({ product, onView }: ProductCardProps) => {
             type="button"
             whileTap={{ scale: 0.96 }}
             onClick={handleAddToCart}
-            className="rounded-full border border-accent/28 bg-accent/10 px-4 py-2.5 text-[0.66rem] font-bold uppercase tracking-[0.12em] text-accentLight transition hover:border-accent/55 hover:bg-accent hover:text-black"
+            className="rounded-full bg-accent px-4 py-2.5 text-[0.64rem] font-black uppercase tracking-[0.1em] text-ink transition hover:brightness-110"
           >
             Adicionar
           </motion.button>
