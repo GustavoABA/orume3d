@@ -30,7 +30,7 @@ const Checkout = () => {
   );
 
   const fieldClass =
-    'mt-2 w-full rounded-2xl border border-accent/12 bg-black/45 px-4 py-3 text-sm text-stone-100 outline-none transition placeholder:text-stone-700 focus:border-accent/40 focus:ring-2 focus:ring-accent/10';
+    'mt-2 w-full rounded-2xl border border-accent/12 bg-surface/85 px-4 py-3 text-sm text-paper outline-none transition placeholder:text-muted/55 focus:border-accent/40 focus:ring-2 focus:ring-accent/10';
 
   const makeCheckoutId = () =>
     'CHK-' +
@@ -201,7 +201,7 @@ const Checkout = () => {
 
   if (successId) {
     return (
-      <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-background px-5 py-12 text-stone-100">
+      <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-background px-5 py-12 text-paper">
         <div className="orume-grid pointer-events-none absolute inset-0 opacity-60" />
         <motion.div
           initial={{ opacity: 0, y: 18, scale: 0.98 }}
@@ -212,8 +212,8 @@ const Checkout = () => {
           <p className="mt-5 text-[0.6rem] font-bold uppercase tracking-[0.28em] text-accent/70">
             Atendimento mínimo
           </p>
-          <h1 className="mt-2 font-display text-3xl text-white">Pedido registrado.</h1>
-          <p className="mt-4 text-sm leading-6 text-stone-500">
+          <h1 className="mt-2 font-display text-3xl text-paper">Pedido registrado.</h1>
+          <p className="mt-4 text-sm leading-6 text-muted">
             Seu código é <strong className="text-accentLight">{successId}</strong>. A Orume recebeu os
             dados do carrinho e o atendimento seguirá por e-mail, somente com as informações
             necessárias para frete, PIX, produção e entrega.
@@ -230,11 +230,11 @@ const Checkout = () => {
   }
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-background text-stone-100">
+    <div className="relative min-h-screen overflow-hidden bg-background text-paper">
       <div className="orume-grid pointer-events-none fixed inset-0 opacity-55" />
 
       {pendingWhatsAppUrl && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/72 px-5 backdrop-blur-xl">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-ink/78 px-5 backdrop-blur-xl">
           <motion.div
             initial={{ opacity: 0, y: 18, scale: 0.96 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -248,7 +248,7 @@ const Checkout = () => {
               Atenção antes de continuar
             </p>
 
-            <h2 className="mt-2 font-display text-3xl text-white">
+            <h2 className="mt-2 font-display text-3xl text-paper">
               O frete ainda não está incluído.
             </h2>
 
@@ -275,7 +275,7 @@ const Checkout = () => {
               />
             </div>
 
-            <p className="mt-5 text-xs leading-5 text-stone-500">
+            <p className="mt-5 text-xs leading-5 text-muted">
               Seu pedido já foi registrado. A próxima tela abrirá uma mensagem pronta com os itens,
               quantidades, valores e links das imagens dos produtos.
             </p>
@@ -283,11 +283,11 @@ const Checkout = () => {
         </div>
       )}
 
-      <header className="relative z-10 border-b border-accent/10 bg-black/70 backdrop-blur-xl">
+      <header className="relative z-10 border-b border-accent/10 bg-ink/80 backdrop-blur-xl">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-4 sm:px-8">
           <a
             href="/orume3d/"
-            className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.15em] text-stone-500 hover:text-accentLight"
+            className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.15em] text-muted hover:text-accentLight"
           >
             <ArrowLeftIcon className="h-4 w-4" />
             Voltar à loja
@@ -301,23 +301,23 @@ const Checkout = () => {
           <p className="text-[0.6rem] font-bold uppercase tracking-[0.3em] text-accent/70">
             Finalizar pedido
           </p>
-          <h1 className="mt-2 font-display text-4xl text-white sm:text-5xl">
+          <h1 className="mt-2 font-display text-4xl text-paper sm:text-5xl">
             Só precisamos do <span className="orume-metal-text">essencial.</span>
           </h1>
-          <p className="mt-4 max-w-2xl text-sm leading-6 text-stone-500">
+          <p className="mt-4 max-w-2xl text-sm leading-6 text-muted">
             O pagamento não acontece no site. A Orume confirma o frete e envia o PIX manualmente
             depois que receber o pedido.
           </p>
 
           <form onSubmit={handleSubmit} className="mt-9 space-y-7">
             <div className="orume-panel rounded-3xl p-5 sm:p-7">
-              <h2 className="font-display text-xl text-white">Seus dados</h2>
+              <h2 className="font-display text-xl text-paper">Seus dados</h2>
               <div className="mt-5 grid gap-4 sm:grid-cols-2">
-                <label className="text-xs font-semibold text-stone-400">
+                <label className="text-xs font-semibold text-paper/70">
                   Nome *
                   <input className={fieldClass} name="name" required autoComplete="name" />
                 </label>
-                <label className="text-xs font-semibold text-stone-400">
+                <label className="text-xs font-semibold text-paper/70">
                   WhatsApp *
                   <input
                     className={fieldClass}
@@ -328,7 +328,7 @@ const Checkout = () => {
                     placeholder="DDD + número"
                   />
                 </label>
-                <label className="text-xs font-semibold text-stone-400 sm:col-span-2">
+                <label className="text-xs font-semibold text-paper/70 sm:col-span-2">
                   E-mail {cleanService ? '*' : '(opcional)'}
                   <input
                     className={fieldClass}
@@ -343,9 +343,9 @@ const Checkout = () => {
             </div>
 
             <div className="orume-panel rounded-3xl p-5 sm:p-7">
-              <h2 className="font-display text-xl text-white">Entrega</h2>
+              <h2 className="font-display text-xl text-paper">Entrega</h2>
               <div className="mt-5 grid gap-4 sm:grid-cols-2">
-                <label className="text-xs font-semibold text-stone-400">
+                <label className="text-xs font-semibold text-paper/70">
                   CEP *
                   <input
                     className={fieldClass}
@@ -357,11 +357,11 @@ const Checkout = () => {
                     placeholder="00000-000"
                   />
                 </label>
-                <label className="text-xs font-semibold text-stone-400">
+                <label className="text-xs font-semibold text-paper/70">
                   Cidade / UF *
                   <input className={fieldClass} name="city" required placeholder="Ex.: Leme/SP" />
                 </label>
-                <label className="text-xs font-semibold text-stone-400 sm:col-span-2">
+                <label className="text-xs font-semibold text-paper/70 sm:col-span-2">
                   Forma de entrega
                   <select className={fieldClass} name="delivery" defaultValue="A combinar">
                     <option>A combinar</option>
@@ -374,7 +374,7 @@ const Checkout = () => {
                 </label>
               </div>
 
-              <label className="mt-4 block text-xs font-semibold text-stone-400">
+              <label className="mt-4 block text-xs font-semibold text-paper/70">
                 Observações
                 <textarea
                   className={fieldClass + ' min-h-24 resize-y'}
@@ -392,22 +392,22 @@ const Checkout = () => {
                   'flex w-full items-start gap-4 rounded-2xl border p-4 text-left transition ' +
                   (cleanService
                     ? 'border-accent/35 bg-accent/10'
-                    : 'border-accent/10 bg-white/[0.018] hover:border-accent/25')
+                    : 'border-accent/10 bg-paper/[0.03] hover:border-accent/25')
                 }
               >
                 <span
                   className={
                     'mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded border ' +
-                    (cleanService ? 'border-accent bg-accent text-black' : 'border-stone-700')
+                    (cleanService ? 'border-accent bg-accent text-ink' : 'border-paper/20')
                   }
                 >
                   {cleanService ? '✓' : ''}
                 </span>
                 <span>
-                  <strong className="block text-sm text-stone-200">
+                  <strong className="block text-sm text-paper/90">
                     Atendimento com o mínimo de interação
                   </strong>
-                  <small className="mt-1 block text-xs leading-5 text-stone-600">
+                  <small className="mt-1 block text-xs leading-5 text-muted/70">
                     Não abre WhatsApp. O pedido é enviado para a Orume e o retorno acontece por
                     e-mail, somente com o necessário para frete, PIX, produção e entrega.
                   </small>
@@ -424,7 +424,7 @@ const Checkout = () => {
             <button
               type="submit"
               disabled={submitting || items.length === 0}
-              className="group relative w-full overflow-hidden rounded-full bg-accent px-6 py-4 text-sm font-bold text-black shadow-glow transition enabled:hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-40"
+              className="group relative w-full overflow-hidden rounded-full bg-accent px-6 py-4 text-sm font-bold text-ink shadow-glow transition enabled:hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-40"
             >
               <span className="relative z-10">
                 {submitting
@@ -433,7 +433,7 @@ const Checkout = () => {
                     ? 'Enviar pedido'
                     : 'Finalizar pelo WhatsApp'}
               </span>
-              <span className="absolute inset-y-0 -left-1/2 w-1/3 skew-x-[-18deg] bg-white/30 blur-sm transition-all duration-700 group-hover:left-[120%]" />
+              <span className="absolute inset-y-0 -left-1/2 w-1/3 skew-x-[-18deg] bg-paper/30 blur-sm transition-all duration-700 group-hover:left-[120%]" />
             </button>
           </form>
         </section>
@@ -443,22 +443,22 @@ const Checkout = () => {
             <p className="text-[0.58rem] font-bold uppercase tracking-[0.26em] text-accent/65">
               Seu carrinho
             </p>
-            <h2 className="mt-1 font-display text-2xl text-white">
+            <h2 className="mt-1 font-display text-2xl text-paper">
               {totalItems} {totalItems === 1 ? 'item' : 'itens'}
             </h2>
 
             <div className="mt-6 space-y-4">
               {items.length === 0 ? (
-                <p className="rounded-2xl border border-accent/10 p-5 text-sm text-stone-600">
+                <p className="rounded-2xl border border-accent/10 p-5 text-sm text-muted/70">
                   Seu carrinho está vazio.
                 </p>
               ) : (
                 items.map((item) => (
                   <div key={item.id} className="flex gap-3 border-b border-accent/8 pb-4 last:border-0">
-                    <img src={item.image} alt="" className="h-16 w-16 rounded-xl bg-black object-cover" />
+                    <img src={item.image} alt="" className="h-16 w-16 rounded-xl bg-ink object-cover" />
                     <div className="min-w-0 flex-1">
-                      <p className="line-clamp-2 text-sm font-semibold text-stone-200">{item.name}</p>
-                      <p className="mt-1 text-xs text-stone-600">
+                      <p className="line-clamp-2 text-sm font-semibold text-paper/90">{item.name}</p>
+                      <p className="mt-1 text-xs text-muted/70">
                         {item.quantity} × {formatBRL(item.price)}
                       </p>
                     </div>
@@ -471,15 +471,15 @@ const Checkout = () => {
             </div>
 
             <div className="mt-6 space-y-3 border-t border-accent/10 pt-5 text-sm">
-              <div className="flex justify-between text-stone-500">
+              <div className="flex justify-between text-muted">
                 <span>Subtotal</span>
                 <span>{formatBRL(subtotal)}</span>
               </div>
-              <div className="flex justify-between text-stone-500">
+              <div className="flex justify-between text-muted">
                 <span>Frete</span>
                 <span className="font-semibold text-amber-300">não incluído</span>
               </div>
-              <div className="flex justify-between border-t border-accent/10 pt-4 text-base font-semibold text-white">
+              <div className="flex justify-between border-t border-accent/10 pt-4 text-base font-semibold text-paper">
                 <span>Total dos itens</span>
                 <span className="orume-metal-text">{formatBRL(subtotal)}</span>
               </div>
