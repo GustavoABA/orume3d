@@ -13,7 +13,7 @@
  *  - run every minute through an installable time trigger.
  */
 
-const ORUS_SPREADSHEET_ID = '1IGZ0KY2J5E87qdl4Gza3w0v_Tz_vsESCH9EHMGZtPoI';
+const ORUS_SPREADSHEET_ID = '1794QUx2drPZuuyUpuB8fBowGiUzJ-3L34qa_NwLPp1M';
 const ORUS_TRIGGER_HANDLER = 'orusSyncTick_';
 
 const ORUS_SHEETS = Object.freeze({
