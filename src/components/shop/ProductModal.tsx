@@ -7,6 +7,7 @@ import { useCart } from '../../context/CartContext';
 import WishlistButton from './WishlistButton';
 import { useToast } from '../../context/ToastContext';
 import { categoryLabel, formatBRL } from '../../lib/format';
+import { buildDirectProductWhatsAppUrl, isMadeToOrder, productAvailabilityLabel } from '../../lib/productWhatsApp';
 
 type ProductModalProps = {
   product: Product | null;
@@ -18,6 +19,7 @@ type ProductModalProps = {
 const ProductModal = ({ product, open, onClose, onCartOpen }: ProductModalProps) => {
   const { addToCart } = useCart();
   const { showToast } = useToast();
+  const madeToOrder = product ? isMadeToOrder(product) : false;
 
   return (
     <AnimatePresence>
@@ -90,8 +92,16 @@ const ProductModal = ({ product, open, onClose, onCartOpen }: ProductModalProps)
                   </div>
 
                   <div className="mt-5 space-y-2 text-xs leading-5 text-muted">
-                    <p>Disponibilidade, variações e prazo serão exibidos conforme cada item for cadastrado no catálogo Orume.</p>
-                    <p>Itens sob demanda entram em produção após a confirmação do pedido.</p>
+                    <p>
+                      Disponibilidade: <strong className={madeToOrder ? 'text-amber-200' : 'text-emerald-200'}>
+                        {productAvailabilityLabel(product)}
+                      </strong>
+                    </p>
+                    {madeToOrder && (
+                      <p>
+                        Este item é produzido após o contato. {product.productionDays ? `Prazo estimado de produção: ${product.productionDays} dias.` : 'O prazo será confirmado pela Orume.'}
+                      </p>
+                    )}
                   </div>
 
                   <div className="mt-auto flex flex-col gap-3 pt-8">
@@ -110,6 +120,11 @@ const ProductModal = ({ product, open, onClose, onCartOpen }: ProductModalProps)
                       type="button"
                       whileTap={{ scale: 0.97 }}
                       onClick={() => {
+                        if (madeToOrder) {
+                          window.location.href = buildDirectProductWhatsAppUrl(product);
+                          return;
+                        }
+
                         addToCart(product);
                         showToast(`"${product.name}" adicionado ao carrinho`);
                         onCartOpen?.();
@@ -117,7 +132,9 @@ const ProductModal = ({ product, open, onClose, onCartOpen }: ProductModalProps)
                       }}
                       className="group relative flex-1 overflow-hidden rounded-full bg-accent px-6 py-3 text-sm font-bold text-ink shadow-glow transition hover:brightness-110"
                     >
-                      <span className="relative z-10">Adicionar ao carrinho</span>
+                      <span className="relative z-10">
+                        {madeToOrder ? 'Comprar sob demanda' : 'Adicionar ao carrinho'}
+                      </span>
                       <span className="absolute inset-y-0 -left-1/2 w-1/3 skew-x-[-18deg] bg-paper/30 blur-sm transition-all duration-700 group-hover:left-[120%]" />
                     </motion.button>
                     <button
