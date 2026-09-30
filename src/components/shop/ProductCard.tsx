@@ -6,6 +6,7 @@ import { useCart } from '../../context/CartContext';
 import WishlistButton from './WishlistButton';
 import { useToast } from '../../context/ToastContext';
 import { categoryLabel, formatBRL } from '../../lib/format';
+import { buildDirectProductWhatsAppUrl, isMadeToOrder, productAvailabilityLabel } from '../../lib/productWhatsApp';
 
 type ProductCardProps = {
   product: Product;
@@ -15,14 +16,20 @@ type ProductCardProps = {
 const ProductCardComponent = ({ product, onView }: ProductCardProps) => {
   const { addToCart } = useCart();
   const { showToast } = useToast();
+  const madeToOrder = isMadeToOrder(product);
 
   const handleAddToCart = useCallback(
     (event: MouseEvent<HTMLButtonElement>) => {
       event.stopPropagation();
+      if (madeToOrder) {
+        window.location.href = buildDirectProductWhatsAppUrl(product);
+        return;
+      }
+
       addToCart(product);
       showToast(`"${product.name}" adicionado ao carrinho`);
     },
-    [addToCart, product, showToast]
+    [addToCart, madeToOrder, product, showToast]
   );
 
   return (
@@ -63,6 +70,13 @@ const ProductCardComponent = ({ product, onView }: ProductCardProps) => {
           {product.name}
         </h3>
         <p className="mt-2 line-clamp-2 text-sm leading-5 text-muted">{product.description}</p>
+        <span className={`mt-3 inline-flex w-fit rounded-full border px-3 py-1 text-[0.58rem] font-bold uppercase tracking-[0.12em] ${
+          madeToOrder
+            ? 'border-amber-500/25 bg-amber-500/[0.07] text-amber-200'
+            : 'border-emerald-500/20 bg-emerald-500/[0.06] text-emerald-200'
+        }`}>
+          {productAvailabilityLabel(product)}
+        </span>
 
         <div className="mt-5 flex items-end justify-between gap-4">
           <div>
@@ -81,7 +95,7 @@ const ProductCardComponent = ({ product, onView }: ProductCardProps) => {
             onClick={handleAddToCart}
             className="rounded-full bg-accent px-4 py-2.5 text-[0.64rem] font-black uppercase tracking-[0.1em] text-ink transition hover:brightness-110"
           >
-            Adicionar
+            {madeToOrder ? 'Comprar' : 'Adicionar'}
           </motion.button>
         </div>
       </div>
