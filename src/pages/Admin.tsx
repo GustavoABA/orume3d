@@ -355,7 +355,7 @@ const Admin = () => {
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <a
-              href="https://docs.google.com/spreadsheets/d/1IGZ0KY2J5E87qdl4Gza3w0v_Tz_vsESCH9EHMGZtPoI/edit"
+              href="https://docs.google.com/spreadsheets/d/1794QUx2drPZuuyUpuB8fBowGiUzJ-3L34qa_NwLPp1M/edit"
               target="_blank"
               rel="noreferrer"
               className="inline-flex items-center gap-2 rounded-full border border-accent/[0.15] px-4 py-2 text-xs text-paper/70 hover:border-accent/40 hover:text-accentLight"
