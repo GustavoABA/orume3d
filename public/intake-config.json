@@ -1,7 +1,7 @@
 {
   "endpoint": "https://script.google.com/macros/s/AKfycbwer65NzcBh4-NEQP7vMD0H22jRIR-mL1_LXQ0ZcAPbfQoAuA4dajh9xpQS88FAUJTNgQ/exec",
-  "sheet": "Orume_Controle_Operacional",
-  "spreadsheetId": "1IGZ0KY2J5E87qdl4Gza3w0v_Tz_vsESCH9EHMGZtPoI",
+  "sheet": "Orume",
+  "spreadsheetId": "1794QUx2drPZuuyUpuB8fBowGiUzJ-3L34qa_NwLPp1M",
   "backendVersion": 2,
   "operationalSyncVersion": 3,
   "mode": "google-apps-script"
