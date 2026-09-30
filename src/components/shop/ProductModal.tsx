@@ -112,7 +112,7 @@ const ProductModal = ({ product, open, onClose, onCartOpen }: ProductModalProps)
                         rel="noreferrer"
                         className="rounded-full border border-accent/25 bg-accent/10 px-6 py-3 text-center text-sm font-semibold text-accentLight transition hover:bg-accent hover:text-ink"
                       >
-                        Comprar este item na Shopee
+                        Ver este item na Shopee
                       </a>
                     )}
                     <div className="flex flex-col gap-3 sm:flex-row">
