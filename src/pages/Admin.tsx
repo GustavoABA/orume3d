@@ -106,7 +106,7 @@ const Admin = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [selectedProduct, setSelectedProduct] = useState<Product>(emptyProduct());
-  const [tab, setTab] = useState<'orders' | 'products'>('orders');
+  const [tab, setTab] = useState<'orders' | 'products'>('products');
   const [status, setStatus] = useState('');
   const [busy, setBusy] = useState(false);
 
@@ -292,6 +292,18 @@ const Admin = () => {
   };
 
   const visibleOrders = useMemo(() => orders.slice(0, 250), [orders]);
+  const activeProducts = useMemo(
+    () => products.filter((product) => product.active === 'Sim'),
+    [products]
+  );
+  const readyProducts = useMemo(
+    () => activeProducts.filter((product) => Number(product.stock || 0) > 0),
+    [activeProducts]
+  );
+  const madeToOrderProducts = useMemo(
+    () => activeProducts.filter((product) => Number(product.stock || 0) <= 0),
+    [activeProducts]
+  );
 
   if (!adminKey) {
     return (
@@ -373,19 +385,38 @@ const Admin = () => {
       </header>
 
       <div className="mx-auto max-w-[1500px] px-5 py-8 sm:px-8">
-        <div className="mb-6 flex gap-2">
-          <button
-            onClick={() => setTab('orders')}
-            className={'inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-xs font-bold uppercase tracking-[0.12em] ' + (tab === 'orders' ? 'bg-accent text-ink' : 'border border-accent/[0.15] text-paper/70')}
-          >
-            <ShoppingBagIcon className="h-4 w-4" /> Pedidos
-          </button>
-          <button
-            onClick={() => setTab('products')}
-            className={'inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-xs font-bold uppercase tracking-[0.12em] ' + (tab === 'products' ? 'bg-accent text-ink' : 'border border-accent/[0.15] text-paper/70')}
-          >
-            <CubeIcon className="h-4 w-4" /> Produtos
-          </button>
+        <div className="mb-6 flex flex-col gap-4">
+          <div className="flex flex-wrap gap-2">
+            <button
+              onClick={() => setTab('products')}
+              className={'inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-xs font-bold uppercase tracking-[0.12em] ' + (tab === 'products' ? 'bg-accent text-ink' : 'border border-accent/[0.15] text-paper/70')}
+            >
+              <CubeIcon className="h-4 w-4" /> Produtos
+            </button>
+            <button
+              onClick={() => setTab('orders')}
+              className={'inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-xs font-bold uppercase tracking-[0.12em] ' + (tab === 'orders' ? 'bg-accent text-ink' : 'border border-accent/[0.15] text-paper/70')}
+            >
+              <ShoppingBagIcon className="h-4 w-4" /> Pedidos
+            </button>
+          </div>
+
+          {tab === 'products' && (
+            <div className="grid gap-3 sm:grid-cols-3">
+              <div className="rounded-2xl border border-accent/10 bg-paper/[0.025] p-4">
+                <p className="text-[0.58rem] font-bold uppercase tracking-[0.18em] text-muted/60">Produtos ativos</p>
+                <strong className="mt-1 block text-2xl text-paper">{activeProducts.length}</strong>
+              </div>
+              <div className="rounded-2xl border border-emerald-500/15 bg-emerald-500/[0.045] p-4">
+                <p className="text-[0.58rem] font-bold uppercase tracking-[0.18em] text-emerald-300/70">Pronta entrega</p>
+                <strong className="mt-1 block text-2xl text-emerald-200">{readyProducts.length}</strong>
+              </div>
+              <div className="rounded-2xl border border-amber-500/15 bg-amber-500/[0.045] p-4">
+                <p className="text-[0.58rem] font-bold uppercase tracking-[0.18em] text-amber-300/70">Sob demanda</p>
+                <strong className="mt-1 block text-2xl text-amber-200">{madeToOrderProducts.length}</strong>
+              </div>
+            </div>
+          )}
         </div>
 
         {status && (
@@ -512,6 +543,15 @@ const Admin = () => {
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-sm font-semibold text-paper/90">{product.name || 'Produto sem nome'}</p>
                       <p className="mt-1 text-xs text-muted/70">{product.price ? formatBRL(product.price) : 'Sem preço'} • {product.active}</p>
+                      <span className={`mt-2 inline-flex rounded-full border px-2.5 py-1 text-[0.56rem] font-bold uppercase tracking-[0.1em] ${
+                        Number(product.stock || 0) <= 0
+                          ? 'border-amber-500/20 bg-amber-500/[0.06] text-amber-200'
+                          : 'border-emerald-500/20 bg-emerald-500/[0.06] text-emerald-200'
+                      }`}>
+                        {Number(product.stock || 0) <= 0
+                          ? 'Sob demanda'
+                          : `${product.stock} pronta${Number(product.stock) === 1 ? '' : 's'}`}
+                      </span>
                     </div>
                   </button>
                 ))}
@@ -523,6 +563,13 @@ const Admin = () => {
                 <div>
                   <p className="text-[0.6rem] font-bold uppercase tracking-[0.22em] text-accent/[0.65]">Produto</p>
                   <h2 className="mt-1 font-display text-3xl">{selectedProduct.id ? selectedProduct.name || 'Editar produto' : 'Novo produto'}</h2>
+                  <p className={`mt-2 text-xs font-semibold ${
+                    Number(selectedProduct.stock || 0) <= 0 ? 'text-amber-300' : 'text-emerald-300'
+                  }`}>
+                    {Number(selectedProduct.stock || 0) <= 0
+                      ? 'Produzido sob demanda • compra direta pelo WhatsApp'
+                      : `Pronta entrega • ${selectedProduct.stock} em estoque`}
+                  </p>
                 </div>
                 <button onClick={saveProduct} disabled={busy} className="rounded-full bg-accent px-5 py-2.5 text-xs font-bold text-ink disabled:opacity-40">
                   Salvar produto
@@ -574,8 +621,30 @@ const Admin = () => {
                 </label>
                 <label className="text-xs font-semibold text-muted">Preço<input type="number" step="0.01" className={inputClass} value={selectedProduct.price} onChange={(e) => setSelectedProduct((p) => ({ ...p, price: Number(e.target.value) }))} /></label>
                 <label className="text-xs font-semibold text-muted">Preço promocional<input type="number" step="0.01" className={inputClass} value={selectedProduct.salePrice} onChange={(e) => setSelectedProduct((p) => ({ ...p, salePrice: Number(e.target.value) }))} /></label>
-                <label className="text-xs font-semibold text-muted">Estoque<input type="number" className={inputClass} value={selectedProduct.stock} onChange={(e) => setSelectedProduct((p) => ({ ...p, stock: Number(e.target.value) }))} /></label>
-                <label className="text-xs font-semibold text-muted">Produção (dias)<input type="number" className={inputClass} value={selectedProduct.productionDays} onChange={(e) => setSelectedProduct((p) => ({ ...p, productionDays: Number(e.target.value) }))} /></label>
+                <label className="text-xs font-semibold text-muted">
+                  Estoque
+                  <input
+                    type="number"
+                    min="0"
+                    className={inputClass}
+                    value={selectedProduct.stock}
+                    onChange={(e) => setSelectedProduct((p) => ({ ...p, stock: Math.max(0, Number(e.target.value)) }))}
+                  />
+                  <span className={`mt-2 block text-[0.68rem] leading-5 ${
+                    Number(selectedProduct.stock || 0) <= 0 ? 'text-amber-300/80' : 'text-emerald-300/80'
+                  }`}>
+                    {Number(selectedProduct.stock || 0) <= 0
+                      ? '0 = Produzido sob demanda. No site, Comprar abre o WhatsApp direto.'
+                      : 'Com estoque = pronta entrega e pode ser adicionado ao carrinho.'}
+                  </span>
+                </label>
+                <label className="text-xs font-semibold text-muted">
+                  Produção (dias)
+                  <input type="number" min="0" className={inputClass} value={selectedProduct.productionDays} onChange={(e) => setSelectedProduct((p) => ({ ...p, productionDays: Math.max(0, Number(e.target.value)) }))} />
+                  <span className="mt-2 block text-[0.68rem] leading-5 text-muted/60">
+                    Usado principalmente para itens sob demanda.
+                  </span>
+                </label>
               </div>
 
               <label className="mt-4 block text-xs font-semibold text-muted">Descrição<textarea className={inputClass + ' min-h-28 resize-y'} value={selectedProduct.description} onChange={(e) => setSelectedProduct((p) => ({ ...p, description: e.target.value }))} /></label>
