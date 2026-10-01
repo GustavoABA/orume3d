@@ -16,6 +16,8 @@ export type CartItem = {
   price: number;
   image: string;
   quantity: number;
+  source?: 'Shopee' | 'Interno';
+  shopeeUrl?: string;
 };
 
 const TAX_RATE = 0;
@@ -57,6 +59,8 @@ const cartReducer = (state: CartState, action: CartAction): CartState => {
             price: action.payload.price,
             image: action.payload.image,
             quantity: 1,
+            source: action.payload.source || (action.payload.shopeeUrl ? 'Shopee' : 'Interno'),
+            shopeeUrl: action.payload.shopeeUrl || '',
           },
         ],
       };
