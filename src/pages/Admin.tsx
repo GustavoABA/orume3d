@@ -104,6 +104,47 @@ const normalizeProductSource = (product: Product): Product => ({
   source: product.source || (product.shopeeUrl?.trim() ? 'Shopee' : 'Interno'),
 });
 
+const isLightshotUrl = (value: string) =>
+  /^https?:\/\/(?:www\.)?prnt\.sc\/[A-Za-z0-9_-]+\/?(?:\?.*)?$/i.test(value.trim());
+
+const resolveLightshotImage = async (value: string): Promise<string> => {
+  const url = value.trim();
+  if (!isLightshotUrl(url)) return url;
+
+  const response = await fetch(
+    'https://api.microlink.io/?url=' +
+      encodeURIComponent(url) +
+      '&meta.image=true&meta.logo=false&meta.title=false&meta.description=false'
+  );
+
+  if (!response.ok) {
+    throw new Error('Não foi possível resolver o link do Lightshot.');
+  }
+
+  const result = (await response.json()) as {
+    status?: string;
+    data?: { image?: { url?: string } | string | null };
+  };
+
+  const image =
+    typeof result.data?.image === 'string'
+      ? result.data.image
+      : String(result.data?.image?.url || '').trim();
+
+  if (!image) {
+    throw new Error('O Lightshot não expôs uma imagem utilizável para este link.');
+  }
+
+  return image;
+};
+
+const resolveProductImages = async (product: Product): Promise<Product> => ({
+  ...product,
+  imageMain: await resolveLightshotImage(product.imageMain),
+  image2: await resolveLightshotImage(product.image2),
+  image3: await resolveLightshotImage(product.image3),
+});
+
 const inputClass =
   'mt-1.5 w-full rounded-xl border border-accent/[0.12] bg-surface/[0.85] px-3.5 py-2.5 text-sm text-paper outline-none transition placeholder:text-muted/[0.55] focus:border-accent/40 focus:ring-2 focus:ring-accent/10';
 
@@ -304,33 +345,49 @@ const Admin = () => {
       return;
     }
 
-    const productToSave: Product =
-      selectedProduct.source === 'Interno'
-        ? {
-            ...selectedProduct,
-            shopeeUrl: '',
-            scrapeStatus: '',
-            scrapeAttemptAt: '',
-            detectedTitle: '',
-            detectedPrice: 0,
-            detectedImage: '',
-          }
-        : selectedProduct;
-
-    setSelectedProduct(productToSave);
     setBusy(true);
-    setStatus('Salvando produto…');
+
     try {
+      const hasLightshot = [selectedProduct.imageMain, selectedProduct.image2, selectedProduct.image3]
+        .some((url) => isLightshotUrl(url));
+
+      if (hasLightshot) {
+        setStatus('Resolvendo links do Lightshot…');
+      }
+
+      const resolvedProduct = await resolveProductImages(selectedProduct);
+
+      const productToSave: Product =
+        resolvedProduct.source === 'Interno'
+          ? {
+              ...resolvedProduct,
+              shopeeUrl: '',
+              scrapeStatus: '',
+              scrapeAttemptAt: '',
+              detectedTitle: '',
+              detectedPrice: 0,
+              detectedImage: '',
+            }
+          : resolvedProduct;
+
+      setSelectedProduct(productToSave);
+      setStatus('Salvando produto…');
+
       await postNoCors(endpoint, {
         action: 'adminSaveProduct',
         adminKey,
         mode: isCreatingProduct ? 'create' : 'update',
         product: productToSave,
       });
+
       await new Promise((resolve) => window.setTimeout(resolve, 1400));
       await getSnapshot(adminKey);
       setIsCreatingProduct(false);
-      setStatus(isCreatingProduct ? `Produto #${productToSave.id} criado no catálogo.` : 'Alterações do produto salvas.');
+      setStatus(
+        isCreatingProduct
+          ? `Produto #${productToSave.id} criado no catálogo.`
+          : 'Alterações do produto salvas.'
+      );
     } catch (error) {
       setStatus(error instanceof Error ? error.message : 'Falha ao salvar produto.');
     } finally {
@@ -338,7 +395,7 @@ const Admin = () => {
     }
   };
 
-  const visibleOrders = useMemo(() => orders.slice(0, 250), [orders]);
+    const visibleOrders = useMemo(() => orders.slice(0, 250), [orders]);
   const activeProducts = useMemo(
     () => products.filter((product) => product.active === 'Sim'),
     [products]
@@ -784,7 +841,7 @@ const Admin = () => {
               <div className="mt-4">
                 <p className="text-xs font-semibold text-muted">Imagens do produto</p>
                 <p className="mt-1 text-[0.68rem] leading-5 text-muted/60">
-                  Cole a URL direta da imagem. Os três links são salvos no catálogo e a primeira imagem é usada no card principal.
+                  Aceita URL direta ou link prnt.sc. Links do Lightshot são convertidos automaticamente para a imagem real ao salvar. A primeira imagem é usada no card principal.
                 </p>
                 <div className="mt-3 grid gap-4 sm:grid-cols-3">
                   {(['imageMain', 'image2', 'image3'] as const).map((key, index) => (
@@ -795,10 +852,34 @@ const Admin = () => {
                           className={inputClass}
                           value={selectedProduct[key]}
                           onChange={(e) => setSelectedProduct((p) => ({ ...p, [key]: e.target.value.trim() }))}
-                          placeholder="https://.../imagem.jpg"
+                          placeholder="https://... ou https://prnt.sc/..."
                         />
                       </label>
-                      {selectedProduct[key] && (
+
+                      {isLightshotUrl(selectedProduct[key]) && (
+                        <button
+                          type="button"
+                          disabled={busy}
+                          onClick={async () => {
+                            setBusy(true);
+                            setStatus('Resolvendo imagem do Lightshot…');
+                            try {
+                              const resolved = await resolveLightshotImage(selectedProduct[key]);
+                              setSelectedProduct((current) => ({ ...current, [key]: resolved }));
+                              setStatus('Link do Lightshot convertido para imagem direta.');
+                            } catch (error) {
+                              setStatus(error instanceof Error ? error.message : 'Falha ao resolver Lightshot.');
+                            } finally {
+                              setBusy(false);
+                            }
+                          }}
+                          className="mt-2 w-full rounded-lg border border-accent/20 bg-accent/[0.06] px-3 py-2 text-[0.68rem] font-bold text-accentLight transition hover:bg-accent/10 disabled:opacity-40"
+                        >
+                          Resolver imagem do Lightshot
+                        </button>
+                      )}
+
+                      {selectedProduct[key] && !isLightshotUrl(selectedProduct[key]) && (
                         <div className="mt-3 overflow-hidden rounded-lg border border-accent/10 bg-ink">
                           <img
                             src={selectedProduct[key]}
@@ -811,7 +892,7 @@ const Admin = () => {
                             }}
                           />
                           <p className="hidden p-3 text-[0.68rem] leading-5 text-amber-300">
-                            Este endereço não abriu como imagem direta. Links de páginas como prnt.sc não funcionam como src de imagem; use o endereço do arquivo/imagem.
+                            Não foi possível carregar esta URL como imagem.
                           </p>
                         </div>
                       )}
