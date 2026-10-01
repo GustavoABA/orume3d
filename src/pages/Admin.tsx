@@ -115,11 +115,23 @@ const Admin = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [selectedProduct, setSelectedProduct] = useState<Product>(emptyProduct());
+  const [isCreatingProduct, setIsCreatingProduct] = useState(false);
   const [tab, setTab] = useState<'orders' | 'products'>('products');
   const [status, setStatus] = useState('');
   const [busy, setBusy] = useState(false);
 
   const completed = (value: string) => value === 'Concluído' || value === 'Cancelado';
+
+  const nextProductId = () =>
+    Math.max(0, ...products.map((product) => Number(product.id) || 0)) + 1;
+
+  const startNewProduct = () => {
+    const draft = emptyProduct();
+    draft.id = nextProductId();
+    setSelectedProduct(draft);
+    setIsCreatingProduct(true);
+    setStatus(`Novo produto preparado com ID ${draft.id}. Preencha os dados e salve.`);
+  };
 
   const getSnapshot = async (key: string, targetEndpoint = endpoint) => {
     if (!targetEndpoint) throw new Error('Endpoint não carregado.');
@@ -312,11 +324,13 @@ const Admin = () => {
       await postNoCors(endpoint, {
         action: 'adminSaveProduct',
         adminKey,
+        mode: isCreatingProduct ? 'create' : 'update',
         product: productToSave,
       });
-      await new Promise((resolve) => window.setTimeout(resolve, 900));
+      await new Promise((resolve) => window.setTimeout(resolve, 1400));
       await getSnapshot(adminKey);
-      setStatus('Produto salvo no catálogo.');
+      setIsCreatingProduct(false);
+      setStatus(isCreatingProduct ? `Produto #${productToSave.id} criado no catálogo.` : 'Alterações do produto salvas.');
     } catch (error) {
       setStatus(error instanceof Error ? error.message : 'Falha ao salvar produto.');
     } finally {
@@ -556,7 +570,7 @@ const Admin = () => {
           <div className="grid gap-5 lg:grid-cols-[350px_1fr]">
             <section className="orume-panel max-h-[75vh] overflow-auto rounded-2xl p-3">
               <button
-                onClick={() => setSelectedProduct(emptyProduct())}
+                onClick={startNewProduct}
                 className="mb-3 w-full rounded-xl border border-accent/25 bg-accent/10 px-4 py-3 text-sm font-semibold text-accentLight"
               >
                 + Novo produto
@@ -565,7 +579,11 @@ const Admin = () => {
                 {products.map((product) => (
                   <button
                     key={product.id}
-                    onClick={() => setSelectedProduct(normalizeProductSource({ ...product }))}
+                    onClick={() => {
+                      setSelectedProduct(normalizeProductSource({ ...product }));
+                      setIsCreatingProduct(false);
+                      setStatus('');
+                    }}
                     className="flex w-full gap-3 rounded-xl border border-accent/10 bg-paper/[0.03] p-3 text-left transition hover:border-accent/30"
                   >
                     {(product.imageMain || product.detectedImage) ? (
@@ -598,7 +616,12 @@ const Admin = () => {
               <div className="mb-6 flex flex-wrap items-end justify-between gap-3 border-b border-accent/10 pb-5">
                 <div>
                   <p className="text-[0.6rem] font-bold uppercase tracking-[0.22em] text-accent/[0.65]">Produto</p>
-                  <h2 className="mt-1 font-display text-3xl">{selectedProduct.id ? selectedProduct.name || 'Editar produto' : 'Novo produto'}</h2>
+                  <h2 className="mt-1 font-display text-3xl">
+                    {isCreatingProduct ? 'Novo produto' : selectedProduct.name || 'Selecione um produto'}
+                  </h2>
+                  {selectedProduct.id > 0 && (
+                    <p className="mt-1 font-mono text-[0.62rem] text-muted/60">ID #{selectedProduct.id}</p>
+                  )}
                   {selectedProduct.source && (
                     <p className="mt-1 text-[0.62rem] font-bold uppercase tracking-[0.14em] text-accent/70">
                       {selectedProduct.source === 'Shopee' ? 'Produto Shopee' : 'Produto interno'}
@@ -613,7 +636,7 @@ const Admin = () => {
                   </p>
                 </div>
                 <button onClick={saveProduct} disabled={busy} className="rounded-full bg-accent px-5 py-2.5 text-xs font-bold text-ink disabled:opacity-40">
-                  Salvar produto
+                  {isCreatingProduct ? 'Criar produto' : 'Salvar alterações'}
                 </button>
               </div>
 
@@ -758,13 +781,43 @@ const Admin = () => {
 
               <label className="mt-4 block text-xs font-semibold text-muted">Descrição<textarea className={inputClass + ' min-h-28 resize-y'} value={selectedProduct.description} onChange={(e) => setSelectedProduct((p) => ({ ...p, description: e.target.value }))} /></label>
 
-              <div className="mt-4 grid gap-4 sm:grid-cols-3">
-                {(['imageMain', 'image2', 'image3'] as const).map((key, index) => (
-                  <label key={key} className="text-xs font-semibold text-muted">
-                    {'Imagem ' + (index + 1)}
-                    <input className={inputClass} value={selectedProduct[key]} onChange={(e) => setSelectedProduct((p) => ({ ...p, [key]: e.target.value }))} placeholder="https://..." />
-                  </label>
-                ))}
+              <div className="mt-4">
+                <p className="text-xs font-semibold text-muted">Imagens do produto</p>
+                <p className="mt-1 text-[0.68rem] leading-5 text-muted/60">
+                  Cole a URL direta da imagem. Os três links são salvos no catálogo e a primeira imagem é usada no card principal.
+                </p>
+                <div className="mt-3 grid gap-4 sm:grid-cols-3">
+                  {(['imageMain', 'image2', 'image3'] as const).map((key, index) => (
+                    <div key={key} className="rounded-xl border border-accent/10 bg-paper/[0.02] p-3">
+                      <label className="text-xs font-semibold text-muted">
+                        {'Imagem ' + (index + 1)}
+                        <input
+                          className={inputClass}
+                          value={selectedProduct[key]}
+                          onChange={(e) => setSelectedProduct((p) => ({ ...p, [key]: e.target.value.trim() }))}
+                          placeholder="https://.../imagem.jpg"
+                        />
+                      </label>
+                      {selectedProduct[key] && (
+                        <div className="mt-3 overflow-hidden rounded-lg border border-accent/10 bg-ink">
+                          <img
+                            src={selectedProduct[key]}
+                            alt={`Prévia da imagem ${index + 1}`}
+                            className="h-28 w-full object-cover"
+                            onError={(event) => {
+                              event.currentTarget.style.display = 'none';
+                              const warning = event.currentTarget.nextElementSibling as HTMLElement | null;
+                              if (warning) warning.style.display = 'block';
+                            }}
+                          />
+                          <p className="hidden p-3 text-[0.68rem] leading-5 text-amber-300">
+                            Este endereço não abriu como imagem direta. Links de páginas como prnt.sc não funcionam como src de imagem; use o endereço do arquivo/imagem.
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
               </div>
 
               <label className="mt-4 block text-xs font-semibold text-muted">Observações internas<textarea className={inputClass + ' min-h-20 resize-y'} value={selectedProduct.adminNotes} onChange={(e) => setSelectedProduct((p) => ({ ...p, adminNotes: e.target.value }))} /></label>
