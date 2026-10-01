@@ -4,9 +4,22 @@ Fonte operacional: `Orume_Controle_Operacional`
 
 Spreadsheet ID: `1IGZ0KY2J5E87qdl4Gza3w0v_Tz_vsESCH9EHMGZtPoI`
 
+## Arquivos versionados
+
+- `Code.gs` — backend Web App principal (`doGet`, `doPost`, catálogo, checkout e `/admin`).
+- `Orume_Operational_Sync_v3.gs` — sincronização de checkouts, pedidos e clientes.
+- `Orume_ERP_v4.gs` — ERP da planilha, formulários, estoque, CRM e rotinas operacionais.
+
 ## Backend web atual
 
-O Web App existente continua responsável por:
+O arquivo canônico do Web App é `Code.gs`.
+
+A rotina de produtos usa duas operações explícitas:
+
+- `mode=create` → gera o próximo ID e **sempre adiciona uma nova linha**;
+- `mode=update` → altera somente a linha que já possui aquele `ID Produto`; se o ID não existir, retorna erro em vez de sobrescrever outro produto.
+
+O Web App é responsável por:
 
 - formulário público de orçamento;
 - IDs visuais de pedido entre **0000 e 1000**;
