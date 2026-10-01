@@ -25,6 +25,8 @@ const Checkout = () => {
         unitPrice: item.price,
         total: item.price * item.quantity,
         image: item.image,
+        source: item.source || (item.shopeeUrl ? 'Shopee' : 'Interno'),
+        shopeeUrl: item.shopeeUrl || '',
       })),
     [items]
   );
@@ -143,10 +145,14 @@ const Checkout = () => {
             '   🔢 Quantidade: *' + item.quantity + 'x*',
             '   💰 Unitário: *' + formatBRL(item.unitPrice) + '*',
             '   💵 Subtotal: *' + formatBRL(item.total) + '*',
+            '   🏷️ Origem: *' + (item.source === 'Interno' ? 'Produto interno Orume' : 'Shopee') + '*',
           ];
 
           if (item.image) {
             lines.push('   🖼️ Imagem: ' + item.image);
+          }
+          if (item.source === 'Shopee' && item.shopeeUrl) {
+            lines.push('   🛒 Shopee: ' + item.shopeeUrl);
           }
 
           return lines.join('\n');
