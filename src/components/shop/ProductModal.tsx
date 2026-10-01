@@ -47,6 +47,13 @@ const ProductModal = ({ product, open, onClose, onCartOpen }: ProductModalProps)
                   <img
                     src={product.image}
                     alt={product.name}
+                    onError={(event) => {
+                      if (!event.currentTarget.src.endsWith('/orume3d/brand/orume-mark.webp')) {
+                        event.currentTarget.src = '/orume3d/brand/orume-mark.webp';
+                        event.currentTarget.classList.remove('object-cover');
+                        event.currentTarget.classList.add('object-contain', 'p-16');
+                      }
+                    }}
                     className="absolute inset-0 h-full w-full object-cover"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-transparent to-black/20" />
