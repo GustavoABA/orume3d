@@ -33,7 +33,10 @@ type Order = {
   tracking: string;
 };
 
+type ProductSource = 'Shopee' | 'Interno' | '';
+
 type Product = {
+  source: ProductSource;
   id: number;
   sku: string;
   active: string;
@@ -71,6 +74,7 @@ type ScrapeResult = {
 };
 
 const emptyProduct = (): Product => ({
+  source: '',
   id: 0,
   sku: '',
   active: 'Sim',
@@ -93,6 +97,11 @@ const emptyProduct = (): Product => ({
   image2: '',
   image3: '',
   adminNotes: '',
+});
+
+const normalizeProductSource = (product: Product): Product => ({
+  ...product,
+  source: product.source || (product.shopeeUrl?.trim() ? 'Shopee' : 'Interno'),
 });
 
 const inputClass =
@@ -124,13 +133,14 @@ const Admin = () => {
     );
     if (!data.ok) throw new Error(data.error || 'Falha ao carregar administração.');
     setOrders(data.orders || []);
-    setProducts(data.products || []);
+    const normalizedProducts = (data.products || []).map(normalizeProductSource);
+    setProducts(normalizedProducts);
     if (selectedOrder) {
       const fresh = (data.orders || []).find((item) => item.id === selectedOrder.id);
       if (fresh) setSelectedOrder(fresh);
     }
     if (selectedProduct.id) {
-      const fresh = (data.products || []).find((item) => item.id === selectedProduct.id);
+      const fresh = normalizedProducts.find((item) => item.id === selectedProduct.id);
       if (fresh) setSelectedProduct(fresh);
     }
   };
@@ -269,17 +279,40 @@ const Admin = () => {
   };
 
   const saveProduct = async () => {
+    if (!selectedProduct.source) {
+      setStatus('Escolha se o produto é da Shopee ou interno.');
+      return;
+    }
     if (!selectedProduct.name.trim()) {
       setStatus('Informe o nome do produto.');
       return;
     }
+    if (selectedProduct.source === 'Shopee' && !selectedProduct.shopeeUrl.trim()) {
+      setStatus('Produto da Shopee precisa do link do anúncio.');
+      return;
+    }
+
+    const productToSave: Product =
+      selectedProduct.source === 'Interno'
+        ? {
+            ...selectedProduct,
+            shopeeUrl: '',
+            scrapeStatus: '',
+            scrapeAttemptAt: '',
+            detectedTitle: '',
+            detectedPrice: 0,
+            detectedImage: '',
+          }
+        : selectedProduct;
+
+    setSelectedProduct(productToSave);
     setBusy(true);
     setStatus('Salvando produto…');
     try {
       await postNoCors(endpoint, {
         action: 'adminSaveProduct',
         adminKey,
-        product: selectedProduct,
+        product: productToSave,
       });
       await new Promise((resolve) => window.setTimeout(resolve, 900));
       await getSnapshot(adminKey);
@@ -532,7 +565,7 @@ const Admin = () => {
                 {products.map((product) => (
                   <button
                     key={product.id}
-                    onClick={() => setSelectedProduct({ ...product })}
+                    onClick={() => setSelectedProduct(normalizeProductSource({ ...product }))}
                     className="flex w-full gap-3 rounded-xl border border-accent/10 bg-paper/[0.03] p-3 text-left transition hover:border-accent/30"
                   >
                     {(product.imageMain || product.detectedImage) ? (
@@ -543,6 +576,9 @@ const Admin = () => {
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-sm font-semibold text-paper/90">{product.name || 'Produto sem nome'}</p>
                       <p className="mt-1 text-xs text-muted/70">{product.price ? formatBRL(product.price) : 'Sem preço'} • {product.active}</p>
+                      <span className="mt-2 mr-2 inline-flex rounded-full border border-accent/15 bg-accent/[0.05] px-2.5 py-1 text-[0.56rem] font-bold uppercase tracking-[0.1em] text-accentLight">
+                        {product.source === 'Shopee' ? 'Shopee' : 'Interno'}
+                      </span>
                       <span className={`mt-2 inline-flex rounded-full border px-2.5 py-1 text-[0.56rem] font-bold uppercase tracking-[0.1em] ${
                         Number(product.stock || 0) <= 0
                           ? 'border-amber-500/20 bg-amber-500/[0.06] text-amber-200'
@@ -563,6 +599,11 @@ const Admin = () => {
                 <div>
                   <p className="text-[0.6rem] font-bold uppercase tracking-[0.22em] text-accent/[0.65]">Produto</p>
                   <h2 className="mt-1 font-display text-3xl">{selectedProduct.id ? selectedProduct.name || 'Editar produto' : 'Novo produto'}</h2>
+                  {selectedProduct.source && (
+                    <p className="mt-1 text-[0.62rem] font-bold uppercase tracking-[0.14em] text-accent/70">
+                      {selectedProduct.source === 'Shopee' ? 'Produto Shopee' : 'Produto interno'}
+                    </p>
+                  )}
                   <p className={`mt-2 text-xs font-semibold ${
                     Number(selectedProduct.stock || 0) <= 0 ? 'text-amber-300' : 'text-emerald-300'
                   }`}>
@@ -576,38 +617,106 @@ const Admin = () => {
                 </button>
               </div>
 
-              <div className="rounded-2xl border border-accent/[0.12] bg-surface/[0.65] p-4">
-                <label className="text-xs font-semibold text-muted">
-                  Link do anúncio na Shopee
-                  <input
-                    className={inputClass}
-                    value={selectedProduct.shopeeUrl}
-                    onChange={(event) => setSelectedProduct((current) => ({ ...current, shopeeUrl: event.target.value }))}
-                    placeholder="https://shopee.com.br/..."
-                  />
-                </label>
-                <div className="mt-3 flex flex-wrap items-center gap-3">
+              <div className="mb-5 rounded-2xl border border-accent/[0.12] bg-surface/[0.55] p-4">
+                <p className="text-[0.6rem] font-bold uppercase tracking-[0.2em] text-accent/70">
+                  Origem do produto
+                </p>
+                <div className="mt-3 grid gap-3 sm:grid-cols-2">
                   <button
                     type="button"
-                    onClick={scrape}
-                    disabled={busy}
-                    className="inline-flex items-center gap-2 rounded-full border border-accent/25 bg-accent/10 px-4 py-2.5 text-xs font-bold text-accentLight disabled:opacity-40"
+                    onClick={() =>
+                      setSelectedProduct((current) => ({
+                        ...current,
+                        source: 'Shopee',
+                      }))
+                    }
+                    className={
+                      'rounded-2xl border px-4 py-4 text-left transition ' +
+                      (selectedProduct.source === 'Shopee'
+                        ? 'border-accent/45 bg-accent/10 text-accentLight'
+                        : 'border-accent/10 bg-paper/[0.02] text-paper/70 hover:border-accent/25')
+                    }
                   >
-                    <ArrowPathIcon className="h-4 w-4" />
-                    {selectedProduct.scrapeAttemptAt ? 'Tentar scraping novamente' : 'Tentar scraping'}
+                    <strong className="block text-sm">Shopee</strong>
+                    <span className="mt-1 block text-xs leading-5 text-muted/70">
+                      Pede o link do anúncio e libera tentativa de scraping.
+                    </span>
                   </button>
-                  {selectedProduct.scrapeStatus && <span className="text-xs text-muted">{selectedProduct.scrapeStatus}</span>}
+
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setSelectedProduct((current) => ({
+                        ...current,
+                        source: 'Interno',
+                        shopeeUrl: '',
+                        scrapeStatus: '',
+                        scrapeAttemptAt: '',
+                        detectedTitle: '',
+                        detectedPrice: 0,
+                        detectedImage: '',
+                      }))
+                    }
+                    className={
+                      'rounded-2xl border px-4 py-4 text-left transition ' +
+                      (selectedProduct.source === 'Interno'
+                        ? 'border-accent/45 bg-accent/10 text-accentLight'
+                        : 'border-accent/10 bg-paper/[0.02] text-paper/70 hover:border-accent/25')
+                    }
+                  >
+                    <strong className="block text-sm">Produto interno</strong>
+                    <span className="mt-1 block text-xs leading-5 text-muted/70">
+                      Não exige Shopee. O produto é vendido diretamente pela Orume.
+                    </span>
+                  </button>
+                </div>
+              </div>
+
+              {selectedProduct.source === 'Shopee' && (
+                <div className="rounded-2xl border border-accent/[0.12] bg-surface/[0.65] p-4">
+                <label className="text-xs font-semibold text-muted">
+                Link do anúncio na Shopee
+                <input
+                className={inputClass}
+                value={selectedProduct.shopeeUrl}
+                onChange={(event) => setSelectedProduct((current) => ({ ...current, shopeeUrl: event.target.value }))}
+                placeholder="https://shopee.com.br/..."
+                />
+                </label>
+                <div className="mt-3 flex flex-wrap items-center gap-3">
+                <button
+                type="button"
+                onClick={scrape}
+                disabled={busy}
+                className="inline-flex items-center gap-2 rounded-full border border-accent/25 bg-accent/10 px-4 py-2.5 text-xs font-bold text-accentLight disabled:opacity-40"
+                >
+                <ArrowPathIcon className="h-4 w-4" />
+                {selectedProduct.scrapeAttemptAt ? 'Tentar scraping novamente' : 'Tentar scraping'}
+                </button>
+                {selectedProduct.scrapeStatus && <span className="text-xs text-muted">{selectedProduct.scrapeStatus}</span>}
                 </div>
                 {selectedProduct.detectedImage && (
-                  <div className="mt-4 flex items-center gap-4 rounded-xl border border-accent/10 bg-paper/[0.03] p-3">
-                    <img src={selectedProduct.detectedImage} alt="" className="h-20 w-20 rounded-lg object-cover" />
-                    <div className="min-w-0">
-                      <p className="truncate text-sm font-semibold">{selectedProduct.detectedTitle || 'Imagem detectada'}</p>
-                      <p className="mt-1 text-xs text-accentLight">{selectedProduct.detectedPrice ? formatBRL(selectedProduct.detectedPrice) : 'Preço não detectado'}</p>
-                    </div>
-                  </div>
+                <div className="mt-4 flex items-center gap-4 rounded-xl border border-accent/10 bg-paper/[0.03] p-3">
+                <img src={selectedProduct.detectedImage} alt="" className="h-20 w-20 rounded-lg object-cover" />
+                <div className="min-w-0">
+                <p className="truncate text-sm font-semibold">{selectedProduct.detectedTitle || 'Imagem detectada'}</p>
+                <p className="mt-1 text-xs text-accentLight">{selectedProduct.detectedPrice ? formatBRL(selectedProduct.detectedPrice) : 'Preço não detectado'}</p>
+                </div>
+                </div>
                 )}
-              </div>
+                </div>
+              )}
+
+              {selectedProduct.source === 'Interno' && (
+                <div className="rounded-2xl border border-emerald-500/15 bg-emerald-500/[0.045] p-4">
+                  <p className="text-sm font-semibold text-emerald-200">Produto interno Orume</p>
+                  <p className="mt-1 text-xs leading-5 text-emerald-100/60">
+                    Cadastre nome, preço, estoque, prazo, descrição e imagens abaixo. Nenhum link da Shopee será solicitado.
+                    No checkout, o WhatsApp identifica este item como produto interno.
+                  </p>
+                </div>
+              )}
+
 
               <div className="mt-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
                 <label className="text-xs font-semibold text-muted">Nome<input className={inputClass} value={selectedProduct.name} onChange={(e) => setSelectedProduct((p) => ({ ...p, name: e.target.value }))} /></label>
