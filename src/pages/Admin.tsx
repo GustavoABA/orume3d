@@ -163,15 +163,10 @@ const Admin = () => {
 
   const completed = (value: string) => value === 'Concluído' || value === 'Cancelado';
 
-  const nextProductId = () =>
-    Math.max(0, ...products.map((product) => Number(product.id) || 0)) + 1;
-
   const startNewProduct = () => {
-    const draft = emptyProduct();
-    draft.id = nextProductId();
-    setSelectedProduct(draft);
+    setSelectedProduct(emptyProduct());
     setIsCreatingProduct(true);
-    setStatus(`Novo produto preparado com ID ${draft.id}. Preencha os dados e salve.`);
+    setStatus('Novo produto: será criado em uma nova linha ao salvar.');
   };
 
   const getSnapshot = async (key: string, targetEndpoint = endpoint) => {
@@ -357,10 +352,14 @@ const Admin = () => {
 
       const resolvedProduct = await resolveProductImages(selectedProduct);
 
+      const baseProduct: Product = isCreatingProduct
+        ? { ...resolvedProduct, id: 0 }
+        : resolvedProduct;
+
       const productToSave: Product =
-        resolvedProduct.source === 'Interno'
+        baseProduct.source === 'Interno'
           ? {
-              ...resolvedProduct,
+              ...baseProduct,
               shopeeUrl: '',
               scrapeStatus: '',
               scrapeAttemptAt: '',
@@ -368,7 +367,7 @@ const Admin = () => {
               detectedPrice: 0,
               detectedImage: '',
             }
-          : resolvedProduct;
+          : baseProduct;
 
       setSelectedProduct(productToSave);
       setStatus('Salvando produto…');
@@ -385,7 +384,7 @@ const Admin = () => {
       setIsCreatingProduct(false);
       setStatus(
         isCreatingProduct
-          ? `Produto #${productToSave.id} criado no catálogo.`
+          ? 'Produto criado em uma nova linha do catálogo.'
           : 'Alterações do produto salvas.'
       );
     } catch (error) {
