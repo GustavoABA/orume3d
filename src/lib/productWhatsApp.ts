@@ -16,6 +16,7 @@ export const productAvailabilityLabel = (product: Product) =>
 export const buildDirectProductWhatsAppUrl = (product: Product) => {
   const image = String(product.image || product.images?.[0] || '').trim();
   const productionDays = Number(product.productionDays || 0);
+  const source = product.source || (product.shopeeUrl ? 'Shopee' : 'Interno');
 
   const message = [
     DIRECT_BUY_CODE,
@@ -24,6 +25,7 @@ export const buildDirectProductWhatsAppUrl = (product: Product) => {
     '━━━━━━━━━━━━━━━━━━━━',
     '',
     '📦 *' + product.name + '*',
+    '🏷️ Origem: *' + (source === 'Interno' ? 'Produto interno Orume' : 'Shopee') + '*',
     product.sku ? '🏷️ SKU: *' + product.sku + '*' : '',
     '💰 Valor do produto: *' + formatBRL(product.price) + '*',
     '🛠️ Disponibilidade: *Produzido sob demanda*',
@@ -31,6 +33,7 @@ export const buildDirectProductWhatsAppUrl = (product: Product) => {
       ? '⏳ Produção estimada: *' + productionDays + (productionDays === 1 ? ' dia*' : ' dias*')
       : '',
     image ? '🖼️ Imagem: ' + image : '',
+    source === 'Shopee' && product.shopeeUrl ? '🛒 Shopee: ' + product.shopeeUrl : '',
     '',
     '🚚 *O frete ainda não está incluído no valor acima.*',
     '',
