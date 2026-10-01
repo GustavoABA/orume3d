@@ -10,6 +10,15 @@ Spreadsheet ID: `1IGZ0KY2J5E87qdl4Gza3w0v_Tz_vsESCH9EHMGZtPoI`
 - `Orume_Operational_Sync_v3.gs` — sincronização de checkouts, pedidos e clientes.
 - `Orume_ERP_v4.gs` — ERP da planilha, formulários, estoque, CRM e rotinas operacionais.
 
+## Implantação atual
+
+- Versão implantada: **2**
+- Atualizada em: **01/10/2026 17:31**
+- Deployment ID: `AKfycbwu5KB0sRUd3kT9YPylLmDULn4ocHTa6q75AltjIfBa8wmxlKKY3p7HtwrhXrXrHseVYw`
+- Web App: `https://script.google.com/macros/s/AKfycbwu5KB0sRUd3kT9YPylLmDULn4ocHTa6q75AltjIfBa8wmxlKKY3p7HtwrhXrXrHseVYw/exec`
+
+> O Deployment ID é público por natureza. Senhas e `ADMIN_KEY` continuam fora do GitHub, somente em Script Properties.
+
 ## Backend web atual
 
 O arquivo canônico do Web App é `Code.gs`.
