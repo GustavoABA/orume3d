@@ -45,6 +45,13 @@ const ProductCardComponent = ({ product, onView }: ProductCardProps) => {
           src={product.image}
           alt={product.name}
           loading="lazy"
+          onError={(event) => {
+            if (!event.currentTarget.src.endsWith('/orume3d/brand/orume-mark.webp')) {
+              event.currentTarget.src = '/orume3d/brand/orume-mark.webp';
+              event.currentTarget.classList.remove('object-cover');
+              event.currentTarget.classList.add('object-contain', 'p-10');
+            }
+          }}
           className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.035]"
         />
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent" />
