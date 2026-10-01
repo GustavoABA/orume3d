@@ -32,6 +32,7 @@ const mapProduct = (item: Record<string, unknown>): Product => {
     stock: Number(item.stock || 0),
     productionDays: Number(item.productionDays || 0),
     shopeeUrl: String(item.shopeeUrl || ''),
+    source: String(item.shopeeUrl || '').trim() ? 'Shopee' : 'Interno',
     images: images.length ? images : [image],
     originalPrice: Number(item.originalPrice || 0),
   };
