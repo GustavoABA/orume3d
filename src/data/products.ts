@@ -13,6 +13,7 @@ export type Product = {
   stock?: number;
   productionDays?: number;
   shopeeUrl?: string;
+  source?: 'Shopee' | 'Interno';
   images?: string[];
   originalPrice?: number;
 };
