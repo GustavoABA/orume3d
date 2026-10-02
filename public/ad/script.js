@@ -3,7 +3,7 @@
   const INTERVAL_MS = 40 * 60 * 1000;
   const TEST_MODE = new URLSearchParams(location.search).has('test');
   const SEEK_SECONDS = Number(new URLSearchParams(location.search).get('seek')) || 0;
-  const SITE_URL = 'https://orume.com.br/';
+  const SITE_URL = window.location.origin.replace(/\/$/, '') + '/';
   let timer = null;
   let master = null;
   let lastSynchronizedPlay = 0;
