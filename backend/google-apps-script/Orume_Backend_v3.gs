@@ -997,3 +997,359 @@ function loadOrderToAdmin_(id) {
 
 
 function saveAdminForm_() {
+
+  const admin = getSheet_(SHEETS.admin);
+
+  const v = admin.getRange(ADMIN_FORM_START_ROW, ADMIN_FORM_VALUE_COL, 22, 1).getValues().map(function(row) { return row[0]; });
+
+  const id = Number(v[0]);
+
+  if (!Number.isInteger(id)) throw new Error("Selecione um pedido na lista.");
+
+  saveOrder_({id:id,status:v[1],priority:v[2],name:v[4],phone:v[5],city:v[6],cep:v[7],product:v[8],quantity:v[9],color:v[10],material:v[11],deadline:v[12],delivery:v[13],cleanService:v[14],referral:v[15],amount:v[16],paid:v[17],links:v[19],description:v[20],notes:v[21]});
+
+  loadOrderToAdmin_(id);
+
+}
+
+
+
+function completeAdminOrder_() {
+
+  const id = Number(getSheet_(SHEETS.admin).getRange(6, 10).getValue());
+
+  if (!Number.isInteger(id)) throw new Error("Selecione um pedido na lista.");
+
+  completeOrder_(id);
+
+  loadOrderToAdmin_(id);
+
+}
+
+
+
+function getProducts_() {
+
+  const sheet = getSheet_(SHEETS.products);
+
+  const last = sheet.getLastRow();
+
+  if (last <= 1) return [];
+
+  return sheet.getRange(2, 1, last - 1, 23).getValues().filter(function(row) { return row[0] !== "" && row[0] !== null; }).map(productToObject_);
+
+}
+
+
+
+function getPublicCatalog_() {
+
+  const cache = CacheService.getScriptCache();
+
+  const cached = cache.get("public_catalog_v2");
+
+  if (cached) {
+
+    try { return JSON.parse(cached); } catch (error) {}
+
+  }
+
+
+
+  const catalog = getProducts_().filter(function(product) { return isYes_(product.active); }).map(function(product) {
+
+    return {id:product.id,sku:product.sku,name:product.name,slug:product.slug,category:product.category,description:product.description,price:product.salePrice > 0 ? product.salePrice : product.price,originalPrice:product.price,stock:product.stock,productionDays:product.productionDays,shopeeUrl:product.shopeeUrl,image:product.imageMain || product.detectedImage,images:[product.imageMain,product.image2,product.image3,product.detectedImage].filter(Boolean)};
+
+  });
+
+
+
+  cache.put("public_catalog_v2", JSON.stringify(catalog), 300);
+
+  return catalog;
+
+}
+
+
+
+function getProductById_(id) {
+
+  const sheet = getSheet_(SHEETS.products);
+
+  const rowNumber = findRowByValue_(sheet, 1, Number(id));
+
+  if (!rowNumber) return null;
+
+  return productToObject_(sheet.getRange(rowNumber, 1, 1, 23).getValues()[0]);
+
+}
+
+
+
+function productToObject_(row) {
+
+  return {id:Number(row[0]),sku:row[1]||"",active:row[2]||"",featured:row[3]||"",name:row[4]||"",slug:row[5]||"",category:row[6]||"",description:row[7]||"",price:Number(row[8]||0),salePrice:Number(row[9]||0),stock:Number(row[10]||0),productionDays:Number(row[11]||0),shopeeUrl:row[12]||"",scrapeStatus:row[13]||"",scrapeAttemptAt:serializeValue_(row[14]),detectedTitle:row[15]||"",detectedPrice:Number(row[16]||0),detectedImage:row[17]||"",imageMain:row[18]||"",image2:row[19]||"",image3:row[20]||"",adminNotes:row[21]||"",updatedAt:serializeValue_(row[22])};
+
+}
+
+
+
+function saveProduct_(product, mode) {
+
+  const sheet = getSheet_(SHEETS.products);
+
+  const requestedId = Number(product.id);
+
+  const operation = String(mode || "").toLowerCase();
+
+  let id = 0;
+
+  let rowNumber = 0;
+
+
+
+  if (operation === "create" || !Number.isInteger(requestedId) || requestedId <= 0) {
+
+    // CREATE nunca procura/reutiliza uma linha existente.
+
+    id = nextProductId_();
+
+    rowNumber = sheet.getLastRow() + 1;
+
+    if (rowNumber > sheet.getMaxRows()) {
+
+      sheet.insertRowsAfter(sheet.getMaxRows(), Math.max(20, rowNumber - sheet.getMaxRows()));
+
+    }
+
+  } else {
+
+    // UPDATE só altera a linha cujo ID exista de fato.
+
+    id = requestedId;
+
+    rowNumber = findRowByValue_(sheet, 1, id);
+
+    if (!rowNumber) {
+
+      throw new Error("Produto #" + id + " não encontrado para edição. Clique em Novo produto para criar outro item.");
+
+    }
+
+  }
+
+
+
+  const row = [id,normalizeText_(product.sku,100),normalizeYesNo_(product.active,"Sim"),normalizeYesNo_(product.featured,"Não"),normalizeText_(product.name,240),slugify_(product.slug||product.name),normalizeText_(product.category,120),normalizeText_(product.description,5000),toMoney_(product.price),toMoney_(product.salePrice),normalizePositiveInt_(product.stock,0,999999),normalizePositiveInt_(product.productionDays,0,365),normalizeShopeeUrl_(product.shopeeUrl),normalizeText_(product.scrapeStatus,120),product.scrapeAttemptAt?new Date(product.scrapeAttemptAt):"",normalizeText_(product.detectedTitle,500),toMoney_(product.detectedPrice),normalizeUrl_(product.detectedImage),normalizeUrl_(product.imageMain),normalizeUrl_(product.image2),normalizeUrl_(product.image3),normalizeText_(product.adminNotes,2500),new Date()];
+
+
+
+  sheet.getRange(rowNumber,1,1,23).setValues([row]);
+
+  CacheService.getScriptCache().remove("public_catalog_v2");
+
+  CacheService.getScriptCache().remove("public_catalog_v3");
+
+  log_("Produto",operation === "create" ? "Criado" : "Atualizado","Produto",id,"Admin",row[4],row[12]);
+
+  return productToObject_(row);
+
+}
+
+
+
+function nextProductId_() {
+
+  const sheet = getSheet_(SHEETS.products), last = sheet.getLastRow();
+
+  if (last <= 1) return 1;
+
+  const ids = sheet.getRange(2,1,last-1,1).getValues().flat().map(Number).filter(function(v){return Number.isFinite(v);});
+
+  return ids.length ? Math.max.apply(null, ids) + 1 : 1;
+
+}
+
+
+
+function scrapeShopee_(url) {
+
+  const cleanUrl = normalizeShopeeUrl_(url);
+
+  if (!cleanUrl) throw new Error("Informe um link válido da Shopee.");
+
+  const response = UrlFetchApp.fetch(cleanUrl,{method:"get",followRedirects:true,muteHttpExceptions:true,headers:{"User-Agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/124 Safari/537.36","Accept-Language":"pt-BR,pt;q=0.9,en;q=0.7"}});
+
+  const httpStatus = response.getResponseCode();
+
+  const html = response.getContentText().slice(0,1500000);
+
+  const lower = html.toLowerCase();
+
+  if (httpStatus===403 || httpStatus===429 || lower.indexOf("captcha")>=0 || (lower.indexOf("verify")>=0 && lower.indexOf("robot")>=0)) return {ok:false,blocked:true,status:"Bloqueado pela Shopee",httpStatus:httpStatus,error:"A página exigiu verificação ou bloqueou a leitura automática. Preencha manualmente e tente novamente depois."};
+
+  if (httpStatus>=400) return {ok:false,status:"Erro HTTP "+httpStatus,httpStatus:httpStatus};
+
+
+
+  const found = findJsonLdProduct_(html) || {};
+
+  const title = normalizeText_(found.name || extractMeta_(html,"og:title") || extractMeta_(html,"twitter:title") || extractHtmlTitle_(html),500);
+
+  const imageRaw = firstImage_(found.image) || extractMeta_(html,"og:image") || extractMeta_(html,"twitter:image");
+
+  const description = normalizeText_(found.description || extractMeta_(html,"og:description") || extractMeta_(html,"description"),5000);
+
+  const offers = found.offers || {};
+
+  const price = parsePrice_(Array.isArray(offers)&&offers.length?offers[0].price:offers.price) || parsePrice_(extractMeta_(html,"product:price:amount"));
+
+  const ok = Boolean(title || imageRaw || price);
+
+  return {ok:ok,blocked:false,status:ok?"Dados detectados":"Nenhum dado estruturado encontrado",httpStatus:httpStatus,title:title,price:price||0,image:normalizeUrl_(imageRaw),description:description,source:cleanUrl};
+
+}
+
+
+
+function findJsonLdProduct_(html) {
+  const regex = /<script[^>]+type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi;
+
+  let match;
+
+  while ((match = regex.exec(html))) {
+
+    const raw = decodeHtml_(String(match[1]||"").trim());
+
+    try {
+
+      const parsed = JSON.parse(raw), found = walkForProduct_(parsed);
+
+      if (found) return found;
+
+    } catch (error) {}
+
+  }
+
+  return null;
+
+}
+
+
+
+function walkForProduct_(value) {
+
+  if (!value) return null;
+
+  if (Array.isArray(value)) {
+
+    for (let i=0;i<value.length;i++){const found=walkForProduct_(value[i]);if(found)return found;}
+
+    return null;
+
+  }
+
+  if (typeof value!=="object") return null;
+
+  const type=value["@type"];
+
+  if (type==="Product" || (Array.isArray(type)&&type.indexOf("Product")>=0)) return value;
+
+  const keys=Object.keys(value);
+
+  for(let j=0;j<keys.length;j++){const found=walkForProduct_(value[keys[j]]);if(found)return found;}
+
+  return null;
+
+}
+
+
+
+function extractMeta_(html,key) {
+  const escaped = String(key).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const patterns = [
+    new RegExp('<meta[^>]+(?:property|name|itemprop)=["\\\']' + escaped + '["\\\'][^>]+content=["\\\']([^"\\\']+)["\\\']', 'i'),
+    new RegExp('<meta[^>]+content=["\\\']([^"\\\']+)["\\\'][^>]+(?:property|name|itemprop)=["\\\']' + escaped + '["\\\']', 'i')
+  ];
+
+  for(let i=0;i<patterns.length;i++){const match=html.match(patterns[i]);if(match&&match[1])return decodeHtml_(match[1]);}
+
+  return "";
+
+}
+
+
+
+function extractHtmlTitle_(html){const match=html.match(/<title[^>]*>([\s\S]*?)<\/title>/i);return match?decodeHtml_(match[1]).replace(/\s+/g," ").trim():"";}
+
+function firstImage_(value){if(Array.isArray(value))return value.length?String(value[0]||""):"";return value?String(value):"";}
+
+function decodeHtml_(value){return String(value||"").replace(/&quot;/g,'"').replace(/&#39;|&apos;/g,"'").replace(/&amp;/g,"&").replace(/&lt;/g,"<").replace(/&gt;/g,">");}
+
+
+
+function findRowByValue_(sheet,column,value){const last=sheet.getLastRow();if(last<=1)return 0;const values=sheet.getRange(2,column,last-1,1).getValues();const target=String(value);for(let i=0;i<values.length;i++)if(String(values[i][0])===target)return i+2;return 0;}
+
+function log_(type,action,entity,id,origin,summary,details){try{getSheet_(SHEETS.logs).appendRow([new Date(),type,action,entity,id,origin,summary,details]);}catch(error){console.error(error);}}
+
+function normalizeText_(value,max){const text=String(value==null?"":value).trim();return text.slice(0,max||500);}
+
+function normalizePhone_(value){let digits=String(value||"").replace(/\D/g,"");if(digits.indexOf("55")===0&&digits.length>11)digits=digits.slice(2);return digits.length>=10&&digits.length<=11?digits:"";}
+
+function normalizeCep_(value){const digits=String(value||"").replace(/\D/g,"");return digits.length===8?digits.slice(0,5)+"-"+digits.slice(5):"";}
+
+function normalizePositiveInt_(value,min,max){const n=parseInt(String(value==null?"":value).replace(/\D/g,""),10);if(!Number.isFinite(n))return min;return Math.max(min,Math.min(max,n));}
+
+function normalizeYesNo_(value,fallback){const clean=String(value||"").toLowerCase();if(clean==="sim"||clean==="true"||clean==="1")return "Sim";if(clean==="não"||clean==="nao"||clean==="false"||clean==="0")return "Não";return fallback||"Não";}
+
+function isYes_(value){return normalizeYesNo_(value,"Não")==="Sim";}
+
+function normalizeUrl_(value){const text=normalizeText_(value,2000);return /^https?:\/\//i.test(text)?text:"";}
+
+function normalizeShopeeUrl_(value){const text=normalizeUrl_(value);if(!text)return "";const match=text.match(/^https:\/\/([a-z0-9.-]+)(\/.*)?$/i);if(!match)return "";const host=String(match[1]||"").toLowerCase();if(host!=="shopee.com.br"&&!host.endsWith(".shopee.com.br")&&host!=="shopee.com"&&!host.endsWith(".shopee.com"))return "";return text;}
+
+function formatMoneyBr_(value) {
+
+  return "R$ " + Number(value || 0).toFixed(2).replace(".", ",");
+
+}
+
+
+
+function toMoney_(value){return Math.max(0,parsePrice_(value));}
+
+function parsePrice_(value){if(value==null||value==="")return 0;if(typeof value==="number")return Number.isFinite(value)?value:0;let clean=String(value).trim().replace(/[^0-9,.-]/g,"");if(!clean)return 0;if(clean.indexOf(",")>=0&&clean.indexOf(".")>=0)clean=clean.replace(/\\./g,"").replace(",",".");else if(clean.indexOf(",")>=0)clean=clean.replace(",",".");const n=Number(clean);return Number.isFinite(n)?n:0;}
+
+function slugify_(value){return normalizeText_(value,240).normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"").slice(0,120);}
+
+function formatOrderId_(value){const n=Number(value);if(!Number.isFinite(n))return "";return String(Math.trunc(n)).padStart(4,"0");}
+
+function serializeValue_(value){if(value instanceof Date)return Utilities.formatDate(value,"America/Sao_Paulo","yyyy-MM-dd'T'HH:mm:ssXXX");return value==null?"":value;}
+
+function shortDate_(value){if(!value)return "";const date=value instanceof Date?value:new Date(value);if(String(date)==="Invalid Date")return String(value);return Utilities.formatDate(date,"America/Sao_Paulo","dd/MM/yyyy");}
+
+function sanitizeCallback_(value){const callback=String(value||"");return /^[A-Za-z_$][0-9A-Za-z_$\\.]{0,100}$/.test(callback)?callback:"";}
+
+function output_(data,callback){const json=JSON.stringify(data),safeCallback=sanitizeCallback_(callback);if(safeCallback)return ContentService.createTextOutput(safeCallback+"("+json+");").setMimeType(ContentService.MimeType.JAVASCRIPT);return ContentService.createTextOutput(json).setMimeType(ContentService.MimeType.JSON);}
+
+function safeError_(error){return normalizeText_(error&&error.message?error.message:error,800)||"Erro desconhecido.";}
+
+
+
+
+
+function testCheckoutEmail_() {
+
+  const destination = PropertiesService.getScriptProperties().getProperty("NOTIFICATION_EMAIL") || "orume3d@gmail.com";
+
+  MailApp.sendEmail({
+
+    to: destination,
+
+    subject: "Teste checkout Orume",
+
+    body: "O envio de e-mail do checkout Orume está autorizado e funcionando."
+
+  });
+
+}
