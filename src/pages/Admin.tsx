@@ -894,6 +894,7 @@ const Admin = () => {
                             src={selectedProduct[key]}
                             alt={`Prévia da imagem ${index + 1}`}
                             referrerPolicy="no-referrer"
+                            referrerPolicy="no-referrer"
                             className="h-28 w-full object-cover"
                             onError={(event) => {
                               event.currentTarget.style.display = 'none';
