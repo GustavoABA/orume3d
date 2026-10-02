@@ -61,7 +61,7 @@ const Checkout = () => {
         return;
       }
 
-      window.location.href = '/orume3d/';
+      window.location.href = '/';
       return;
     }
 
@@ -225,7 +225,7 @@ const Checkout = () => {
             necessárias para frete, PIX, produção e entrega.
           </p>
           <a
-            href="/orume3d/"
+            href="/"
             className="mt-7 inline-flex rounded-full border border-accent/[0.22] bg-accent/[0.06] px-6 py-3 text-sm font-semibold text-accentLight hover:border-accent/[0.45]"
           >
             Voltar para a loja
@@ -292,7 +292,7 @@ const Checkout = () => {
       <header className="relative z-10 border-b border-accent/10 bg-ink/80 backdrop-blur-xl">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-4 sm:px-8">
           <a
-            href="/orume3d/"
+            href="/"
             className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.15em] text-muted hover:text-accentLight"
           >
             <ArrowLeftIcon className="h-4 w-4" />
