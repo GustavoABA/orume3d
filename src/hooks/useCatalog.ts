@@ -17,7 +17,11 @@ const CACHE_KEY = 'orume:catalog:v3';
 const CACHE_TTL = 5 * 60 * 1000;
 const PLACEHOLDER_IMAGE = '/brand/orume-mark.webp';
 
-const cleanUrl = (value: unknown) => String(value || '').trim();
+const cleanUrl = (value: unknown) => {
+  const url = String(value || '').trim();
+  if (!url) return '';
+  return url.replace(/^http:\/\//i, 'https://');
+};
 
 const collectImages = (item: Record<string, unknown>) => {
   const fromArray = Array.isArray(item.images)
