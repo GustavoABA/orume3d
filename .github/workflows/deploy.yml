@@ -38,6 +38,7 @@ jobs:
           mkdir -p dist/admin dist/checkout
           cp dist/index.html dist/admin/index.html
           cp dist/index.html dist/checkout/index.html
+          cp dist/index.html dist/404.html
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
