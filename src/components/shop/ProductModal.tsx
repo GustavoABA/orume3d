@@ -47,6 +47,7 @@ const ProductModal = ({ product, open, onClose, onCartOpen }: ProductModalProps)
                   <img
                     src={product.image}
                     alt={product.name}
+                    referrerPolicy="no-referrer"
                     onError={(event) => {
                       if (!event.currentTarget.src.endsWith('/brand/orume-mark.webp')) {
                         event.currentTarget.src = '/brand/orume-mark.webp';
