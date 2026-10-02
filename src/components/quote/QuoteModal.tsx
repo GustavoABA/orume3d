@@ -32,7 +32,7 @@ const QuoteModal = ({ open, onClose }: QuoteModalProps) => {
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    fetch('/orume3d/intake-config.json', { cache: 'no-store' })
+    fetch('/intake-config.json', { cache: 'no-store' })
       .then((response) => (response.ok ? response.json() : {}))
       .then((config: IntakeConfig) => setEndpoint(String(config.endpoint || '').trim()))
       .catch(() => setEndpoint(''));
