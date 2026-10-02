@@ -37,7 +37,7 @@ const RecentlyViewedComponent = ({ allProducts, productIds, onSelect }: Recently
             whileHover={{ y: -4 }}
             className="overflow-hidden rounded-2xl border border-accent/10 bg-paper/[0.03] text-left transition hover:border-accent/30"
           >
-            <img src={product.image} alt={product.name} loading="lazy" className="h-36 w-full object-cover opacity-85" />
+            <img src={product.image} alt={product.name} loading="lazy" referrerPolicy="no-referrer" className="h-36 w-full object-cover opacity-85" />
             <div className="p-4">
               <span className="text-[0.58rem] font-bold uppercase tracking-[0.18em] text-accent/60">
                 {categoryLabel(product.category)}
