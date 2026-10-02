@@ -461,7 +461,7 @@ const Checkout = () => {
               ) : (
                 items.map((item) => (
                   <div key={item.id} className="flex gap-3 border-b border-accent/[0.08] pb-4 last:border-0">
-                    <img src={item.image} alt="" className="h-16 w-16 rounded-xl bg-ink object-cover" />
+                    <img src={item.image} alt="" referrerPolicy="no-referrer" className="h-16 w-16 rounded-xl bg-ink object-cover" />
                     <div className="min-w-0 flex-1">
                       <p className="line-clamp-2 text-sm font-semibold text-paper/90">{item.name}</p>
                       <p className="mt-1 text-xs text-muted/70">
