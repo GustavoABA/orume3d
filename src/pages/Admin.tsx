@@ -412,7 +412,7 @@ const Admin = () => {
     return (
       <main className="min-h-screen bg-background px-5 py-16 text-paper">
         <form onSubmit={login} className="orume-panel mx-auto max-w-md rounded-3xl p-7">
-          <img src="/orume3d/brand/orume-mark.webp" alt="" className="mx-auto h-14 w-14 object-contain" />
+          <img src="/brand/orume-mark.webp" alt="" className="mx-auto h-14 w-14 object-contain" />
           <p className="mt-5 text-center text-[0.6rem] font-bold uppercase tracking-[0.3em] text-accent/70">
             Administração Orume
           </p>
@@ -437,7 +437,7 @@ const Admin = () => {
             Entrar
           </button>
           {status && <p className="mt-4 text-center text-xs leading-5 text-muted">{status}</p>}
-          <a href="/orume3d/" className="mt-5 block text-center text-xs text-muted/70 hover:text-accentLight">
+          <a href="/" className="mt-5 block text-center text-xs text-muted/70 hover:text-accentLight">
             ← Voltar para a loja
           </a>
         </form>
@@ -450,7 +450,7 @@ const Admin = () => {
       <header className="sticky top-0 z-30 border-b border-accent/[0.12] bg-ink/[0.94] backdrop-blur-xl">
         <div className="mx-auto flex max-w-[1500px] flex-wrap items-center justify-between gap-3 px-5 py-3 sm:px-8">
           <div className="flex items-center gap-3">
-            <img src="/orume3d/brand/orume-mark.webp" alt="" className="h-9 w-9 object-contain" />
+            <img src="/brand/orume-mark.webp" alt="" className="h-9 w-9 object-contain" />
             <div>
               <p className="orume-metal-text font-display text-xl tracking-[0.16em]">ORUME ADMIN</p>
               <p className="text-[0.55rem] uppercase tracking-[0.22em] text-muted/70">backend operacional</p>
