@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
 
 const Footer = () => {
-  const logo = '/orume3d/brand/orume-mark.webp';
+  const logo = '/brand/orume-mark.webp';
 
   const socialLinks = [
     { label: 'Instagram', handle: '@orume3d', href: 'https://www.instagram.com/orume3d/' },
