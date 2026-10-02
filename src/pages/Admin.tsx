@@ -643,7 +643,17 @@ const Admin = () => {
                     className="flex w-full gap-3 rounded-xl border border-accent/10 bg-paper/[0.03] p-3 text-left transition hover:border-accent/30"
                   >
                     {(product.imageMain || product.detectedImage) ? (
-                      <img src={product.imageMain || product.detectedImage} alt="" className="h-14 w-14 rounded-lg object-cover" />
+                      <img
+                        src={product.imageMain || product.detectedImage}
+                        alt=""
+                        referrerPolicy="no-referrer"
+                        onError={(event) => {
+                          event.currentTarget.src = '/brand/orume-mark.webp';
+                          event.currentTarget.classList.remove('object-cover');
+                          event.currentTarget.classList.add('object-contain', 'p-2');
+                        }}
+                        className="h-14 w-14 rounded-lg object-cover"
+                      />
                     ) : (
                       <div className="flex h-14 w-14 items-center justify-center rounded-lg bg-ink text-muted/[0.55]"><CubeIcon className="h-6 w-6" /></div>
                     )}
@@ -883,6 +893,7 @@ const Admin = () => {
                           <img
                             src={selectedProduct[key]}
                             alt={`Prévia da imagem ${index + 1}`}
+                            referrerPolicy="no-referrer"
                             className="h-28 w-full object-cover"
                             onError={(event) => {
                               event.currentTarget.style.display = 'none';
