@@ -12,8 +12,9 @@ const Admin = lazy(() => import('./pages/Admin'));
 const Checkout = lazy(() => import('./pages/Checkout'));
 
 const App = () => {
-  const isAdminRoute = ['/admin', '/admin/', '/orume3d/admin', '/orume3d/admin/'].includes(window.location.pathname);
-  const isCheckoutRoute = ['/checkout', '/checkout/', '/orume3d/checkout', '/orume3d/checkout/'].includes(window.location.pathname);
+  const pathname = window.location.pathname.replace(/\/+$/, '') || '/';
+  const isAdminRoute = pathname === '/admin';
+  const isCheckoutRoute = pathname === '/checkout';
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isQuoteOpen, setIsQuoteOpen] = useState(false);
   const [activePage, setActivePage] = useState<'home' | 'wishlist'>('home');
