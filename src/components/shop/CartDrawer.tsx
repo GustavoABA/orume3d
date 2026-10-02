@@ -9,7 +9,7 @@ const CartDrawer = ({ open, onClose }: { open: boolean; onClose: () => void }) =
 
   const goToCheckout = () => {
     onClose();
-    window.location.href = '/orume3d/checkout/';
+    window.location.href = '/checkout/';
   };
 
   return (
