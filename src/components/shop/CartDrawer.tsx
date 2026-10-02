@@ -79,6 +79,14 @@ const CartDrawer = ({ open, onClose }: { open: boolean; onClose: () => void }) =
                               src={item.image}
                               alt={item.name}
                               loading="lazy"
+                              referrerPolicy="no-referrer"
+                              onError={(event) => {
+                                if (!event.currentTarget.src.endsWith('/brand/orume-mark.webp')) {
+                                  event.currentTarget.src = '/brand/orume-mark.webp';
+                                  event.currentTarget.classList.remove('object-cover');
+                                  event.currentTarget.classList.add('object-contain', 'p-3');
+                                }
+                              }}
                               className="h-20 w-20 rounded-xl object-cover"
                             />
                             <div className="min-w-0 flex-1">
