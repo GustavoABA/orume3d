@@ -15,7 +15,7 @@ type CatalogCache = {
 
 const CACHE_KEY = 'orume:catalog:v3';
 const CACHE_TTL = 5 * 60 * 1000;
-const PLACEHOLDER_IMAGE = '/orume3d/brand/orume-mark.webp';
+const PLACEHOLDER_IMAGE = '/brand/orume-mark.webp';
 
 const cleanUrl = (value: unknown) => String(value || '').trim();
 
