@@ -45,6 +45,7 @@ const ProductCardComponent = ({ product, onView }: ProductCardProps) => {
           src={product.image}
           alt={product.name}
           loading="lazy"
+          referrerPolicy="no-referrer"
           onError={(event) => {
             if (!event.currentTarget.src.endsWith('/brand/orume-mark.webp')) {
               event.currentTarget.src = '/brand/orume-mark.webp';
