@@ -77,14 +77,28 @@
       const urls = products
         .map(product => {
           const images = Array.isArray(product?.images) ? product.images.filter(Boolean) : [];
-          return product?.image || images[0] || '';
+          return (
+            product?.image ||
+            product?.imageMain ||
+            product?.mainImage ||
+            product?.detectedImage ||
+            product?.['Imagem principal'] ||
+            images[0] ||
+            ''
+          );
         })
         .filter(Boolean)
-        .map(src => new URL(src, SITE_URL).href);
+        .map(src => new URL(String(src).replace(/^http:\/\//i, 'https://'), SITE_URL).href);
 
       if (!urls.length) throw new Error('catálogo sem imagens');
 
       document.querySelectorAll('.feed-image').forEach((image, index) => {
+        image.onerror = () => {
+          image.onerror = null;
+          image.src = '/brand/orume-mark.webp';
+          image.style.objectFit = 'contain';
+          image.style.padding = '12%';
+        };
         image.src = urls[index % urls.length];
       });
 
