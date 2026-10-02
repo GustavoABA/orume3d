@@ -13,14 +13,19 @@ type CatalogCache = {
   products: Product[];
 };
 
-const CACHE_KEY = 'orume:catalog:v3';
+const CACHE_KEY = 'orume:catalog:v4';
 const CACHE_TTL = 5 * 60 * 1000;
 const PLACEHOLDER_IMAGE = '/brand/orume-mark.webp';
 
 const cleanUrl = (value: unknown) => {
-  const url = String(value || '').trim();
+  let url = String(value || '').trim();
   if (!url) return '';
-  return url.replace(/^http:\/\//i, 'https://');
+
+  url = url.replace(/^http:\/\//i, 'https://');
+  url = url.replace(/^https:\/\/gustavoaba\.github\.io\/orume3d\//i, 'https://orume.com.br/');
+  url = url.replace(/^\/orume3d\//i, '/');
+
+  return url;
 };
 
 const collectImages = (item: Record<string, unknown>) => {
