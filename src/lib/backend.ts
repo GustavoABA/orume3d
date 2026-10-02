@@ -6,7 +6,7 @@ export type BackendConfig = {
 };
 
 export const loadBackendConfig = async (): Promise<BackendConfig> => {
-  const response = await fetch('/intake-config.json', { cache: 'no-store' });
+  const response = await fetch('/intake-config.json?v=' + Date.now(), { cache: 'no-store' });
   if (!response.ok) throw new Error('Configuração do backend indisponível.');
   const config = (await response.json()) as Partial<BackendConfig>;
   const endpoint = String(config.endpoint || '').trim();
