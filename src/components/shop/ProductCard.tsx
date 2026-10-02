@@ -46,8 +46,8 @@ const ProductCardComponent = ({ product, onView }: ProductCardProps) => {
           alt={product.name}
           loading="lazy"
           onError={(event) => {
-            if (!event.currentTarget.src.endsWith('/orume3d/brand/orume-mark.webp')) {
-              event.currentTarget.src = '/orume3d/brand/orume-mark.webp';
+            if (!event.currentTarget.src.endsWith('/brand/orume-mark.webp')) {
+              event.currentTarget.src = '/brand/orume-mark.webp';
               event.currentTarget.classList.remove('object-cover');
               event.currentTarget.classList.add('object-contain', 'p-10');
             }
