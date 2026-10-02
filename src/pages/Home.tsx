@@ -27,7 +27,7 @@ const Home = ({ onCartOpen }: HomeProps) => {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const { addRecentlyViewed, recentlyViewed } = usePreferences();
-  const hero = "/orume3d/brand/orume-hero.webp";
+  const hero = "/brand/orume-hero.webp";
 
   const { products: activeCatalog, loading: catalogLoading, error: catalogError } = useCatalog();
 
