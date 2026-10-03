@@ -8,7 +8,6 @@ import {
   type ReactNode,
 } from 'react';
 import type { Product } from '../data/products';
-import { useLocalStorage } from '../hooks/useLocalStorage';
 
 export type CartItem = {
   id: number;
@@ -43,7 +42,6 @@ type CartState = {
 };
 
 type CartAction =
-  | { type: 'HYDRATE'; payload: CartItem[] }
   | { type: 'ADD_ITEM'; payload: Product }
   | { type: 'REMOVE_ITEM'; payload: { id: number } }
   | { type: 'UPDATE_QUANTITY'; payload: { id: number; quantity: number } }
@@ -51,8 +49,6 @@ type CartAction =
 
 const cartReducer = (state: CartState, action: CartAction): CartState => {
   switch (action.type) {
-    case 'HYDRATE':
-      return { items: normalizeStoredItems(action.payload) };
     case 'ADD_ITEM': {
       const existing = state.items.find((item) => item.id === action.payload.id);
       if (existing) {
@@ -111,16 +107,22 @@ type CartContextValue = {
 const CartContext = createContext<CartContextValue | undefined>(undefined);
 
 export const CartProvider = ({ children }: { children: ReactNode }) => {
-  const [storedItems, setStoredItems] = useLocalStorage<CartItem[]>(STORAGE_KEY, []);
-  const [state, dispatch] = useReducer(cartReducer, { items: normalizeStoredItems(storedItems) });
+  const [state, dispatch] = useReducer(cartReducer, undefined, (): CartState => {
+    try {
+      const saved = window.localStorage.getItem(STORAGE_KEY);
+      return { items: normalizeStoredItems(saved ? JSON.parse(saved) : []) };
+    } catch {
+      return { items: [] };
+    }
+  });
 
   useEffect(() => {
-    dispatch({ type: 'HYDRATE', payload: storedItems });
-  }, [storedItems]);
-
-  useEffect(() => {
-    setStoredItems(state.items);
-  }, [state.items, setStoredItems]);
+    try {
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state.items));
+    } catch {
+      // O carrinho continua funcionando quando o armazenamento está indisponível.
+    }
+  }, [state.items]);
 
   const addToCart = useCallback((product: Product) => dispatch({ type: 'ADD_ITEM', payload: product }), []);
   const removeFromCart = useCallback((id: number) => dispatch({ type: 'REMOVE_ITEM', payload: { id } }), []);
