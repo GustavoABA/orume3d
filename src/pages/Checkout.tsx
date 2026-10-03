@@ -1,14 +1,15 @@
-import { FormEvent, useEffect, useMemo, useState } from 'react';
+import { FormEvent, useEffect, useMemo, useRef, useState } from 'react';
 import { ArrowLeftIcon, EnvelopeIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 import { motion } from 'framer-motion';
 import { useCart } from '../context/CartContext';
 import { formatBRL } from '../lib/format';
-import { loadBackendConfig, postNoCors } from '../lib/backend';
+import { loadBackendConfig, postBackend } from '../lib/backend';
 
 const ORUME_WHATSAPP = '5519989342212';
 
 const Checkout = () => {
   const { items, subtotal, totalItems, resetCart } = useCart();
+  const pendingCheckout = useRef({ signature: '', id: '' });
   const [cleanService, setCleanService] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [successId, setSuccessId] = useState('');
@@ -108,13 +109,17 @@ const Checkout = () => {
       return;
     }
 
-    const checkoutId = makeCheckoutId();
+    const signature = JSON.stringify({ name, phone, email, cep, city, delivery, notes, cleanService, cartLines });
+    if (pendingCheckout.current.signature !== signature) {
+      pendingCheckout.current = { signature, id: makeCheckoutId() };
+    }
+    const checkoutId = pendingCheckout.current.id;
 
     setSubmitting(true);
 
     try {
       const config = await loadBackendConfig();
-      await postNoCors(config.endpoint, {
+      const result = await postBackend(config.endpoint, {
         action: 'createCheckout',
         checkoutId,
         name,
@@ -131,6 +136,9 @@ const Checkout = () => {
         total: subtotal,
         paymentMethod: 'PIX manual',
       });
+
+      if (result.checkoutId !== checkoutId) throw new Error('O backend não confirmou o código deste checkout.');
+      pendingCheckout.current = { signature: '', id: '' };
 
       if (cleanService) {
         setSuccessId(checkoutId);
@@ -199,7 +207,7 @@ const Checkout = () => {
       setPendingWhatsAppUrl(whatsappUrl);
     } catch (reason) {
       console.error(reason);
-      setError('Não foi possível registrar o checkout. Tente novamente em alguns instantes.');
+      setError(reason instanceof Error ? reason.message : 'Não foi possível confirmar o checkout.');
     } finally {
       setSubmitting(false);
     }

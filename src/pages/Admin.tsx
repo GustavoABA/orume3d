@@ -1,6 +1,6 @@
 import { FormEvent, useEffect, useMemo, useState } from 'react';
 import { ArrowPathIcon, ArrowTopRightOnSquareIcon, CheckCircleIcon, CubeIcon, ShoppingBagIcon } from '@heroicons/react/24/outline';
-import { loadBackendConfig, jsonp, postNoCors } from '../lib/backend';
+import { loadBackendConfig, jsonp, postBackend } from '../lib/backend';
 import { formatBRL } from '../lib/format';
 
 type Order = {
@@ -249,12 +249,11 @@ const Admin = () => {
     setBusy(true);
     setStatus('Salvando pedido…');
     try {
-      await postNoCors(endpoint, {
+      await postBackend(endpoint, {
         action: 'adminSaveOrder',
         adminKey,
         order: selectedOrder,
       });
-      await new Promise((resolve) => window.setTimeout(resolve, 900));
       await getSnapshot(adminKey);
       setStatus('Pedido salvo.');
     } catch (error) {
@@ -269,12 +268,11 @@ const Admin = () => {
     setBusy(true);
     setStatus('Concluindo pedido…');
     try {
-      await postNoCors(endpoint, {
+      await postBackend(endpoint, {
         action: 'adminCompleteOrder',
         adminKey,
         id: selectedOrder.id,
       });
-      await new Promise((resolve) => window.setTimeout(resolve, 900));
       await getSnapshot(adminKey);
       setStatus('Pedido marcado como concluído.');
     } catch (error) {
@@ -372,16 +370,16 @@ const Admin = () => {
       setSelectedProduct(productToSave);
       setStatus('Salvando produto…');
 
-      await postNoCors(endpoint, {
+      const result = await postBackend<{ ok: boolean; error?: string; product: Product }>(endpoint, {
         action: 'adminSaveProduct',
         adminKey,
         mode: isCreatingProduct ? 'create' : 'update',
         product: productToSave,
       });
 
-      await new Promise((resolve) => window.setTimeout(resolve, 1400));
-      await getSnapshot(adminKey);
+      setSelectedProduct(result.product);
       setIsCreatingProduct(false);
+      await getSnapshot(adminKey);
       setStatus(
         isCreatingProduct
           ? 'Produto criado em uma nova linha do catálogo.'

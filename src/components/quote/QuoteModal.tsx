@@ -3,26 +3,17 @@ import { XMarkIcon } from '@heroicons/react/24/outline';
 import { AnimatePresence, motion } from 'framer-motion';
 import { FormEvent, useEffect, useRef, useState } from 'react';
 
+import { loadBackendConfig, postBackend } from '../../lib/backend';
+
 type QuoteModalProps = {
   open: boolean;
   onClose: () => void;
 };
 
-type QuoteStatusResponse = {
-  found?: boolean;
-  complete?: boolean;
-  failed?: boolean;
-  orderId?: string;
-  error?: string;
-};
-
-type IntakeConfig = {
-  endpoint?: string;
-};
-
 const initialQuantity = '1';
 
 const QuoteModal = ({ open, onClose }: QuoteModalProps) => {
+  const pendingQuote = useRef({ signature: '', id: '' });
   const formRef = useRef<HTMLFormElement>(null);
   const [quantity, setQuantity] = useState(initialQuantity);
   const [cleanService, setCleanService] = useState(false);
@@ -32,9 +23,8 @@ const QuoteModal = ({ open, onClose }: QuoteModalProps) => {
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    fetch('/intake-config.json?v=' + Date.now(), { cache: 'no-store' })
-      .then((response) => (response.ok ? response.json() : {}))
-      .then((config: IntakeConfig) => setEndpoint(String(config.endpoint || '').trim()))
+    loadBackendConfig()
+      .then((config) => setEndpoint(config.endpoint))
       .catch(() => setEndpoint(''));
   }, []);
 
@@ -47,72 +37,6 @@ const QuoteModal = ({ open, onClose }: QuoteModalProps) => {
 
   const makeSiteId = () =>
     `SITE-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
-
-  const getStatusJsonp = (siteId: string) =>
-    new Promise<QuoteStatusResponse>((resolve, reject) => {
-      const callback = `__orumeStatus_${Math.random().toString(36).slice(2)}`;
-      const script = document.createElement('script');
-      const host = window as unknown as Record<string, ((data: QuoteStatusResponse) => void) | undefined>;
-
-      const cleanup = () => {
-        window.clearTimeout(timer);
-        try {
-          delete host[callback];
-        } catch {
-          host[callback] = undefined;
-        }
-        script.remove();
-      };
-
-      host[callback] = (data: QuoteStatusResponse) => {
-        cleanup();
-        resolve(data || {});
-      };
-
-      script.onerror = () => {
-        cleanup();
-        reject(new Error('Falha ao consultar status'));
-      };
-
-      const timer = window.setTimeout(() => {
-        cleanup();
-        reject(new Error('Timeout ao consultar status'));
-      }, 8000);
-
-      script.src =
-        endpoint +
-        '?action=status&siteId=' +
-        encodeURIComponent(siteId) +
-        '&callback=' +
-        encodeURIComponent(callback) +
-        '&_=' +
-        Date.now();
-      script.async = true;
-      document.head.appendChild(script);
-    });
-
-  const waitForConfirmation = async (siteId: string) => {
-    const deadline = Date.now() + 30000;
-
-    while (Date.now() < deadline) {
-      try {
-        const result = await getStatusJsonp(siteId);
-
-        if (result.found && result.complete) return result;
-        if (result.found && result.failed) {
-          throw new Error(result.error || 'O Apps Script marcou o pedido como erro.');
-        }
-      } catch (error) {
-        if (error instanceof Error && error.message.includes('marcou o pedido como erro')) {
-          throw error;
-        }
-      }
-
-      await new Promise((resolve) => window.setTimeout(resolve, 1500));
-    }
-
-    throw new Error('Tempo de confirmação excedido');
-  };
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -152,9 +76,8 @@ const QuoteModal = ({ open, onClose }: QuoteModalProps) => {
       return;
     }
 
-    const siteId = makeSiteId();
     const payload = {
-      siteId,
+      action: 'quote',
       name: String(data.get('name') || '').trim(),
       phone,
       city: String(data.get('city') || '').trim(),
@@ -173,8 +96,11 @@ const QuoteModal = ({ open, onClose }: QuoteModalProps) => {
       cleanService,
     };
 
-    const body = new FormData();
-    body.append('payload', JSON.stringify(payload));
+    const signature = JSON.stringify(payload);
+    if (pendingQuote.current.signature !== signature) {
+      pendingQuote.current = { signature, id: makeSiteId() };
+    }
+    const siteId = pendingQuote.current.id;
 
     setSubmitting(true);
     setStatus('Registrando seu orçamento…');
@@ -189,15 +115,9 @@ const QuoteModal = ({ open, onClose }: QuoteModalProps) => {
         // armazenamento local é apenas auxiliar
       }
 
-      await fetch(endpoint, {
-        method: 'POST',
-        body,
-        mode: 'no-cors',
-        redirect: 'follow',
-        cache: 'no-store',
-      });
-
-      const result = await waitForConfirmation(siteId);
+      const result = await postBackend(endpoint, { ...payload, siteId });
+      if (!result.orderId) throw new Error('O backend não confirmou o número do orçamento.');
+      pendingQuote.current = { signature: '', id: '' };
       const orderText = result.orderId ? ` Pedido ${result.orderId}.` : '';
 
       setStatus(
@@ -216,7 +136,7 @@ const QuoteModal = ({ open, onClose }: QuoteModalProps) => {
     } catch (error) {
       console.error('Falha no orçamento:', error);
       setStatus(
-        'O pedido foi enviado, mas a confirmação não chegou. Aguarde alguns minutos antes de tentar novamente.'
+        error instanceof Error ? error.message : 'Não foi possível confirmar o orçamento.'
       );
     } finally {
       setSubmitting(false);
