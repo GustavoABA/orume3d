@@ -1,3 +1,5 @@
+import { useAffiliate } from './AffiliateContext';
+import { affiliatePrice } from '../lib/affiliate';
 import {
   createContext,
   useCallback,
@@ -10,6 +12,7 @@ import {
 import type { Product } from '../data/products';
 
 export type CartItem = {
+  basePrice?: number;
   id: number;
   name: string;
   price: number;
@@ -55,7 +58,7 @@ const cartReducer = (state: CartState, action: CartAction): CartState => {
         return {
           items: state.items.map((item) =>
             item.id === action.payload.id
-              ? { ...item, quantity: Math.min(item.quantity + 1, MAX_QUANTITY) }
+              ? { ...item, price: action.payload.basePrice ?? action.payload.price, basePrice: action.payload.basePrice ?? action.payload.price, quantity: Math.min(item.quantity + 1, MAX_QUANTITY) }
               : item
           ),
         };
@@ -66,7 +69,8 @@ const cartReducer = (state: CartState, action: CartAction): CartState => {
           {
             id: action.payload.id,
             name: action.payload.name,
-            price: action.payload.price,
+            price: action.payload.basePrice ?? action.payload.price,
+            basePrice: action.payload.basePrice ?? action.payload.price,
             image: normalizeImageUrl(action.payload.image),
             quantity: 1,
             source: action.payload.source || (action.payload.shopeeUrl ? 'Shopee' : 'Interno'),
@@ -107,6 +111,7 @@ type CartContextValue = {
 const CartContext = createContext<CartContextValue | undefined>(undefined);
 
 export const CartProvider = ({ children }: { children: ReactNode }) => {
+  const affiliate = useAffiliate();
   const [state, dispatch] = useReducer(cartReducer, undefined, (): CartState => {
     try {
       const saved = window.localStorage.getItem(STORAGE_KEY);
@@ -133,13 +138,14 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   const resetCart = useCallback(() => dispatch({ type: 'RESET' }), []);
 
   const value = useMemo(() => {
-    const subtotal = state.items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+    const items = state.items.map(item => ({ ...item, price: affiliatePrice(item.basePrice ?? item.price, affiliate?.rate || 0) }));
+    const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
     const tax = subtotal * TAX_RATE;
     const total = subtotal + tax;
     const totalItems = state.items.reduce((sum, item) => sum + item.quantity, 0);
 
     return {
-      items: state.items,
+      items,
       subtotal,
       tax,
       total,
@@ -149,7 +155,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       updateQuantity,
       resetCart,
     };
-  }, [state.items, addToCart, removeFromCart, updateQuantity, resetCart]);
+  }, [state.items, affiliate, addToCart, removeFromCart, updateQuantity, resetCart]);
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 };

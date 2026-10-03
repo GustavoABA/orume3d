@@ -1,3 +1,4 @@
+import { useAffiliate } from '../../context/AffiliateContext';
 import { Dialog } from '@headlessui/react';
 import { CheckCircleIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { FormEvent, useEffect, useRef, useState } from 'react';
@@ -8,6 +9,7 @@ type QuoteModalProps = { open: boolean; onClose: () => void };
 const fieldClass = 'mt-2 w-full rounded-lg border border-paper/20 bg-ink px-3 py-3 text-base text-paper outline-none placeholder:text-muted/70 focus:border-accent focus:ring-1 focus:ring-accent';
 
 const QuoteModal = ({ open, onClose }: QuoteModalProps) => {
+  const affiliate = useAffiliate();
   const pendingQuote = useRef({ signature: '', id: '' });
   const titleRef = useRef<HTMLHeadingElement>(null);
   const [step, setStep] = useState(1);
@@ -37,6 +39,7 @@ const QuoteModal = ({ open, onClose }: QuoteModalProps) => {
     if (value('cep').replace(/\D/g, '').length !== 8) { setStatus('Informe um CEP com 8 dígitos.'); return; }
 
     const payload = {
+      affiliateCode: affiliate?.code || '', affiliateRate: affiliate?.rate,
       action: 'quote', name: value('name'), phone, product: value('product'), quantity: value('quantity'),
       cep: value('cep'), city: value('city'), delivery: 'A combinar',
       links: value('links'), description: value('description'), dimensions: value('dimensions'),
@@ -54,6 +57,7 @@ const QuoteModal = ({ open, onClose }: QuoteModalProps) => {
       if (!result.orderId) throw new Error('O backend não confirmou o número do orçamento.');
       const url = buildWhatsAppUrl([
         'Olá, enviei um orçamento pelo site da orume.',
+        affiliate ? `Afiliado: ${affiliate.code} (${affiliate.rate}%)` : '',
         `Protocolo: ${result.orderId}`,
         `Nome: ${payload.name}`,
         `Peça: ${payload.product}`,

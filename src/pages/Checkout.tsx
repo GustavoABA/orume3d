@@ -1,3 +1,4 @@
+import { useAffiliate } from '../context/AffiliateContext';
 import { FormEvent, useMemo, useRef, useState } from 'react';
 import { ArrowLeftIcon, EnvelopeIcon, CheckCircleIcon } from '@heroicons/react/24/outline';
 import { motion } from 'framer-motion';
@@ -8,6 +9,7 @@ import { loadBackendConfig, postBackend } from '../lib/backend';
 import { buildWhatsAppUrl } from '../lib/whatsapp';
 
 const Checkout = () => {
+  const affiliate = useAffiliate();
   const { items, subtotal, totalItems, resetCart } = useCart();
   const pendingCheckout = useRef({ signature: '', id: '' });
   const [cleanService, setCleanService] = useState(false);
@@ -77,7 +79,7 @@ const Checkout = () => {
       return;
     }
 
-    const signature = JSON.stringify({ name, phone, email, cep, city, delivery, notes, cleanService, cartLines });
+    const signature = JSON.stringify({ name, phone, email, cep, city, delivery, notes, cleanService, cartLines, affiliate });
     if (pendingCheckout.current.signature !== signature) {
       pendingCheckout.current = { signature, id: makeCheckoutId() };
     }
@@ -89,6 +91,8 @@ const Checkout = () => {
       const config = await loadBackendConfig();
       const result = await postBackend(config.endpoint, {
         action: 'createCheckout',
+        affiliateCode: affiliate?.code || '',
+        affiliateRate: affiliate?.rate,
         checkoutId,
         name,
         phone,
@@ -150,6 +154,7 @@ const Checkout = () => {
         itemText,
         '',
         '💳 *RESUMO*',
+        affiliate ? `Afiliado: ${affiliate.code} (${affiliate.rate}% já incluídos)` : '',
         'Subtotal dos produtos: *' + formatBRL(subtotal) + '*',
         '',
         '🚨 *ATENÇÃO: FRETE NÃO INCLUÍDO*',

@@ -1,3 +1,4 @@
+import { useAffiliate } from '../../context/AffiliateContext';
 import { Fragment } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
 import { ExclamationTriangleIcon, MinusIcon, PlusIcon, TrashIcon, XMarkIcon } from '@heroicons/react/24/outline';
@@ -5,11 +6,12 @@ import { useCart } from '../../context/CartContext';
 import { formatBRL } from '../../lib/format';
 
 const CartDrawer = ({ open, onClose }: { open: boolean; onClose: () => void }) => {
+  const affiliate = useAffiliate();
   const { items, totalItems, subtotal, updateQuantity, removeFromCart } = useCart();
 
   const goToCheckout = () => {
     onClose();
-    window.location.href = '/checkout/';
+    window.location.href = '/checkout/' + (affiliate ? '?afiliado=' + encodeURIComponent(affiliate.code) : '');
   };
 
   return (
