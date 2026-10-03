@@ -58,14 +58,22 @@ export const jsonp = <T>(
       if (settled) return;
       settled = true;
       cleanup();
-      reject(new Error('Falha ao consultar o backend.'));
+      reject(
+        new Error(
+          'Não foi possível abrir o Apps Script. Confirme a implantação do Web App como “Executar como: Eu” e “Quem pode acessar: Qualquer pessoa”.'
+        )
+      );
     };
 
     const timer = window.setTimeout(() => {
       if (settled) return;
       settled = true;
       cleanup(true);
-      reject(new Error('Tempo de resposta do backend excedido.'));
+      reject(
+        new Error(
+          'O Apps Script não respondeu a tempo. Verifique se a implantação está pública e se a URL /exec em intake-config.json é a implantação atual.'
+        )
+      );
     }, timeoutMs);
 
     const search = new URLSearchParams();
@@ -76,6 +84,7 @@ export const jsonp = <T>(
     search.set('_', String(Date.now()));
     script.src = endpoint + '?' + search.toString();
     script.async = true;
+    script.referrerPolicy = 'no-referrer';
     document.head.appendChild(script);
   });
 
