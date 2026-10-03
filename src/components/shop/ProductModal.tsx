@@ -1,10 +1,10 @@
 import { Dialog } from '@headlessui/react';
-import { XMarkIcon } from '@heroicons/react/24/outline';
-import { StarIcon } from '@heroicons/react/24/solid';
+import { XMarkIcon, TruckIcon, CubeIcon } from '@heroicons/react/24/outline';
 import { AnimatePresence, motion } from 'framer-motion';
 import type { Product } from '../../data/products';
 import { useCart } from '../../context/CartContext';
 import WishlistButton from './WishlistButton';
+import ProductGallery from './ProductGallery';
 import { useToast } from '../../context/ToastContext';
 import { categoryLabel, formatBRL } from '../../lib/format';
 import { buildDirectProductWhatsAppUrl, isMadeToOrder, productAvailabilityLabel } from '../../lib/productWhatsApp';
@@ -25,146 +25,59 @@ const ProductModal = ({ product, open, onClose, onCartOpen }: ProductModalProps)
     <AnimatePresence>
       {open && product && (
         <Dialog open={open} onClose={onClose} className="fixed inset-0 z-50 overflow-y-auto">
-          <div className="flex min-h-full items-center justify-center px-4 py-8">
-            <Dialog.Overlay
-              as={motion.div}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-ink/[0.86] backdrop-blur-sm"
-            />
-
-            <Dialog.Panel
-              as={motion.div}
-              initial={{ opacity: 0, y: 26, scale: 0.97 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: 18, scale: 0.98 }}
-              transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
-              className="orume-panel relative w-full max-w-4xl overflow-hidden rounded-[1.7rem]"
-            >
-              <div className="grid md:grid-cols-[1.08fr_.92fr]">
-                <div className="relative min-h-[330px] bg-ink md:min-h-[540px]">
-                  <img
-                    src={product.image}
-                    alt={product.name}
-                    referrerPolicy="no-referrer"
-                    onError={(event) => {
-                      if (!event.currentTarget.src.endsWith('/brand/orume-mark.webp')) {
-                        event.currentTarget.src = '/brand/orume-mark.webp';
-                        event.currentTarget.classList.remove('object-cover');
-                        event.currentTarget.classList.add('object-contain', 'p-16');
-                      }
-                    }}
-                    className="absolute inset-0 h-full w-full object-cover"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-transparent to-black/20" />
-                  <div className="absolute left-4 top-4 flex items-center gap-2">
-                    <span className="rounded-full border border-accent/25 bg-ink/[0.78] px-3 py-1 text-[0.62rem] font-bold uppercase tracking-[0.16em] text-accentLight backdrop-blur">
-                      {categoryLabel(product.category)}
-                    </span>
-                    <WishlistButton productId={product.id} />
+          <div className="flex min-h-full items-center justify-center p-3 sm:p-6">
+            <Dialog.Overlay as={motion.div} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-ink/90 backdrop-blur-sm" />
+            <Dialog.Panel as={motion.div} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 16 }} transition={{ duration: 0.2 }} className="orume-panel relative flex max-h-[calc(100dvh-2rem)] w-full max-w-5xl flex-col overflow-hidden rounded-3xl">
+              <div className="flex shrink-0 items-center justify-between border-b border-paper/10 px-5 py-3">
+                <span className="text-[0.65rem] font-bold uppercase tracking-[0.2em] text-accentLight">Orume • detalhes da peça</span>
+                <button type="button" onClick={onClose} aria-label="Fechar produto" className="rounded-full p-2 text-paper/70 transition hover:bg-paper/10 hover:text-paper focus-visible:ring-2 focus-visible:ring-accent"><XMarkIcon className="h-5 w-5" /></button>
+              </div>
+              <div className="min-h-0 overflow-y-auto overscroll-contain">
+                <div className="grid md:grid-cols-[1.1fr_1fr]">
+                  <div className="min-w-0 bg-ink/30 md:sticky md:top-0 md:self-start">
+                    <ProductGallery key={product.id} name={product.name} image={product.image} images={product.images} />
                   </div>
-                </div>
-
-                <div className="flex flex-col p-7 sm:p-9">
-                  <p className="text-[0.6rem] font-bold uppercase tracking-[0.3em] text-accent/70">
-                    Orume seleciona
-                  </p>
-                  <Dialog.Title className="mt-3 font-display text-3xl leading-tight text-paper">
-                    {product.name}
-                  </Dialog.Title>
-                  <Dialog.Description className="mt-3 text-sm leading-6 text-paper/70">
-                    {product.description}
-                  </Dialog.Description>
-
-                  <div className="mt-7 border-y border-accent/[0.12] py-5">
-                    <span className="text-[0.6rem] font-bold uppercase tracking-[0.24em] text-muted/70">
-                      Preço
-                    </span>
-                    <div className="mt-2 flex flex-wrap items-center gap-3">
-                      <span className="orume-metal-text text-3xl font-bold">
-                        {formatBRL(product.price)}
-                      </span>
-                      {product.discount && (
-                        <span className="rounded-full border border-accent/20 bg-accent/10 px-2.5 py-1 text-[0.62rem] font-bold text-accentLight">
-                          -{product.discount}%
-                        </span>
-                      )}
+                  <div className="min-w-0 px-5 pb-6 pt-2 sm:px-7 md:py-6">
+                    <div className="flex items-center justify-between gap-3">
+                      <p className="text-[0.65rem] font-bold uppercase tracking-[0.18em] text-accentLight">{categoryLabel(product.category)}</p>
+                      <WishlistButton productId={product.id} />
                     </div>
-                    {product.rating && (
-                      <div className="mt-2 flex items-center gap-1.5 text-xs font-semibold text-accent/75">
-                        <StarIcon className="h-4 w-4" aria-hidden="true" />
-                        <span>{product.rating.toFixed(1)} / 5</span>
+                    <Dialog.Title className="mt-3 break-words font-display text-2xl leading-tight text-paper sm:text-3xl">{product.name}</Dialog.Title>
+                    <Dialog.Description className="mt-3 text-sm text-muted">{productAvailabilityLabel(product)}. Frete calculado à parte.</Dialog.Description>
+                    <div className="mt-5 border-y border-paper/10 py-5">
+                      {Number(product.originalPrice) > product.price && <p className="text-sm text-muted line-through">{formatBRL(product.originalPrice!)}</p>}
+                      <p className="text-3xl font-bold tabular-nums text-accentLight">{formatBRL(product.price)}</p>
+                      <p className="mt-1 text-xs text-muted">Valor por unidade • frete não incluído</p>
+                    </div>
+                    <div className="mt-5 grid gap-3 text-xs leading-5">
+                      <div className="flex gap-3 rounded-xl bg-paper/[0.03] p-3">
+                        <CubeIcon className="mt-0.5 h-5 w-5 shrink-0 text-accentLight" />
+                        <div><p className="font-semibold text-paper">{productAvailabilityLabel(product)}</p><p className="text-muted">{madeToOrder ? (product.productionDays ? `Produção estimada em ${product.productionDays} dias, após confirmação.` : 'Confirme o prazo de produção com a Orume.') : 'Quantidade e envio confirmados no atendimento.'}</p></div>
                       </div>
-                    )}
-                  </div>
-
-                  <div className="mt-5 space-y-2 text-xs leading-5 text-muted">
-                    <p>
-                      Disponibilidade: <strong className={madeToOrder ? 'text-amber-200' : 'text-emerald-200'}>
-                        {productAvailabilityLabel(product)}
-                      </strong>
-                    </p>
-                    {madeToOrder && (
-                      <p>
-                        Este item é produzido após o contato. {product.productionDays ? `Prazo estimado de produção: ${product.productionDays} dias.` : 'O prazo será confirmado pela Orume.'}
-                      </p>
-                    )}
-                  </div>
-
-                  <div className="mt-auto flex flex-col gap-3 pt-8">
-                    {product.shopeeUrl && (
-                      <a
-                        href={product.shopeeUrl}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="rounded-full border border-accent/25 bg-accent/10 px-6 py-3 text-center text-sm font-semibold text-accentLight transition hover:bg-accent hover:text-ink"
-                      >
-                        Ver este item na Shopee
-                      </a>
-                    )}
-                    <div className="flex flex-col gap-3 sm:flex-row">
-                    <motion.button
-                      type="button"
-                      whileTap={{ scale: 0.97 }}
-                      onClick={() => {
-                        if (madeToOrder) {
-                          window.location.href = buildDirectProductWhatsAppUrl(product);
-                          return;
-                        }
-
-                        addToCart(product);
-                        showToast(`"${product.name}" adicionado ao carrinho`);
-                        onCartOpen?.();
-                        onClose();
-                      }}
-                      className="group relative flex-1 overflow-hidden rounded-full bg-accent px-6 py-3 text-sm font-bold text-ink shadow-glow transition hover:brightness-110"
-                    >
-                      <span className="relative z-10">
-                        {madeToOrder ? 'Comprar sob demanda' : 'Adicionar ao carrinho'}
-                      </span>
-                      <span className="absolute inset-y-0 -left-1/2 w-1/3 skew-x-[-18deg] bg-paper/30 blur-sm transition-all duration-700 group-hover:left-[120%]" />
-                    </motion.button>
-                    <button
-                      type="button"
-                      onClick={onClose}
-                      className="rounded-full border border-accent/[0.18] bg-paper/[0.04] px-6 py-3 text-sm font-semibold text-paper/80 transition hover:border-accent/40 hover:text-accentLight"
-                    >
-                      Continuar vendo
-                    </button>
+                      <div className="flex gap-3 rounded-xl bg-paper/[0.03] p-3">
+                        <TruckIcon className="mt-0.5 h-5 w-5 shrink-0 text-accentLight" />
+                        <div><p className="font-semibold text-paper">Entrega a combinar</p><p className="text-muted">Informe seu CEP para consultar o frete antes do pagamento.</p></div>
+                      </div>
                     </div>
+                    {product.description && <details className="mt-5 border-t border-paper/10 pt-4">
+                      <summary className="cursor-pointer py-1 text-sm font-semibold text-paper focus-visible:outline-accent">Descrição completa</summary>
+                      <p className="mt-3 whitespace-pre-line break-words text-sm leading-6 text-muted">{product.description}</p>
+                    </details>}
+                    {product.sku && <p className="mt-4 text-xs text-muted">Referência: {product.sku}</p>}
+                    {product.shopeeUrl && <a href={product.shopeeUrl} target="_blank" rel="noopener noreferrer" className="mt-5 inline-flex text-sm font-semibold text-accentLight underline underline-offset-4">Ver anúncio na Shopee ↗</a>}
                   </div>
                 </div>
               </div>
-
-              <button
-                type="button"
-                onClick={onClose}
-                className="absolute right-4 top-4 rounded-full border border-accent/[0.18] bg-ink/80 p-2 text-paper/70 backdrop-blur transition hover:border-accent/[0.45] hover:text-accentLight"
-              >
-                <span className="sr-only">Fechar</span>
-                <XMarkIcon className="h-5 w-5" aria-hidden="true" />
-              </button>
+              <div className="flex shrink-0 flex-col gap-3 border-t border-paper/10 bg-background px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-7">
+                <div><p className="text-sm font-semibold text-paper">{madeToOrder ? 'Feito para você, sob demanda' : 'Sua próxima peça Orume'}</p><p className="mt-0.5 text-xs text-muted">{madeToOrder ? 'Combine produção e entrega pelo WhatsApp.' : 'Adicione ao carrinho e continue seu pedido.'}</p></div>
+                <button type="button" onClick={() => {
+                  if (madeToOrder) { window.location.href = buildDirectProductWhatsAppUrl(product); return; }
+                  addToCart(product);
+                  showToast(`"${product.name}" adicionado ao carrinho`);
+                  onClose();
+                  onCartOpen?.();
+                }} className="shrink-0 rounded-full bg-accent px-6 py-3.5 text-sm font-bold text-ink transition hover:brightness-110 focus-visible:ring-2 focus-visible:ring-paper">{madeToOrder ? 'Comprar pelo WhatsApp' : 'Adicionar ao carrinho'}</button>
+              </div>
             </Dialog.Panel>
           </div>
         </Dialog>
