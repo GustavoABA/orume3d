@@ -20,6 +20,7 @@ export const buildDirectProductWhatsAppUrl = (product: Product) => {
 
   const message = [
     DIRECT_BUY_CODE,
+    product.affiliateCode ? `Afiliado: ${product.affiliateCode} (${product.affiliateRate}% já incluídos)` : '',
     '',
     '✨ *ORUME 3D — INTERESSE EM PRODUTO* ✨',
     '━━━━━━━━━━━━━━━━━━━━',

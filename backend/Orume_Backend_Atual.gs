@@ -26,8 +26,9 @@ function doGet(e) {
     const p = (e && e.parameter) || {};
     const action = String(p.action || "ping");
 
-    if (action === "ping") return output_({ ok: true, version: 2, spreadsheetId: SPREADSHEET_ID }, p.callback);
+    if (action === "ping") return output_({ ok: true, version: 3, spreadsheetId: SPREADSHEET_ID }, p.callback);
     if (action === "status") return output_(getQuoteStatus_(p.siteId), p.callback);
+    if (action === "affiliate") return output_({ ok: true, affiliate: requireAffiliate_(p.code) }, p.callback);
     if (action === "catalog") return output_({ ok: true, products: getPublicCatalog_() }, p.callback);
 
     if (action === "adminSnapshot") {
@@ -64,6 +65,7 @@ function doPost(e) {
     if (action === "createCheckout") return output_(createCheckout_(payload));
 
     requireAdmin_(payload.adminKey);
+    if (action === "adminSaveAffiliate") return output_({ ok: true, affiliate: saveAffiliate_(payload.affiliate || {}, payload.mode) });
     if (action === "adminSaveOrder") return output_({ ok: true, order: saveOrder_(payload.order || {}) });
     if (action === "adminCompleteOrder") return output_({ ok: true, order: completeOrder_(payload.id) });
     if (action === "adminSaveProduct") return output_({ ok: true, product: saveProduct_(payload.product || {}, payload.mode || "") });
@@ -214,12 +216,14 @@ function createOrderFromQuote_(payload) {
   if (!cep) throw new Error("CEP inválido.");
   if (!product) throw new Error("Produto obrigatório.");
 
+  const affiliate = checkoutAffiliate_(payload);
+  ensureAffiliateColumns_(orders, 33);
   const orderId = allocateOrderId_();
   const uid = Utilities.getUuid();
   const now = new Date();
   const row = [
     orderId, siteId, now, now, "Orçamento", "Normal", name, phone,
-    normalizeText_(payload.city, 180), cep, normalizeText_(payload.referral, 180), product,
+    normalizeText_(payload.city, 180), cep, affiliate ? affiliate.code : normalizeText_(payload.referral, 180), product,
     quantity, normalizeText_(payload.dimensions, 180), normalizeText_(payload.color, 120),
     normalizeText_(payload.material, 120) || "Avaliar com a Orume",
     normalizeText_(payload.deadline, 80), normalizeText_(payload.links, 1500),
@@ -227,6 +231,7 @@ function createOrderFromQuote_(payload) {
     payload.cleanService ? "Sim" : "Não", normalizeText_(payload.notes, 2500),
     "", 0, "", "", "Pendente", "", "Site ORUME", "", "", uid
   ];
+  row.push(affiliate ? affiliate.code : "", affiliate ? affiliate.rate : "", "");
   orders.appendRow(row);
   const rowNumber = orders.getLastRow();
   orders.getRange(rowNumber, 25).setFormula('=IF(W' + rowNumber + '="","",MAX(0,W' + rowNumber + '-X' + rowNumber + '))');
@@ -240,7 +245,7 @@ function createCheckout_(payload) {
   const sheet = getSheet_(SHEETS.checkouts);
   const uid = normalizeText_(payload.checkoutId, 120) || ("CHK-" + Utilities.getUuid().slice(0, 12).toUpperCase());
   const now = new Date();
-  const cart = Array.isArray(payload.cart) ? payload.cart : [];
+  let cart = Array.isArray(payload.cart) ? payload.cart : [];
   if (!cart.length) throw new Error("Carrinho vazio.");
 
   const name = normalizeText_(payload.name, 180);
@@ -257,7 +262,27 @@ function createCheckout_(payload) {
   if (!cep) throw new Error("CEP inválido.");
   if (payload.cleanService && !email) throw new Error("E-mail obrigatório no atendimento mínimo.");
 
-  const subtotal = toMoney_(payload.subtotal);
+  const existing = findRowByValue_(sheet, 1, uid);
+  if (existing) return { ok: true, duplicate: true, checkoutId: uid };
+  const affiliate = checkoutAffiliate_(payload);
+  let affiliateAmount = 0;
+  if (affiliate) {
+    const products = getProducts_();
+    cart = cart.map(function(item) {
+      const product = products.find(function(p) { return p.id === Number(item.id) && isYes_(p.active); });
+      if (!product) throw new Error("Produto indisponível. Atualize o catálogo.");
+      const quantity = Number(item.quantity);
+      if (!Number.isInteger(quantity) || quantity < 1 || quantity > 99) throw new Error("Quantidade inválida.");
+      const base = product.salePrice > 0 ? product.salePrice : product.price;
+      const unitPrice = affiliateMoney_(base, affiliate.rate);
+      if (Math.abs(Number(item.unitPrice) - unitPrice) > 0.001 || !Number.isFinite(Number(item.unitPrice))) throw new Error("O preço foi atualizado. Remova o item do carrinho e adicione novamente pelo catálogo atualizado.");
+      affiliateAmount += Math.round((unitPrice - base) * 100) * quantity;
+      return { id: product.id, name: product.name, quantity: quantity, basePrice: base, unitPrice: unitPrice, total: Math.round(unitPrice * 100) * quantity / 100 };
+    });
+  }
+  const subtotal = affiliate ? cart.reduce(function(sum, item) { return sum + Math.round(item.total * 100); }, 0) / 100 : toMoney_(payload.subtotal);
+  if (affiliate && (!Number.isFinite(Number(payload.subtotal)) || Math.abs(Number(payload.subtotal) - subtotal) > 0.001)) throw new Error("Total divergente. Recarregue o catálogo antes de continuar.");
+  ensureAffiliateColumns_(sheet, 23);
   const freight = 0;
   const total = subtotal;
   const itemSummary = cart.map(function(item) {
@@ -268,14 +293,12 @@ function createCheckout_(payload) {
     return quantity + "x " + itemName + " — " + formatMoneyBr_(lineTotal);
   }).join("\n");
 
-  const existing = findRowByValue_(sheet, 1, uid);
-  if (existing) return { ok: true, duplicate: true, checkoutId: uid };
-
   sheet.appendRow([
     uid, now, now, "Aguardando contato", name, phone, cep, city,
     JSON.stringify(cart).slice(0, 45000), subtotal, freight, total,
     "PIX manual", "", "Site ORUME", "", "",
-    email, delivery, cleanService, notes, itemSummary
+    email, delivery, cleanService, notes, itemSummary,
+    affiliate ? affiliate.code : "", affiliate ? affiliate.rate : "", affiliate ? affiliateAmount / 100 : ""
   ]);
 
   if (payload.cleanService) {
@@ -285,6 +308,7 @@ function createCheckout_(payload) {
       "Novo checkout recebido pela Orume 3D.",
       "",
       "ID: " + uid,
+      affiliate ? "Afiliado: " + affiliate.code + " (" + affiliate.rate + "%)" : "",
       "Cliente: " + name,
       "WhatsApp: " + phone,
       "E-mail: " + email,
@@ -370,7 +394,7 @@ function upsertCustomer_(orderRow) {
 }
 
 function getAdminSnapshot_() {
-  return { ok: true, orders: getOrderSummaries_(), products: getProducts_(), spreadsheetId: SPREADSHEET_ID };
+  return { ok: true, orders: getOrderSummaries_(), products: getProducts_(), affiliates: getAffiliates_(), spreadsheetId: SPREADSHEET_ID };
 }
 
 function getOrderSummaries_() {
@@ -675,4 +699,56 @@ function testCheckoutEmail_() {
     subject: "Teste checkout Orume",
     body: "O envio de e-mail do checkout Orume está autorizado e funcionando."
   });
+}
+
+// Afiliados: o cadastro é administrativo, a resolução pública aceita apenas um código.
+function getAffiliates_() {
+  const sheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName("Afiliados");
+  if (!sheet || sheet.getLastRow() < 2) return [];
+  return sheet.getRange(2, 1, sheet.getLastRow() - 1, 5).getValues().filter(function(row) { return row[0]; }).map(function(row) {
+    return { code: String(row[0]), name: String(row[1]), rate: Number(row[2]), active: isYes_(row[3]), updatedAt: serializeValue_(row[4]) };
+  });
+}
+function affiliateMoney_(price, rate) { return Math.round((price * (100 + rate) / 100 + Number.EPSILON) * 100) / 100; }
+function requireAffiliate_(code) {
+  const affiliate = getAffiliates_().find(function(item) { return item.code === String(code || ""); });
+  if (!affiliate || !affiliate.active || !Number.isFinite(affiliate.rate) || affiliate.rate < 0 || affiliate.rate > 1000) throw new Error("Afiliado inexistente ou inativo.");
+  return { code: affiliate.code, name: affiliate.name, rate: affiliate.rate, active: true };
+}
+function checkoutAffiliate_(payload) {
+  if (!payload.affiliateCode) return null;
+  const affiliate = requireAffiliate_(payload.affiliateCode);
+  if (Number(payload.affiliateRate) !== affiliate.rate) throw new Error("A taxa do afiliado mudou. Recarregue a página antes de continuar.");
+  return affiliate;
+}
+function saveAffiliate_(affiliate, mode) {
+  const code = String(affiliate.code || "").trim();
+  const name = normalizeText_(affiliate.name, 120);
+  const rate = Number(affiliate.rate);
+  if (!/^[a-z0-9]+(-[a-z0-9]+)*$/.test(code) || code.length > 80) throw new Error("Código inválido: use letras minúsculas, números e hífens.");
+  if (!name || /^[=+@-]/.test(name)) throw new Error("Informe um nome válido.");
+  if (affiliate.rate === "" || !Number.isFinite(rate) || rate < 0 || rate > 1000 || Math.abs(rate * 100 - Math.round(rate * 100)) > 0.00001) throw new Error("Informe uma taxa de 0 a 1000%, com até duas casas decimais.");
+  const book = SpreadsheetApp.openById(SPREADSHEET_ID);
+  let sheet = book.getSheetByName("Afiliados");
+  if (!sheet) {
+    sheet = book.insertSheet("Afiliados");
+    sheet.getRange(1, 1, 1, 5).setValues([["Código", "Nome", "Acréscimo (%)", "Ativo", "Atualizado em"]]);
+    sheet.setFrozenRows(1);
+  }
+  const row = findRowByValue_(sheet, 1, code);
+  if (mode !== "create" && mode !== "update") throw new Error("Modo de gravação inválido.");
+  if (mode === "create" && row) throw new Error("Este código já existe. Edite o afiliado cadastrado.");
+  if (mode === "update" && !row) throw new Error("Afiliado não encontrado.");
+  const values = [code, name, rate, affiliate.active === true ? "Sim" : "Não", new Date()];
+  if (row) sheet.getRange(row, 1, 1, 5).setValues([values]); else sheet.appendRow(values);
+  return requireAffiliateForAdmin_(code);
+}
+function requireAffiliateForAdmin_(code) { return getAffiliates_().find(function(item) { return item.code === code; }); }
+function ensureAffiliateColumns_(sheet, start) {
+  const last = start + 2;
+  if (sheet.getMaxColumns() < last) sheet.insertColumnsAfter(sheet.getMaxColumns(), last - sheet.getMaxColumns());
+  const headers = sheet.getRange(1, start, 1, 3).getValues()[0];
+  const expected = ["Afiliado", "Acréscimo afiliado (%)", "Valor acréscimo afiliado"];
+  if (headers.some(function(value, index) { return value && value !== expected[index]; })) throw new Error("As colunas de afiliado já estão ocupadas na aba " + sheet.getName() + ". Confira a estrutura antes de continuar.");
+  sheet.getRange(1, start, 1, 3).setValues([expected]);
 }

@@ -10,7 +10,7 @@ import ts from 'typescript';
 const source = await readFile(new URL('../src/context/CartContext.tsx', import.meta.url), 'utf8');
 const compiled = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.CommonJS, jsx: ts.JsxEmit.ReactJSX, target: ts.ScriptTarget.ES2020 } }).outputText;
 
-function mount(t, initial, unavailable = false) {
+function mount(t, initial, unavailable = false, affiliate = null) {
   let saved = initial;
   let writes = 0;
   const window = { localStorage: {
@@ -18,7 +18,11 @@ function mount(t, initial, unavailable = false) {
     setItem(_key, value) { if (unavailable) throw new Error('blocked'); writes++; if (writes > 10) throw new Error('render loop'); saved = value; },
   } };
   const exports = {};
-  vm.runInNewContext(compiled, { exports, require: createRequire(import.meta.url), window });
+  vm.runInNewContext(compiled, { exports, require: id => {
+    if (id.endsWith('/AffiliateContext')) return { useAffiliate: () => affiliate };
+    if (id.endsWith('/affiliate')) return { affiliatePrice: (price, rate) => Math.round((price * (100 + rate) / 100 + Number.EPSILON) * 100) / 100 };
+    return createRequire(import.meta.url)(id);
+  }, window });
   let cart;
   function Consumer() { cart = exports.useCart(); return null; }
   let renderer;
@@ -66,4 +70,20 @@ test('unavailable storage still permits cart operations', t => {
   const state = mount(t, null, true);
   act(() => state.cart.addToCart(product));
   assert.equal(state.cart.totalItems, 1);
+});
+
+
+test('affiliate cart restores base prices and never compounds the markup', t => {
+  const state = mount(t, JSON.stringify([{ ...product, quantity: 2 }]), false, {code:'linux',rate:20});
+  assert.equal(state.cart.subtotal,192);
+  act(() => state.cart.addToCart({...product,price:96,basePrice:80}));
+  assert.equal(state.cart.subtotal,288);
+  assert.equal(JSON.parse(state.saved)[0].price,80);
+});
+test('new affiliate item persists its base, allowing another link or direct visit to reprice', t => {
+  const state=mount(t,null,false,{code:'linux',rate:20});
+  act(()=>state.cart.addToCart({...product,price:96,basePrice:80}));
+  assert.equal(state.cart.items[0].price,96);
+  const direct=mount(t,state.saved);assert.equal(direct.cart.items[0].price,80);
+  const other=mount(t,state.saved,false,{code:'other',rate:10});assert.equal(other.cart.items[0].price,88);
 });

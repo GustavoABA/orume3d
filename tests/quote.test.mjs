@@ -11,7 +11,7 @@ const require = createRequire(import.meta.url);
 const source = await readFile(new URL('../src/components/quote/QuoteModal.tsx', import.meta.url), 'utf8');
 const code = ts.transpileModule(source, {compilerOptions:{module:ts.ModuleKind.CommonJS,jsx:ts.JsxEmit.ReactJSX,target:ts.ScriptTarget.ES2020}}).outputText;
 const props = {name:'Teste local',phone:'19999999999',product:'Suporte',quantity:'2',cep:'13600000'};
-function setup(t, post) {
+function setup(t, post, affiliate = null) {
  const Dialog = ({children}) => React.createElement('dialog', null, children);
  for (const name of ['Overlay','Panel','Title','Description']) Dialog[name] = React.forwardRef(({children,...rest},ref) => React.createElement('div',{...rest,ref},children));
  const exports = {};
@@ -19,6 +19,7 @@ function setup(t, post) {
   if(id==='@headlessui/react') return {Dialog};
   if(id.endsWith('/backend')) return {loadBackendConfig:async()=>({endpoint:'test'}),postBackend:post};
   if(id.endsWith('/whatsapp')) return {buildWhatsAppUrl:message=>'https://wa.me/5519989342212?text='+encodeURIComponent(message)};
+  if(id.endsWith('/AffiliateContext')) return {useAffiliate:()=>affiliate};
   return require(id);
  }});
  let r;act(()=>{r=create(React.createElement(exports.default,{open:true,onClose(){}}));});
@@ -42,4 +43,10 @@ test('failed confirmation keeps form and retries the same payload with the same 
 });
 test('missing order ID does not display WhatsApp continuation as success',async t=>{
  const s=setup(t,async()=>({ok:true}));await s.submit();await s.submit();assert.equal(s.r.root.findAllByType('a').length,0);
+});
+
+test('affiliate attribution accompanies custom quote and its WhatsApp confirmation',async t=>{
+ let sent;const s=setup(t,async(_url,payload)=>{sent=payload;return {ok:true,orderId:'0020'};},{code:'afiliado-linux',rate:20});
+ await s.submit();await s.submit();assert.equal(sent.affiliateCode,'afiliado-linux');assert.equal(sent.affiliateRate,20);
+ const message=new URL(s.r.root.findByType('a').props.href).searchParams.get('text');assert.ok(message.includes('afiliado-linux'));assert.ok(message.includes('orume'));
 });

@@ -1,3 +1,5 @@
+import Affiliates from '../components/admin/Affiliates';
+import type { Affiliate } from '../lib/affiliate';
 import { FormEvent, useEffect, useMemo, useState } from 'react';
 import { ArrowPathIcon, ArrowTopRightOnSquareIcon, CheckCircleIcon, CubeIcon, ShoppingBagIcon } from '@heroicons/react/24/outline';
 import { loadBackendConfig, jsonp, postBackend } from '../lib/backend';
@@ -61,7 +63,7 @@ type Product = {
   adminNotes: string;
 };
 
-type Snapshot = { ok: boolean; error?: string; orders?: Order[]; products?: Product[] };
+type Snapshot = { ok: boolean; error?: string; orders?: Order[]; products?: Product[]; affiliates?: Affiliate[] };
 type ScrapeResult = {
   ok: boolean;
   blocked?: boolean;
@@ -157,7 +159,9 @@ const Admin = () => {
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [selectedProduct, setSelectedProduct] = useState<Product>(emptyProduct());
   const [isCreatingProduct, setIsCreatingProduct] = useState(false);
-  const [tab, setTab] = useState<'orders' | 'products'>('products');
+  const [tab, setTab] = useState<'orders' | 'products' | 'affiliates'>('products');
+  const [affiliates, setAffiliates] = useState<Affiliate[]>([]);
+  const [affiliatesSupported, setAffiliatesSupported] = useState(false);
   const [status, setStatus] = useState('');
   const [busy, setBusy] = useState(false);
 
@@ -180,6 +184,8 @@ const Admin = () => {
       60000
     );
     if (!data.ok) throw new Error(data.error || 'Falha ao carregar administração.');
+    setAffiliates(data.affiliates || []);
+    setAffiliatesSupported(Array.isArray(data.affiliates));
     setOrders(data.orders || []);
     const normalizedProducts = (data.products || []).map(normalizeProductSource);
     setProducts(normalizedProducts);
@@ -500,8 +506,8 @@ const Admin = () => {
             >
               <ShoppingBagIcon className="h-4 w-4" /> Pedidos
             </button>
+            <button className={tab === 'affiliates' ? 'orume-primary' : 'orume-secondary'} onClick={() => setTab('affiliates')}>Afiliados</button>
           </div>
-
           {tab === 'products' && (
             <div className="grid gap-3 sm:grid-cols-3">
               <div className="rounded-2xl border border-accent/10 bg-paper/[0.025] p-4">
@@ -526,7 +532,7 @@ const Admin = () => {
           </div>
         )}
 
-        {tab === 'orders' ? (
+        {tab === 'affiliates' ? <Affiliates affiliates={affiliates} supported={affiliatesSupported} endpoint={endpoint} adminKey={adminKey} refresh={() => getSnapshot(adminKey)} /> : tab === 'orders' ? (
           <div className="grid gap-5 lg:grid-cols-[390px_1fr]">
             <section className="orume-panel max-h-[75vh] overflow-auto rounded-2xl p-3">
               <div className="px-2 pb-3 text-[0.62rem] font-bold uppercase tracking-[0.22em] text-accent/[0.65]">

@@ -1,3 +1,4 @@
+import { AffiliateProvider } from './context/AffiliateContext';
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
@@ -10,9 +11,9 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <ToastProvider>
       <PreferencesProvider>
-        <CartProvider>
+        <AffiliateProvider><CartProvider>
           <App />
-        </CartProvider>
+        </CartProvider></AffiliateProvider>
       </PreferencesProvider>
     </ToastProvider>
   </React.StrictMode>

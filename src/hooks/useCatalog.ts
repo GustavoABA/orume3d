@@ -1,4 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useAffiliate } from '../context/AffiliateContext';
+import { priceForAffiliate } from '../lib/affiliate';
+import { useEffect, useMemo, useState } from 'react';
 import type { Product } from '../data/products';
 import { jsonp, loadBackendConfig } from '../lib/backend';
 
@@ -106,6 +108,7 @@ const readCache = (): Product[] => {
 };
 
 export const useCatalog = () => {
+  const affiliate = useAffiliate();
   const cached = readCache();
   const [products, setProducts] = useState<Product[]>(cached);
   const [loading, setLoading] = useState(cached.length === 0);
@@ -165,5 +168,6 @@ export const useCatalog = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  return { products, loading, error };
+  const pricedProducts = useMemo(() => products.map(product => priceForAffiliate(product, affiliate)), [products, affiliate]);
+  return { products: pricedProducts, loading, error };
 };
