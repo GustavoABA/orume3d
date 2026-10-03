@@ -89,3 +89,15 @@ Não é necessário alterar a URL `/exec` do site para esse módulo.
 O frontend público contém somente a tela. A chave é digitada pelo administrador e mantida em `sessionStorage` durante a sessão.
 
 Por ser GitHub Pages falando com Apps Script, as leituras administrativas usam JSONP. Para segurança mais forte no futuro, migre o admin para autenticação Google/OAuth ou backend com sessão HTTP real.
+
+## Comunicação do site com a planilha
+
+O frontend carrega a URL pública de `public/intake-config.json`. As leituras do catálogo usam `action=catalog` e JSONP. Orçamentos, checkouts e gravações do admin usam POST com JSON no corpo e `Content-Type: text/plain;charset=utf-8`, compatível com `parsePayload_` do backend atual. Esse tipo de conteúdo evita preflight OPTIONS; o navegador acompanha o redirecionamento do Content Service e lê o JSON retornado.
+
+O site só apresenta sucesso quando o backend responde `ok: true`. Erros de validação e de chave administrativa aparecem para o usuário. Erros de rede têm resultado indeterminado: a gravação pode ter ocorrido, portanto não há reenvio automático. Na mesma tela, uma nova tentativa de orçamento/checkout com os mesmos dados reutiliza o identificador, aproveitando a deduplicação já existente no backend. Recarregar a página encerra essa retenção em memória.
+
+Essa correção do frontend não exige nova implantação do Apps Script. Alterar arquivos `.gs` no GitHub, porém, não atualiza automaticamente o Web App: para mudanças futuras no backend, atualize o projeto Google e publique uma nova versão da implantação existente. Nunca adicione simultaneamente `Code.gs` e `../Orume_Backend_Atual.gs` ao projeto: são cópias do mesmo backend.
+
+Validação local: `npm test` e `npm run build`. O teste no navegador com a implantação atual confirmou leitura do catálogo e recebimento de um erro de validação de um orçamento sem ID (sem criar pedido). Uma gravação válida completa e as operações autenticadas do admin precisam ser verificadas com dados de teste controlados.
+
+Referência: https://developers.google.com/apps-script/guides/content

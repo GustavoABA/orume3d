@@ -88,17 +88,40 @@ export const jsonp = <T>(
     document.head.appendChild(script);
   });
 
-export const postNoCors = async (
+export type BackendResponse = {
+  ok: boolean;
+  error?: string;
+  orderId?: string;
+  checkoutId?: string;
+};
+
+export const postBackend = async <T extends BackendResponse = BackendResponse>(
   endpoint: string,
   payload: Record<string, unknown>
-): Promise<void> => {
-  const body = new FormData();
-  body.append('payload', JSON.stringify(payload));
-  await fetch(endpoint, {
-    method: 'POST',
-    body,
-    mode: 'no-cors',
-    cache: 'no-store',
-    redirect: 'follow',
-  });
+): Promise<T> => {
+  const controller = new AbortController();
+  const timer = window.setTimeout(() => controller.abort(), 60000);
+  let result: T;
+  try {
+    const response = await fetch(endpoint, {
+      method: 'POST',
+      // text/plain evita o preflight OPTIONS, que o Web App não implementa.
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(payload),
+      mode: 'cors',
+      credentials: 'omit',
+      redirect: 'follow',
+      signal: controller.signal,
+    });
+    if (!response.ok) throw new Error('HTTP ' + response.status);
+    result = (await response.json()) as T;
+    if (!result || typeof result.ok !== 'boolean') throw new Error('Resposta inválida');
+  } catch {
+    // Uma falha de rede pode ocorrer depois da gravação. Nunca reenviar automaticamente.
+    throw new Error('Não foi possível confirmar a gravação. Os dados podem ter sido recebidos; confira antes de reenviar.');
+  } finally {
+    window.clearTimeout(timer);
+  }
+  if (!result.ok) throw new Error(result.error || 'O Apps Script recusou a gravação.');
+  return result;
 };
