@@ -24,6 +24,20 @@ const TAX_RATE = 0;
 const STORAGE_KEY = 'orume-cart';
 const MAX_QUANTITY = 99;
 
+const normalizeImageUrl = (value: string) => {
+  let url = String(value || '').trim();
+  if (!url) return '/brand/orume-mark.webp';
+  url = url.replace(/^http:\/\//i, 'https://');
+  url = url.replace(/^https:\/\/gustavoaba\.github\.io\/orume3d\//i, 'https://orume.com.br/');
+  url = url.replace(/^\/orume3d\//i, '/');
+  return url;
+};
+
+const normalizeStoredItems = (items: CartItem[]) =>
+  Array.isArray(items)
+    ? items.map((item) => ({ ...item, image: normalizeImageUrl(item.image) }))
+    : [];
+
 type CartState = {
   items: CartItem[];
 };
@@ -38,7 +52,7 @@ type CartAction =
 const cartReducer = (state: CartState, action: CartAction): CartState => {
   switch (action.type) {
     case 'HYDRATE':
-      return { items: action.payload };
+      return { items: normalizeStoredItems(action.payload) };
     case 'ADD_ITEM': {
       const existing = state.items.find((item) => item.id === action.payload.id);
       if (existing) {
@@ -57,7 +71,7 @@ const cartReducer = (state: CartState, action: CartAction): CartState => {
             id: action.payload.id,
             name: action.payload.name,
             price: action.payload.price,
-            image: action.payload.image,
+            image: normalizeImageUrl(action.payload.image),
             quantity: 1,
             source: action.payload.source || (action.payload.shopeeUrl ? 'Shopee' : 'Interno'),
             shopeeUrl: action.payload.shopeeUrl || '',
@@ -98,7 +112,7 @@ const CartContext = createContext<CartContextValue | undefined>(undefined);
 
 export const CartProvider = ({ children }: { children: ReactNode }) => {
   const [storedItems, setStoredItems] = useLocalStorage<CartItem[]>(STORAGE_KEY, []);
-  const [state, dispatch] = useReducer(cartReducer, { items: storedItems });
+  const [state, dispatch] = useReducer(cartReducer, { items: normalizeStoredItems(storedItems) });
 
   useEffect(() => {
     dispatch({ type: 'HYDRATE', payload: storedItems });
