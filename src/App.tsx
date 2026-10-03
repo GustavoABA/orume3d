@@ -12,12 +12,20 @@ const Admin = lazy(() => import('./pages/Admin'));
 const Checkout = lazy(() => import('./pages/Checkout'));
 
 const App = () => {
-  const pathname = window.location.pathname.replace(/\/+$/, '') || '/';
+  const rawPathname = window.location.pathname.replace(/\/+$/, '') || '/';
+  const pathname = rawPathname.replace(/^\/orume3d(?=\/|$)/, '') || '/';
   const isAdminRoute = pathname === '/admin';
   const isCheckoutRoute = pathname === '/checkout';
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isQuoteOpen, setIsQuoteOpen] = useState(false);
   const [activePage, setActivePage] = useState<'home' | 'wishlist'>('home');
+
+  useEffect(() => {
+    if (rawPathname.startsWith('/orume3d')) {
+      const target = pathname + window.location.search + window.location.hash;
+      window.history.replaceState({}, '', target || '/');
+    }
+  }, [pathname, rawPathname]);
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
