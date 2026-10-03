@@ -22,10 +22,7 @@ html {
 body {
   @apply min-h-screen bg-background font-sans antialiased;
   color: var(--paper);
-  background-image:
-    radial-gradient(circle at 12% -8%, rgba(36, 221, 117, 0.10), transparent 30rem),
-    radial-gradient(circle at 92% 12%, rgba(223, 170, 78, 0.08), transparent 28rem),
-    linear-gradient(180deg, #071017 0%, #08141a 52%, #071017 100%);
+  background: var(--ink);
 }
 
 ::selection {
@@ -59,7 +56,7 @@ a {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: linear-gradient(180deg, var(--green), var(--gold));
+  background: #43534d;
   border: 2px solid #071017;
   border-radius: 9999px;
 }
@@ -77,30 +74,11 @@ a {
 }
 
 .orume-panel {
-  background:
-    linear-gradient(145deg, rgba(16, 33, 41, 0.92), rgba(7, 16, 23, 0.97)),
-    radial-gradient(circle at top left, rgba(36, 221, 117, 0.07), transparent 42%);
-  border: 1px solid rgba(241, 238, 231, 0.08);
-  box-shadow:
-    inset 0 1px 0 rgba(241, 238, 231, 0.035),
-    0 24px 80px rgba(0, 0, 0, 0.28);
+  background: #0b171e;
+  border: 1px solid rgba(241, 238, 231, 0.10);
 }
-
-.orume-panel-interactive {
-  transition:
-    border-color 180ms ease,
-    background-color 180ms ease,
-    transform 180ms ease,
-    box-shadow 180ms ease;
-}
-
-.orume-panel-interactive:hover {
-  border-color: rgba(36, 221, 117, 0.32);
-  box-shadow:
-    inset 0 1px 0 rgba(241, 238, 231, 0.045),
-    0 28px 90px rgba(0, 0, 0, 0.34),
-    0 0 0 1px rgba(36, 221, 117, 0.035);
-}
+.orume-panel-interactive { transition: border-color 180ms ease; }
+.orume-panel-interactive:hover { border-color: rgba(241, 238, 231, 0.25); }
 
 .orume-gold-line {
   background: linear-gradient(90deg, transparent, rgba(223, 170, 78, 0.7), transparent);
@@ -139,7 +117,7 @@ a {
 }
 
 .orume-eyebrow {
-  @apply text-[0.62rem] font-black uppercase tracking-[0.28em] text-accent;
+  @apply text-xs font-semibold tracking-[0.12em] text-accentLight;
 }
 
 .orume-heading {
@@ -147,8 +125,7 @@ a {
 }
 
 .orume-primary {
-  @apply inline-flex items-center justify-center rounded-full bg-accent px-5 py-3 text-xs font-black uppercase tracking-[0.13em] text-ink transition;
-  box-shadow: 0 12px 34px rgba(36, 221, 117, 0.16);
+  @apply inline-flex items-center justify-center rounded-lg bg-accent px-5 py-3 text-sm font-semibold text-ink transition;
 }
 
 .orume-primary:hover {
@@ -157,7 +134,7 @@ a {
 }
 
 .orume-secondary {
-  @apply inline-flex items-center justify-center rounded-full border border-paper/15 bg-paper/[0.035] px-5 py-3 text-xs font-bold uppercase tracking-[0.13em] text-paper transition;
+  @apply inline-flex items-center justify-center rounded-lg border border-paper/20 bg-transparent px-5 py-3 text-sm font-semibold text-paper transition;
 }
 
 .orume-secondary:hover {

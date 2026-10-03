@@ -17,9 +17,10 @@ const PAGE_SIZE = 9;
 
 type HomeProps = {
   onCartOpen: () => void;
+  onQuoteOpen: () => void;
 };
 
-const Home = ({ onCartOpen }: HomeProps) => {
+const Home = ({ onCartOpen, onQuoteOpen }: HomeProps) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<ProductCategory | "All">("All");
   const [sortOption, setSortOption] = useState<SortOption>("price-asc");
@@ -27,7 +28,7 @@ const Home = ({ onCartOpen }: HomeProps) => {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const { addRecentlyViewed, recentlyViewed } = usePreferences();
-  const hero = "/brand/orume-hero.webp";
+  const hero = "/brand/orume-workbench.webp";
 
   const { products: activeCatalog, loading: catalogLoading, error: catalogError } = useCatalog();
 
@@ -100,81 +101,21 @@ const Home = ({ onCartOpen }: HomeProps) => {
 
   return (
     <>
-      <section className="mx-auto max-w-[1500px] px-4 pt-5 sm:px-6 sm:pt-7">
-        <motion.div
-          initial={{ opacity: 0, y: 18, scale: 0.992 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          transition={{ duration: 0.75, ease: [0.22, 1, 0.36, 1] }}
-          className="orume-shine relative min-h-[440px] overflow-hidden rounded-[1.6rem] border border-paper/10 bg-background shadow-[0_30px_100px_rgba(0,0,0,.42)] sm:min-h-[510px]"
-        >
-          <motion.img
-            src={hero}
-            alt="Estúdio Orume com peças de impressão 3D"
-            className="absolute inset-0 h-full w-full object-cover object-center"
-            initial={{ scale: 1.045 }}
-            animate={{ scale: 1 }}
-            transition={{ duration: 1.6, ease: [0.22, 1, 0.36, 1] }}
-          />
-
-          <div
-            className="absolute inset-0"
-            style={{
-              background:
-                'linear-gradient(90deg, rgba(7,16,23,.99) 0%, rgba(7,16,23,.96) 24%, rgba(7,16,23,.82) 40%, rgba(7,16,23,.48) 56%, rgba(7,16,23,.12) 72%, rgba(7,16,23,0) 84%)',
-            }}
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-background/65 via-transparent to-background/10" />
-          <div className="absolute -left-20 top-0 h-72 w-72 rounded-full bg-accent/[0.07] blur-3xl" />
-          <div className="absolute inset-x-0 bottom-0 h-px orume-green-line opacity-70" />
-
-          <div className="relative flex min-h-[440px] max-w-3xl flex-col justify-end px-7 pb-9 pt-24 sm:min-h-[510px] sm:px-12 sm:pb-12 lg:px-16">
-            <motion.p
-              initial={{ opacity: 0, x: -12 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.15, duration: 0.55 }}
-              className="orume-eyebrow mb-4"
-            >
-              Orume 3D • objetos feitos camada por camada
-            </motion.p>
-
-            <motion.h1
-              initial={{ opacity: 0, y: 14 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.22, duration: 0.65 }}
-              className="max-w-3xl text-4xl font-black leading-[0.94] tracking-[-0.045em] text-paper sm:text-6xl lg:text-7xl"
-            >
-              Forma, função e <span className="text-accent">presença.</span>
-            </motion.h1>
-
-            <motion.p
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.32, duration: 0.55 }}
-              className="mt-5 max-w-lg text-sm leading-6 text-paper/70 sm:text-base"
-            >
-              Peças impressas em 3D e projetos personalizados produzidos com identidade Orume.
-            </motion.p>
-
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4, duration: 0.55 }}
-              className="mt-7 flex flex-wrap gap-3"
-            >
-              <button type="button" onClick={scrollToCatalog} className="orume-primary">
-                Explorar catálogo
-              </button>
-              <a
-                href="https://wa.me/5519989342212?text=Ol%C3%A1%2C%20gostaria%20de%20fazer%20um%20projeto%20personalizado%20com%20a%20Orume%203D."
-                target="_blank"
-                rel="noreferrer"
-                className="orume-secondary bg-background/[0.45] backdrop-blur"
-              >
-                Projeto personalizado
-              </a>
-            </motion.div>
+      <section className="mx-auto grid max-w-7xl items-center gap-8 px-5 py-10 sm:px-8 sm:py-14 lg:grid-cols-[1fr_1.1fr] lg:gap-12">
+        <div className="max-w-xl">
+          <p className="text-sm font-medium text-accentLight">Impressão 3D por encomenda</p>
+          <h1 className="mt-5 font-display text-4xl font-semibold leading-[1.08] tracking-tight text-paper sm:text-5xl lg:text-6xl">Peças para usar.<br />Ideias para tirar do papel.</h1>
+          <p className="mt-6 max-w-md text-base leading-7 text-muted">Escolha uma peça do catálogo ou conte o que quer imprimir. A gente combina os detalhes, o prazo e a entrega com você.</p>
+          <div className="mt-8 flex flex-wrap gap-3">
+            <button type="button" onClick={scrollToCatalog} className="orume-primary">Ver peças</button>
+            <button type="button" onClick={onQuoteOpen} className="orume-secondary">Pedir orçamento</button>
           </div>
-        </motion.div>
+          <p className="mt-5 text-sm text-muted">Você aprova o orçamento antes da produção.</p>
+        </div>
+        <figure className="min-w-0">
+          <img src={hero} alt="Composição ilustrativa de peças impressas em 3D, filamento e ferramentas sobre uma bancada" fetchPriority="high" width="1536" height="1024" className="aspect-[3/2] w-full rounded-xl object-cover" />
+          <figcaption className="mt-2 text-right text-xs text-muted">Impressão 3D em detalhes · imagem ilustrativa</figcaption>
+        </figure>
       </section>
 
       <div id="catalogo" className="mx-auto max-w-7xl scroll-mt-28 px-5 py-10 sm:px-8 sm:py-14">
@@ -188,10 +129,10 @@ const Home = ({ onCartOpen }: HomeProps) => {
           <div className="max-w-2xl">
             <p className="orume-eyebrow">Catálogo Orume</p>
             <h2 className="orume-heading mt-2 text-3xl sm:text-4xl">
-              Encontre sua próxima peça.
+              Peças do catálogo.
             </h2>
             <p className="mt-3 max-w-xl text-sm leading-6 text-muted">
-              Pesquise, filtre, salve favoritos e abra cada produto para ver os detalhes.
+              Veja as fotos, os materiais e o prazo de produção de cada peça.
             </p>
           </div>
 
