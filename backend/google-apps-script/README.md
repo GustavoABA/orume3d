@@ -12,10 +12,10 @@ Spreadsheet ID: `1IGZ0KY2J5E87qdl4Gza3w0v_Tz_vsESCH9EHMGZtPoI`
 
 ## Implantação atual
 
-- Versão implantada: **2**
-- Atualizada em: **01/10/2026 17:31**
-- Deployment ID: `AKfycbwu5KB0sRUd3kT9YPylLmDULn4ocHTa6q75AltjIfBa8wmxlKKY3p7HtwrhXrXrHseVYw`
-- Web App: `https://script.google.com/macros/s/AKfycbwu5KB0sRUd3kT9YPylLmDULn4ocHTa6q75AltjIfBa8wmxlKKY3p7HtwrhXrXrHseVYw/exec`
+- Versão implantada: **4**
+- Atualizada em: **03/10/2026 09:44**
+- Deployment ID: `AKfycby7AHQGEB3LQ7WNA8X5Nu5IpfIu-B1fxsyWpE_aS8JNDK1TDEoPQD-pU--kfOmki_-Opg`
+- Web App: `https://script.google.com/macros/s/AKfycby7AHQGEB3LQ7WNA8X5Nu5IpfIu-B1fxsyWpE_aS8JNDK1TDEoPQD-pU--kfOmki_-Opg/exec`
 
 > O Deployment ID é público por natureza. Senhas e `ADMIN_KEY` continuam fora do GitHub, somente em Script Properties.
 
