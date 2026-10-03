@@ -13,7 +13,7 @@ type CatalogCache = {
   products: Product[];
 };
 
-const CACHE_KEY = 'orume:catalog:v4';
+const CACHE_KEY = 'orume:catalog:v5';
 const CACHE_TTL = 5 * 60 * 1000;
 const PLACEHOLDER_IMAGE = '/brand/orume-mark.webp';
 
@@ -79,6 +79,19 @@ const mapProduct = (item: Record<string, unknown>): Product => {
   };
 };
 
+const normalizeCachedProduct = (product: Product): Product => {
+  const images = Array.from(
+    new Set([product.image, ...(product.images || [])].map(cleanUrl).filter(Boolean))
+  );
+  const image = images[0] || PLACEHOLDER_IMAGE;
+  return {
+    ...product,
+    image,
+    images: images.length ? images : [image],
+    shopeeUrl: cleanUrl(product.shopeeUrl),
+  };
+};
+
 const readCache = (): Product[] => {
   try {
     const raw = localStorage.getItem(CACHE_KEY);
@@ -86,7 +99,7 @@ const readCache = (): Product[] => {
     const parsed = JSON.parse(raw) as CatalogCache;
     if (!Array.isArray(parsed.products)) return [];
     if (Date.now() - Number(parsed.savedAt || 0) > CACHE_TTL) return [];
-    return parsed.products;
+    return parsed.products.map(normalizeCachedProduct);
   } catch {
     return [];
   }
