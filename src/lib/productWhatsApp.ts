@@ -1,7 +1,7 @@
 import type { Product } from '../data/products';
 import { formatBRL } from './format';
 
-const ORUME_WHATSAPP = '5519989342212';
+import { buildWhatsAppUrl } from './whatsapp';
 const DIRECT_BUY_CODE = 'cod01#445';
 
 export const isMadeToOrder = (product: Product) => Number(product.stock || 0) <= 0;
@@ -42,5 +42,5 @@ export const buildDirectProductWhatsAppUrl = (product: Product) => {
     .filter(Boolean)
     .join('\n');
 
-  return 'https://wa.me/' + ORUME_WHATSAPP + '?text=' + encodeURIComponent(message);
+  return buildWhatsAppUrl(message);
 };

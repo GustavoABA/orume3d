@@ -1,3 +1,4 @@
+import { buildWhatsAppUrl } from '../../lib/whatsapp';
 import { motion } from 'framer-motion';
 
 const Footer = () => {
@@ -55,7 +56,7 @@ const Footer = () => {
 
           <div className="flex flex-wrap items-center gap-3">
             <a
-              href="https://wa.me/5519989342212"
+              href={buildWhatsAppUrl('Olá, vim pelo site da orume e gostaria de tirar uma dúvida.')}
               target="_blank"
               rel="noreferrer"
               className="orume-secondary"
