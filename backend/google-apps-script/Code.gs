@@ -26,7 +26,7 @@ function doGet(e) {
     const p = (e && e.parameter) || {};
     const action = String(p.action || "ping");
 
-    if (action === "ping") return output_({ ok: true, version: 3, spreadsheetId: SPREADSHEET_ID }, p.callback);
+    if (action === "ping") return output_({ ok: true, version: 4, spreadsheetId: SPREADSHEET_ID }, p.callback);
     if (action === "status") return output_(getQuoteStatus_(p.siteId), p.callback);
     if (action === "affiliate") return output_({ ok: true, affiliate: requireAffiliate_(p.code) }, p.callback);
     if (action === "catalog") return output_({ ok: true, products: getPublicCatalog_() }, p.callback);
@@ -541,21 +541,22 @@ function getProducts_() {
   const sheet = getSheet_(SHEETS.products);
   const last = sheet.getLastRow();
   if (last <= 1) return [];
-  return sheet.getRange(2, 1, last - 1, 23).getValues().filter(function(row) { return row[0] !== "" && row[0] !== null; }).map(productToObject_);
+  const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+  return sheet.getRange(2, 1, last - 1, Math.max(23, headers.length)).getValues().filter(function(row) { return row[0] !== "" && row[0] !== null; }).map(function(row) { return productToObject_(row, headers); });
 }
 
 function getPublicCatalog_() {
   const cache = CacheService.getScriptCache();
-  const cached = cache.get("public_catalog_v2");
+  const cached = cache.get("public_catalog_v4");
   if (cached) {
     try { return JSON.parse(cached); } catch (error) {}
   }
 
   const catalog = getProducts_().filter(function(product) { return isYes_(product.active); }).map(function(product) {
-    return {id:product.id,sku:product.sku,name:product.name,slug:product.slug,category:product.category,description:product.description,price:product.salePrice > 0 ? product.salePrice : product.price,originalPrice:product.price,stock:product.stock,productionDays:product.productionDays,shopeeUrl:product.shopeeUrl,image:product.imageMain || product.detectedImage,images:[product.imageMain,product.image2,product.image3,product.detectedImage].filter(Boolean)};
+    return {id:product.id,sku:product.sku,name:product.name,slug:product.slug,category:product.category,description:product.description,price:product.salePrice > 0 ? product.salePrice : product.price,originalPrice:product.price,stock:product.stock,productionDays:product.productionDays,heightCm:product.heightCm,widthCm:product.widthCm,depthCm:product.depthCm,shopeeUrl:product.shopeeUrl,image:product.imageMain || product.detectedImage,images:[product.imageMain,product.image2,product.image3,product.detectedImage].filter(Boolean)};
   });
 
-  cache.put("public_catalog_v2", JSON.stringify(catalog), 300);
+  cache.put("public_catalog_v4", JSON.stringify(catalog), 300);
   return catalog;
 }
 
@@ -563,15 +564,19 @@ function getProductById_(id) {
   const sheet = getSheet_(SHEETS.products);
   const rowNumber = findRowByValue_(sheet, 1, Number(id));
   if (!rowNumber) return null;
-  return productToObject_(sheet.getRange(rowNumber, 1, 1, 23).getValues()[0]);
+  const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+  return productToObject_(sheet.getRange(rowNumber, 1, 1, Math.max(23, headers.length)).getValues()[0], headers);
 }
 
-function productToObject_(row) {
-  return {id:Number(row[0]),sku:row[1]||"",active:row[2]||"",featured:row[3]||"",name:row[4]||"",slug:row[5]||"",category:row[6]||"",description:row[7]||"",price:Number(row[8]||0),salePrice:Number(row[9]||0),stock:Number(row[10]||0),productionDays:Number(row[11]||0),shopeeUrl:row[12]||"",scrapeStatus:row[13]||"",scrapeAttemptAt:serializeValue_(row[14]),detectedTitle:row[15]||"",detectedPrice:Number(row[16]||0),detectedImage:row[17]||"",imageMain:row[18]||"",image2:row[19]||"",image3:row[20]||"",adminNotes:row[21]||"",updatedAt:serializeValue_(row[22])};
+function productToObject_(row, headers) {
+  headers = headers || [];
+  return {heightCm:readDimension_(row[headers.indexOf("Altura (cm)")]),widthCm:readDimension_(row[headers.indexOf("Largura (cm)")]),depthCm:readDimension_(row[headers.indexOf("Profundidade (cm)")]),id:Number(row[0]),sku:row[1]||"",active:row[2]||"",featured:row[3]||"",name:row[4]||"",slug:row[5]||"",category:row[6]||"",description:row[7]||"",price:Number(row[8]||0),salePrice:Number(row[9]||0),stock:Number(row[10]||0),productionDays:Number(row[11]||0),shopeeUrl:row[12]||"",scrapeStatus:row[13]||"",scrapeAttemptAt:serializeValue_(row[14]),detectedTitle:row[15]||"",detectedPrice:Number(row[16]||0),detectedImage:row[17]||"",imageMain:row[18]||"",image2:row[19]||"",image3:row[20]||"",adminNotes:row[21]||"",updatedAt:serializeValue_(row[22])};
 }
 
 function saveProduct_(product, mode) {
   const sheet = getSheet_(SHEETS.products);
+  const dimensions = ["heightCm", "widthCm", "depthCm"].map(function(key) { return product[key] === undefined ? undefined : normalizeDimension_(product[key]); });
+  const dimensionColumns = ensureProductDimensions_(sheet);
   const requestedId = Number(product.id);
   const operation = String(mode || "").toLowerCase();
   let id = 0;
@@ -596,10 +601,11 @@ function saveProduct_(product, mode) {
   const row = [id,normalizeText_(product.sku,100),normalizeYesNo_(product.active,"Sim"),normalizeYesNo_(product.featured,"Não"),normalizeText_(product.name,240),slugify_(product.slug||product.name),normalizeText_(product.category,120),normalizeText_(product.description,5000),toMoney_(product.price),toMoney_(product.salePrice),normalizePositiveInt_(product.stock,0,999999),normalizePositiveInt_(product.productionDays,0,365),normalizeShopeeUrl_(product.shopeeUrl),normalizeText_(product.scrapeStatus,120),product.scrapeAttemptAt?new Date(product.scrapeAttemptAt):"",normalizeText_(product.detectedTitle,500),toMoney_(product.detectedPrice),normalizeUrl_(product.detectedImage),normalizeUrl_(product.imageMain),normalizeUrl_(product.image2),normalizeUrl_(product.image3),normalizeText_(product.adminNotes,2500),new Date()];
 
   sheet.getRange(rowNumber,1,1,23).setValues([row]);
-  CacheService.getScriptCache().remove("public_catalog_v2");
+  dimensionColumns.forEach(function(column, index) { if (dimensions[index] !== undefined) sheet.getRange(rowNumber, column).setValue(dimensions[index]); });
+  CacheService.getScriptCache().remove("public_catalog_v4");
   CacheService.getScriptCache().remove("public_catalog_v3");
   log_("Produto",operation === "create" ? "Criado" : "Atualizado","Produto",id,"Admin",row[4],row[12]);
-  return productToObject_(row);
+  return getProductById_(id);
 }
 
 function nextProductId_() {
@@ -751,4 +757,29 @@ function ensureAffiliateColumns_(sheet, start) {
   const expected = ["Afiliado", "Acréscimo afiliado (%)", "Valor acréscimo afiliado"];
   if (headers.some(function(value, index) { return value && value !== expected[index]; })) throw new Error("As colunas de afiliado já estão ocupadas na aba " + sheet.getName() + ". Confira a estrutura antes de continuar.");
   sheet.getRange(1, start, 1, 3).setValues([expected]);
+}
+
+
+function normalizeDimension_(value) {
+  if (value === "" || value === null) return "";
+  const number = Number(String(value).trim().replace(",", "."));
+  if (!Number.isFinite(number) || number <= 0 || number > 10000 || Math.abs(number * 100 - Math.round(number * 100)) > 0.00001) throw new Error("Medidas devem ser maiores que zero, até 10000 cm, com até duas casas decimais.");
+  return number;
+}
+function readDimension_(value) {
+  try { return normalizeDimension_(value); } catch (error) { return ""; }
+}
+function ensureProductDimensions_(sheet) {
+  const labels = ["Altura (cm)", "Largura (cm)", "Profundidade (cm)"];
+  const headers = sheet.getRange(1, 1, 1, Math.max(23, sheet.getLastColumn())).getValues()[0];
+  return labels.map(function(label) {
+    let index = headers.indexOf(label);
+    if (index < 0) {
+      index = headers.length;
+      if (sheet.getMaxColumns() < index + 1) sheet.insertColumnsAfter(sheet.getMaxColumns(), index + 1 - sheet.getMaxColumns());
+      sheet.getRange(1, index + 1).setValue(label);
+      headers.push(label);
+    }
+    return index + 1;
+  });
 }

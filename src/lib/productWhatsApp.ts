@@ -1,3 +1,4 @@
+import { productDimensions } from './productDimensions';
 import type { Product } from '../data/products';
 import { formatBRL } from './format';
 
@@ -28,6 +29,7 @@ export const buildDirectProductWhatsAppUrl = (product: Product) => {
     '📦 *' + product.name + '*',
     '🏷️ Origem: *' + (source === 'Interno' ? 'Produto interno Orume' : 'Shopee') + '*',
     product.sku ? '🏷️ SKU: *' + product.sku + '*' : '',
+    productDimensions(product) ? '📏 ' + productDimensions(product) : '',
     '💰 Valor do produto: *' + formatBRL(product.price) + '*',
     '🛠️ Disponibilidade: *Produzido sob demanda*',
     productionDays > 0

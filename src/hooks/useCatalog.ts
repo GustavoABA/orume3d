@@ -15,7 +15,7 @@ type CatalogCache = {
   products: Product[];
 };
 
-const CACHE_KEY = 'orume:catalog:v5';
+const CACHE_KEY = 'orume:catalog:v6';
 const CACHE_TTL = 5 * 60 * 1000;
 const PLACEHOLDER_IMAGE = '/brand/orume-mark.webp';
 
@@ -73,6 +73,9 @@ const mapProduct = (item: Record<string, unknown>): Product => {
     description: String(item.description || item['Descrição'] || ''),
     sku: String(item.sku || item['SKU'] || ''),
     stock: Number(item.stock ?? item['Estoque'] ?? 0),
+    heightCm: Number(item.heightCm) || undefined,
+    widthCm: Number(item.widthCm) || undefined,
+    depthCm: Number(item.depthCm) || undefined,
     productionDays: Number(item.productionDays ?? item['Produção (dias)'] ?? 0),
     shopeeUrl,
     source: shopeeUrl ? 'Shopee' : 'Interno',
