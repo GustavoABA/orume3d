@@ -1,6 +1,9 @@
 export type ProductCategory = string;
 
 export type Product = {
+  heightCm?: number;
+  widthCm?: number;
+  depthCm?: number;
   basePrice?: number;
   affiliateCode?: string;
   affiliateRate?: number;

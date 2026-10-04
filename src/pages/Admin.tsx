@@ -51,6 +51,9 @@ type Product = {
   salePrice: number;
   stock: number;
   productionDays: number;
+  heightCm?: number | string;
+  widthCm?: number | string;
+  depthCm?: number | string;
   shopeeUrl: string;
   scrapeStatus: string;
   scrapeAttemptAt: string;
@@ -848,6 +851,14 @@ const Admin = () => {
                   </span>
                 </label>
               </div>
+
+              <fieldset className="mt-5 rounded-xl border border-paper/10 p-4">
+                <legend className="px-2 text-sm font-semibold">Medidas da peça (cm)</legend>
+                <p className="mb-3 text-xs text-muted">Preencha as medidas conhecidas. Campos vazios não aparecem no anúncio. Use as medidas da peça, sem a embalagem.</p>
+                <div className="grid gap-3 sm:grid-cols-3">
+                  {([['heightCm', 'Altura'], ['widthCm', 'Largura'], ['depthCm', 'Profundidade']] as const).map(([key, label]) => <label key={key} className="block text-xs font-semibold text-muted">{label} (cm)<input type="number" min="0.01" max="10000" step="0.01" placeholder="Ex.: 15,5" className={inputClass} value={selectedProduct[key] ?? ''} onChange={e => setSelectedProduct(p => ({ ...p, [key]: e.target.value }))} /></label>)}
+                </div>
+              </fieldset>
 
               <label className="mt-4 block text-xs font-semibold text-muted">Descrição<textarea className={inputClass + ' min-h-28 resize-y'} value={selectedProduct.description} onChange={(e) => setSelectedProduct((p) => ({ ...p, description: e.target.value }))} /></label>
 

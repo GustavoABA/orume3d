@@ -1,3 +1,4 @@
+import { productDimensions } from '../../lib/productDimensions';
 import { Dialog } from '@headlessui/react';
 import { XMarkIcon, TruckIcon, CubeIcon } from '@heroicons/react/24/outline';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -59,6 +60,7 @@ const ProductModal = ({ product, open, onClose, onCartOpen }: ProductModalProps)
                         <div><p className="font-semibold text-paper">Entrega a combinar</p><p className="text-muted">Informe seu CEP para consultar o frete antes do pagamento.</p></div>
                       </div>
                     </div>
+                    {productDimensions(product) && <section className="mt-5 rounded-xl border border-paper/10 p-4"><h3 className="text-sm font-semibold text-paper">Medidas da peça</h3><p className="mt-2 text-sm leading-6 text-muted">{productDimensions(product)}</p></section>}
                     {product.description && <details className="mt-5 border-t border-paper/10 pt-4">
                       <summary className="cursor-pointer py-1 text-sm font-semibold text-paper focus-visible:outline-accent">Descrição completa</summary>
                       <p className="mt-3 whitespace-pre-line break-words text-sm leading-6 text-muted">{product.description}</p>
