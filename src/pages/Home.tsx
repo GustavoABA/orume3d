@@ -10,7 +10,7 @@ import InstagramProjects from "../components/social/InstagramProjects";
 import { type Product, type ProductCategory } from "../data/products";
 import { usePagination } from "../hooks/usePagination";
 import { usePreferences } from "../context/PreferencesContext";
-import FilterModal from "../components/common/FilterModal";
+import MobileCatalogFilters from "../components/common/MobileCatalogFilters";
 import { useCatalog } from "../hooks/useCatalog";
 
 const PAGE_SIZE = 9;
@@ -26,7 +26,6 @@ const Home = ({ onCartOpen, onQuoteOpen }: HomeProps) => {
   const [sortOption, setSortOption] = useState<SortOption>("price-asc");
   const [isLoading, setIsLoading] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
-  const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const { addRecentlyViewed, recentlyViewed } = usePreferences();
   const hero = "/brand/orume-workbench.webp";
 
@@ -81,15 +80,6 @@ const Home = ({ onCartOpen, onQuoteOpen }: HomeProps) => {
     return () => window.clearTimeout(timeout);
   }, [searchTerm, selectedCategory, sortOption, reset]);
 
-  useEffect(() => {
-    const handleResize = () => {
-      if (window.innerWidth >= 768) setIsFilterModalOpen(false);
-    };
-    handleResize();
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
-
   const handleViewProduct = (product: Product) => {
     setSelectedProduct(product);
     addRecentlyViewed(product.id);
@@ -143,6 +133,7 @@ const Home = ({ onCartOpen, onQuoteOpen }: HomeProps) => {
 
         <div className="md:hidden">
           <SearchBar value={searchTerm} onChange={setSearchTerm} className="max-w-none" />
+          <MobileCatalogFilters categories={categoryOptions} category={selectedCategory} onCategoryChange={setSelectedCategory} sort={sortOption} onSortChange={setSortOption} resultCount={sortedProducts.length} />
         </div>
 
         <div className="hidden md:block">
@@ -161,17 +152,6 @@ const Home = ({ onCartOpen, onQuoteOpen }: HomeProps) => {
             </div>
           </div>
         </div>
-
-        <motion.button
-          type="button"
-          whileTap={{ scale: 0.96 }}
-          onClick={() => setIsFilterModalOpen(true)}
-          aria-haspopup="dialog"
-          aria-expanded={isFilterModalOpen}
-          className="fixed bottom-6 right-5 z-30 inline-flex items-center rounded-full bg-accent px-5 py-3 text-[0.68rem] font-black uppercase tracking-[0.11em] text-ink shadow-glow md:hidden"
-        >
-          Filtrar produtos
-        </motion.button>
 
         {catalogError && !catalogLoading && activeCatalog.length === 0 && (
           <div className="mb-6 rounded-2xl border border-gold/20 bg-gold/[0.05] px-5 py-4 text-sm text-muted">
@@ -205,17 +185,7 @@ const Home = ({ onCartOpen, onQuoteOpen }: HomeProps) => {
           onCartOpen={onCartOpen}
         />
 
-        <FilterModal
-          open={isFilterModalOpen}
-          onClose={() => setIsFilterModalOpen(false)}
-          searchTerm={searchTerm}
-          onSearchChange={setSearchTerm}
-          category={selectedCategory}
-          onCategoryChange={setSelectedCategory}
-          sortOption={sortOption}
-          onSortChange={setSortOption}
-          categories={categoryOptions}
-        />
+
       </div>
     </>
   );
