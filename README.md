@@ -72,6 +72,10 @@ Todas as mensagens preparadas pelo site devem conter **`orume` em minúsculas**,
 
 A primeira visita ainda depende da resposta do Google Apps Script e da velocidade dos servidores das imagens. O backend também possui cache público de cinco minutos, invalidado ao salvar produtos pelo admin. Alterações diretas na planilha podem demorar até a expiração dos caches para aparecer.
 
+## Anúncio automático
+
+A página `/ad/` exibe três produtos sorteados do catálogo a cada reprodução. O histórico fica no navegador: os produtos disponíveis com imagem são percorridos antes de iniciar outra rodada, evitando repetições dentro do mesmo anúncio. Com menos de três produtos, os espaços restantes exibem a marca. O catálogo é consultado novamente em cada reprodução; não é necessário editar o anúncio ao cadastrar peças.
+
 ## Publicação
 
 Ao enviar alterações para `main`, o workflow [Deploy](.github/workflows/deploy.yml) executa `npm ci`, testes, build e publicação no GitHub Pages. Ele prepara as rotas `/admin/`, `/checkout/` e a página de fallback. O domínio é definido em `public/CNAME`.
