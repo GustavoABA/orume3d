@@ -12,13 +12,13 @@ function load(storage = {}, random = Math.random) {
   return ctx.window.ORUME_AD_SELECTION.pick;
 }
 const pool = Array.from({ length: 30 }, (_, i) => ({ id: String(i + 1), image: '/'+i+'.jpg' }));
-test('ten ads cover thirty products without repeating; reload preserves progress', () => {
+test('five ads cover thirty products without repeating; reload preserves progress', () => {
   const storage = {};
   const ids = [];
-  for (let i = 0; i < 10; i++) ids.push(...load(storage)(pool, 3).map(p => p.id));
+  for (let i = 0; i < 5; i++) ids.push(...load(storage)(pool, 6).map(p => p.id));
   assert.equal(new Set(ids).size, 30);
-  const next = load(storage)(pool, 3).map(p => p.id);
-  assert.ok(next.every(id => !ids.slice(-3).includes(id)));
+  const next = load(storage)(pool, 6).map(p => p.id);
+  assert.ok(next.every(id => !ids.slice(-6).includes(id)));
 });
 test('selection uses randomness instead of catalog order', () => {
   assert.notDeepEqual(Array.from(load({}, () => 0)(pool, 3), p => p.id), Array.from(load({}, () => .99)(pool, 3), p => p.id));

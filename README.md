@@ -74,7 +74,7 @@ A primeira visita ainda depende da resposta do Google Apps Script e da velocidad
 
 ## Anúncio automático
 
-A página `/ad/` exibe três produtos sorteados do catálogo a cada reprodução. O histórico fica no navegador: os produtos disponíveis com imagem são percorridos antes de iniciar outra rodada, evitando repetições dentro do mesmo anúncio. Com menos de três produtos, os espaços restantes exibem a marca. O catálogo é consultado novamente em cada reprodução; não é necessário editar o anúncio ao cadastrar peças.
+A página `/ad/` exibe seis produtos sorteados do catálogo a cada reprodução. O histórico fica no navegador: os produtos disponíveis com imagem são percorridos antes de iniciar outra rodada, evitando repetições dentro do mesmo anúncio. Com menos de seis produtos, os espaços restantes exibem a marca. O catálogo é consultado novamente em cada reprodução; não é necessário editar o anúncio ao cadastrar peças.
 
 ## Publicação
 
