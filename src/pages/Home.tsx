@@ -24,7 +24,6 @@ const Home = ({ onCartOpen, onQuoteOpen }: HomeProps) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<ProductCategory | "All">("All");
   const [sortOption, setSortOption] = useState<SortOption>("price-asc");
-  const [isLoading, setIsLoading] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const { addRecentlyViewed, recentlyViewed } = usePreferences();
   const hero = "/brand/orume-workbench.webp";
@@ -74,10 +73,7 @@ const Home = ({ onCartOpen, onQuoteOpen }: HomeProps) => {
   } = usePagination(sortedProducts, PAGE_SIZE);
 
   useEffect(() => {
-    setIsLoading(true);
-    const timeout = window.setTimeout(() => setIsLoading(false), 220);
     reset();
-    return () => window.clearTimeout(timeout);
   }, [searchTerm, selectedCategory, sortOption, reset]);
 
   const handleViewProduct = (product: Product) => {
@@ -162,7 +158,7 @@ const Home = ({ onCartOpen, onQuoteOpen }: HomeProps) => {
         <div className="mt-8">
           <ProductGrid
             products={paginatedProducts}
-            isLoading={catalogLoading || isLoading}
+            isLoading={catalogLoading}
             onView={handleViewProduct}
             onLoadMore={loadMore}
             hasMore={hasMore}
