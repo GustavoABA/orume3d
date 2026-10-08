@@ -105,6 +105,7 @@
         };
         image.src = selected[index]?.image || '/brand/orume-mark-transparent.png';
         image.alt = selected[index]?.name || 'Orume 3D';
+        image.closest('.project-card').querySelector('.project-name').textContent = image.alt;
       });
 
       document.querySelector('#feed-label').textContent =
@@ -138,41 +139,42 @@
       .to('.print-nozzle', { xPercent: 430, duration: .36, repeat: 13, yoyo: true, ease: 'sine.inOut' }, 2.15)
       .to(['.print-rail', '.print-layers'], { autoAlpha: 0, duration: .65 }, 7.6)
       .to('.logo-reveal img', { autoAlpha: 1, scale: 1, rotation: 0, duration: .8 }, 7.65)
-      .to('.opening', { autoAlpha: 0, y: '-1.5vh', duration: .8 }, 18.1);
+      .to('.opening', { autoAlpha: 0, y: '-1.5vh', duration: .8 }, 11.1);
 
-    tl.to('.projects', { autoAlpha: 1, y: 0, duration: .65 }, 19.1);
-    [['.card-1',20.2],['.card-2',26.5],['.card-3',32.8]].forEach(([card, start]) => {
+    tl.to('.projects', { autoAlpha: 1, y: 0, duration: .65 }, 12.1);
+    Array.from(document.querySelectorAll('.project-card')).forEach((card, index) => {
+      const start = 13.2 + index * 5;
       tl.to(card, { autoAlpha: 1, xPercent: 0, rotation: 0, scale: 1, duration: .55 }, start)
-        .to(card, { autoAlpha: 0, xPercent: -34, rotation: -4, scale: .94, duration: .55 }, start + 4.9);
+        .to(card, { autoAlpha: 0, xPercent: -34, rotation: -4, scale: .94, duration: .55 }, start + 4.35);
     });
-    tl.to('.auto-hint b', { x: '1.1vw', duration: .45, repeat: 16, yoyo: true, ease: 'sine.inOut' }, 20.2)
-      .to('.projects', { autoAlpha: 0, y: '-1.5vh', duration: .7 }, 39.2);
+    tl.to('.auto-hint b', { x: '1.1vw', duration: .45, repeat: 16, yoyo: true, ease: 'sine.inOut' }, 13.2)
+      .to('.projects', { autoAlpha: 0, y: '-1.5vh', duration: .7 }, 43.2);
 
-    tl.to('.journey', { autoAlpha: 1, duration: .65 }, 40.1)
-      .to('.person-arm', { rotation: 34, y: '2.3vh', duration: .42, transformOrigin: '8% 50%' }, 42.1)
-      .to('.person-arm', { rotation: -8, y: 0, duration: .38 }, 42.55)
-      .to('.person-arm', { rotation: 34, y: '2.3vh', duration: .38 }, 43.05)
-      .to('.person-arm', { rotation: -8, y: 0, duration: .35 }, 43.45)
-      .to('.ok-bubble', { autoAlpha: 1, scale: 1, duration: .35, ease: 'back.out(2)' }, 44.0)
-      .to('.chip-1', { autoAlpha: 1, x: 0, duration: .35 }, 45.25)
-      .to('.copy-1', { autoAlpha: 0, x: '-2vw', duration: .35 }, 45.25)
-      .to('.phase-person', { autoAlpha: 0, scale: .35, rotation: -10, duration: .55 }, 45.35)
-      .fromTo('.phase-phone', { autoAlpha: 0, scale: .35, rotation: 12 }, { autoAlpha: 1, scale: 1, rotation: 0, duration: .55, ease: 'back.out(1.6)' }, 45.7)
-      .to('.copy-2', { autoAlpha: 1, x: 0, duration: .4 }, 45.9);
+    tl.to('.journey', { autoAlpha: 1, duration: .65 }, 44.1)
+      .to('.person-arm', { rotation: 34, y: '2.3vh', duration: .42, transformOrigin: '8% 50%' }, 46.1)
+      .to('.person-arm', { rotation: -8, y: 0, duration: .38 }, 46.55)
+      .to('.person-arm', { rotation: 34, y: '2.3vh', duration: .38 }, 47.05)
+      .to('.person-arm', { rotation: -8, y: 0, duration: .35 }, 47.45)
+      .to('.ok-bubble', { autoAlpha: 1, scale: 1, duration: .35, ease: 'back.out(2)' }, 48.0)
+      .to('.chip-1', { autoAlpha: 1, x: 0, duration: .35 }, 49.25)
+      .to('.copy-1', { autoAlpha: 0, x: '-2vw', duration: .35 }, 49.25)
+      .to('.phase-person', { autoAlpha: 0, scale: .35, rotation: -10, duration: .55 }, 49.35)
+      .fromTo('.phase-phone', { autoAlpha: 0, scale: .35, rotation: 12 }, { autoAlpha: 1, scale: 1, rotation: 0, duration: .55, ease: 'back.out(1.6)' }, 49.7)
+      .to('.copy-2', { autoAlpha: 1, x: 0, duration: .4 }, 49.9);
     ['.m1','.m2','.m3','.m4'].forEach((message, index) => {
-      tl.fromTo(message, { autoAlpha: 0, y: '2vh' }, { autoAlpha: 1, y: 0, duration: .32 }, 46.7 + index * .72);
+      tl.fromTo(message, { autoAlpha: 0, y: '2vh' }, { autoAlpha: 1, y: 0, duration: .32 }, 50.7 + index * .72);
     });
-    tl.to('.chip-2', { autoAlpha: 1, x: 0, duration: .35 }, 50.2)
-      .to('.copy-2', { autoAlpha: 0, x: '-2vw', duration: .35 }, 50.2)
-      .to('.phase-phone', { autoAlpha: 0, scale: .25, rotation: -12, duration: .5 }, 50.25)
-      .fromTo('.phase-truck', { autoAlpha: 0, scale: .2, rotation: 8 }, { autoAlpha: 1, scale: 1, rotation: 0, duration: .65, ease: 'back.out(1.5)' }, 50.55)
-      .to('.copy-3', { autoAlpha: 1, x: 0, duration: .42 }, 50.8)
-      .to('.delivery-truck', { y: '-1.1vh', duration: .23, repeat: 43, yoyo: true, ease: 'sine.inOut' }, 51.2)
-      .to('.delivery-truck>i', { rotation: 1080, duration: 10, ease: 'none' }, 51.2)
-      .fromTo('.smoke i', { autoAlpha: 0, x: 0, y: 0, scale: .35 }, { autoAlpha: .65, x: '-5vw', y: '-2vh', scale: 1.7, duration: 1.2, repeat: 7, stagger: .35, ease: 'power1.out' }, 51.2)
-      .to('.journey', { autoAlpha: 0, y: '-1.2vh', duration: .7 }, 64.8);
+    tl.to('.chip-2', { autoAlpha: 1, x: 0, duration: .35 }, 54.2)
+      .to('.copy-2', { autoAlpha: 0, x: '-2vw', duration: .35 }, 54.2)
+      .to('.phase-phone', { autoAlpha: 0, scale: .25, rotation: -12, duration: .5 }, 54.25)
+      .fromTo('.phase-truck', { autoAlpha: 0, scale: .2, rotation: 8 }, { autoAlpha: 1, scale: 1, rotation: 0, duration: .65, ease: 'back.out(1.5)' }, 54.55)
+      .to('.copy-3', { autoAlpha: 1, x: 0, duration: .42 }, 54.8)
+      .to('.delivery-truck', { y: '-1.1vh', duration: .23, repeat: 43, yoyo: true, ease: 'sine.inOut' }, 55.2)
+      .to('.delivery-truck>i', { rotation: 1080, duration: 10, ease: 'none' }, 55.2)
+      .fromTo('.smoke i', { autoAlpha: 0, x: 0, y: 0, scale: .35 }, { autoAlpha: .65, x: '-5vw', y: '-2vh', scale: 1.7, duration: 1.2, repeat: 7, stagger: .35, ease: 'power1.out' }, 55.2)
+      .to('.journey', { autoAlpha: 0, y: '-1.2vh', duration: .7 }, 68.8);
 
-    tl.to('.final', { autoAlpha: 1, scale: 1, duration: .75 }, 65.7)
+    tl.to('.final', { autoAlpha: 1, scale: 1, duration: .75 }, 69.7)
       .to('.final', { autoAlpha: 0, scale: 1.025, duration: 1.15 }, 88.65);
     tl.to({}, { duration: .2 }, 89.8);
     return tl;
