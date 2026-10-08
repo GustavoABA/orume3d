@@ -64,7 +64,14 @@
     });
   }
 
-  async function refreshProjects() {
+  let pendingProjects = null;
+  function refreshProjects() {
+    if (pendingProjects) return pendingProjects;
+    pendingProjects = updateProjects().finally(() => { pendingProjects = null; });
+    return pendingProjects;
+  }
+
+  async function updateProjects() {
     try {
       const configResponse = await fetch(`${SITE_URL}intake-config.json?live=${Date.now()}`, { cache: 'no-store' });
       if (!configResponse.ok) throw new Error('configuração indisponível');
@@ -73,37 +80,35 @@
       if (!config?.endpoint) throw new Error('endpoint ausente');
 
       const result = await catalogJsonp(config.endpoint, { action: 'catalog' });
-      const products = Array.isArray(result?.products) ? result.products : [];
-      const urls = products
-        .map(product => {
-          const images = Array.isArray(product?.images) ? product.images.filter(Boolean) : [];
-          return (
-            product?.image ||
-            product?.imageMain ||
-            product?.mainImage ||
-            product?.detectedImage ||
-            product?.['Imagem principal'] ||
-            images[0] ||
-            ''
-          );
-        })
-        .filter(Boolean)
-        .map(src => new URL(String(src).replace(/^http:\/\//i, 'https://'), SITE_URL).href);
-
-      if (!urls.length) throw new Error('catálogo sem imagens');
-
-      document.querySelectorAll('.feed-image').forEach((image, index) => {
+      if (!result?.ok || !Array.isArray(result.products)) throw new Error('catálogo inválido');
+      const products = result.products.flatMap(product => {
+        const images = Array.isArray(product?.images) ? product.images : [];
+        const src = product?.image || product?.imageMain || product?.mainImage ||
+          product?.detectedImage || product?.['Imagem principal'] || images.find(Boolean);
+        if (!src) return [];
+        try {
+          const url = new URL(String(src).replace(/^http:\/\//i, 'https://'), SITE_URL);
+          if (!['https:', 'http:'].includes(url.protocol)) return [];
+          return [{ id: String(product.id || url.href), image: url.href, name: String(product.name || 'Produto da Orume 3D') }];
+        } catch { return []; }
+      });
+      const slots = [...document.querySelectorAll('.feed-image')];
+      const selected = window.ORUME_AD_SELECTION.pick(products, slots.length);
+      slots.forEach((image, index) => {
+        image.style.objectFit = '';
+        image.style.padding = '';
         image.onerror = () => {
           image.onerror = null;
           image.src = '/brand/orume-mark.webp';
           image.style.objectFit = 'contain';
           image.style.padding = '12%';
         };
-        image.src = urls[index % urls.length];
+        image.src = selected[index]?.image || '/brand/orume-mark.webp';
+        image.alt = selected[index]?.name || 'Orume 3D';
       });
 
       document.querySelector('#feed-label').textContent =
-        urls.length > 1 ? 'CATÁLOGO ORUME ATUALIZADO' : 'PRODUTO ORUME EM DESTAQUE';
+        selected.length > 1 ? 'CATÁLOGO ORUME ATUALIZADO' : 'PRODUTO ORUME EM DESTAQUE';
     } catch (error) {
       console.warn('ORUME AD: catálogo não carregou', error);
       document.querySelector('#feed-label').textContent = 'CATÁLOGO ORUME';
@@ -173,11 +178,11 @@
     return tl;
   }
 
-  function playAd(broadcast = true) {
+  async function playAd(broadcast = true) {
     const now = Date.now();
     if (now - lastSynchronizedPlay < 3000) return;
     lastSynchronizedPlay = now;
-    refreshProjects();
+    await refreshProjects();
     document.body.classList.add('gsap-active', 'active');
     if (!master) master = buildTimeline();
     master.restart();
@@ -204,7 +209,6 @@
   window.addEventListener('obsSourceActiveChanged', event => { if (event.detail?.active) schedule(); });
   window.addEventListener('obsSourceVisibleChanged', event => { if (event.detail?.visible && !timer) schedule(); });
   makeParticles();
-  refreshProjects();
   if (TEST_MODE) playAd(); else schedule();
   window.ORUME_AD = { play: playAd, schedule, refreshProjects };
 })();
