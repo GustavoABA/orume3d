@@ -99,11 +99,11 @@
         image.style.padding = '';
         image.onerror = () => {
           image.onerror = null;
-          image.src = '/brand/orume-mark.webp';
+          image.src = '/brand/orume-mark-transparent.png';
           image.style.objectFit = 'contain';
           image.style.padding = '12%';
         };
-        image.src = selected[index]?.image || '/brand/orume-mark.webp';
+        image.src = selected[index]?.image || '/brand/orume-mark-transparent.png';
         image.alt = selected[index]?.name || 'Orume 3D';
       });
 
