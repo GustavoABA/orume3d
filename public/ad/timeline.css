@@ -24,3 +24,5 @@ body.gsap-active .opening,body.gsap-active .projects,body.gsap-active .journey,b
 .project-card{border-radius:3vw}.project-card figcaption{font-size:2.5vw;padding:5vh 3vw 2vh}
 .project-card figcaption span{font-size:2vw}.auto-hint{font-size:1.5vw}
 }
+
+@media(max-aspect-ratio:1/1){.projects h2 em{margin-left:.2em}.projects .lead{font-size:clamp(13px,3.4vw,20px)}.projects .feed-state{font-size:clamp(8px,2.2vw,14px);letter-spacing:.08em}.project-card figcaption{font-size:clamp(12px,3vw,18px)}.project-card figcaption span{font-size:clamp(10px,2.5vw,15px)}}
