@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 
 const SCRIPT_ID = 'orume-elfsight-instagram';
@@ -6,18 +6,27 @@ const SCRIPT_SRC = 'https://elfsightcdn.com/platform.js';
 const APP_CLASS = 'elfsight-app-9f259760-45e7-4cae-a481-b388c3758c80';
 
 const InstagramProjects = () => {
+  const sectionRef = useRef<HTMLElement>(null);
   useEffect(() => {
-    if (document.getElementById(SCRIPT_ID)) return;
-
-    const script = document.createElement('script');
-    script.id = SCRIPT_ID;
-    script.src = SCRIPT_SRC;
-    script.async = true;
-    document.body.appendChild(script);
+    const load = () => {
+      if (document.getElementById(SCRIPT_ID)) return;
+      const script = document.createElement('script');
+      script.id = SCRIPT_ID;
+      script.src = SCRIPT_SRC;
+      script.async = true;
+      document.body.appendChild(script);
+    };
+    if (!('IntersectionObserver' in window)) { load(); return; }
+    const observer = new IntersectionObserver(entries => {
+      if (entries.some(entry => entry.isIntersecting)) { load(); observer.disconnect(); }
+    }, { rootMargin: '300px' });
+    if (sectionRef.current) observer.observe(sectionRef.current);
+    return () => observer.disconnect();
   }, []);
 
   return (
     <motion.section
+      ref={sectionRef}
       initial={{ opacity: 0, y: 18 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: '-80px' }}
