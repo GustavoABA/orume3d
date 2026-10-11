@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import SearchBar from "../components/common/SearchBar";
 import CategoryFilter from "../components/common/CategoryFilter";
@@ -15,6 +15,19 @@ import { useCatalog } from "../hooks/useCatalog";
 
 const PAGE_SIZE = 9;
 
+const productIdFromPath = () => {
+  const pathname = window.location.pathname.replace(/^\/orume3d(?=\/|$)/, "");
+  const match = pathname.match(/^\/produto\/(\d+)\/?$/);
+  if (!match) return null;
+  const id = Number(match[1]);
+  return Number.isInteger(id) && id > 0 ? id : null;
+};
+
+const productPath = (productId: number) =>
+  `/produto/${productId}/${window.location.search}${window.location.hash}`;
+
+const catalogPath = () => `/${window.location.search}${window.location.hash}`;
+
 type HomeProps = {
   onCartOpen: () => void;
   onQuoteOpen: () => void;
@@ -25,6 +38,8 @@ const Home = ({ onCartOpen, onQuoteOpen }: HomeProps) => {
   const [selectedCategory, setSelectedCategory] = useState<ProductCategory | "All">("All");
   const [sortOption, setSortOption] = useState<SortOption>("price-asc");
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [routeProductId, setRouteProductId] = useState<number | null>(() => productIdFromPath());
+  const openedFromCatalog = useRef(false);
   const { addRecentlyViewed, recentlyViewed } = usePreferences();
   const hero = "/brand/orume-workbench.webp";
 
@@ -76,9 +91,52 @@ const Home = ({ onCartOpen, onQuoteOpen }: HomeProps) => {
     reset();
   }, [searchTerm, selectedCategory, sortOption, reset]);
 
-  const handleViewProduct = (product: Product) => {
+  useEffect(() => {
+    const syncRoute = () => {
+      openedFromCatalog.current = false;
+      setRouteProductId(productIdFromPath());
+    };
+    window.addEventListener("popstate", syncRoute);
+    return () => window.removeEventListener("popstate", syncRoute);
+  }, []);
+
+  useEffect(() => {
+    if (catalogLoading) return;
+
+    if (routeProductId === null) {
+      setSelectedProduct(null);
+      return;
+    }
+
+    const product = activeCatalog.find((item) => item.id === routeProductId) ?? null;
     setSelectedProduct(product);
+    if (product) addRecentlyViewed(product.id);
+  }, [activeCatalog, catalogLoading, routeProductId, addRecentlyViewed]);
+
+  const handleViewProduct = (product: Product) => {
+    openedFromCatalog.current = true;
+    setSelectedProduct(product);
+    setRouteProductId(product.id);
     addRecentlyViewed(product.id);
+
+    if (productIdFromPath() !== product.id) {
+      window.history.pushState({ orumeProductId: product.id }, "", productPath(product.id));
+    }
+  };
+
+  const handleCloseProduct = () => {
+    setSelectedProduct(null);
+    setRouteProductId(null);
+
+    if (productIdFromPath() === null) return;
+
+    if (openedFromCatalog.current) {
+      openedFromCatalog.current = false;
+      window.history.back();
+      return;
+    }
+
+    window.history.replaceState({}, "", catalogPath());
   };
 
   const scrollToCatalog = () => {
@@ -178,11 +236,9 @@ const Home = ({ onCartOpen, onQuoteOpen }: HomeProps) => {
         <ProductModal
           product={selectedProduct}
           open={Boolean(selectedProduct)}
-          onClose={() => setSelectedProduct(null)}
+          onClose={handleCloseProduct}
           onCartOpen={onCartOpen}
         />
-
-
       </div>
     </>
   );
