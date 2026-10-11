@@ -123,7 +123,11 @@ const Checkout = () => {
       resetCart();
     } catch (reason) {
       console.error(reason);
-      setError(reason instanceof Error ? reason.message : 'Não foi possível registrar o pedido.');
+      const message =
+        reason && typeof reason === 'object' && 'message' in reason
+          ? String((reason as { message?: unknown }).message || '')
+          : '';
+      setError(message || 'Não foi possível registrar o pedido.');
     } finally {
       setSubmitting(false);
     }
