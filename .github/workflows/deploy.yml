@@ -42,6 +42,9 @@ jobs:
           cp dist/index.html dist/admin/index.html
           cp dist/index.html dist/checkout/index.html
           cp dist/index.html dist/404.html
+          for file in dist/admin/index.html dist/checkout/index.html dist/404.html; do
+            sed -i 's|<meta name="robots" content="index, follow, max-image-preview:large" />|<meta name="robots" content="noindex, nofollow" />|' "$file"
+          done
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
