@@ -40,6 +40,7 @@ const Home = ({ onCartOpen, onQuoteOpen }: HomeProps) => {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [routeProductId, setRouteProductId] = useState<number | null>(() => productIdFromPath());
   const openedFromCatalog = useRef(false);
+  const lastAutoViewedProductId = useRef<number | null>(null);
   const { addRecentlyViewed, recentlyViewed } = usePreferences();
   const hero = "/brand/orume-workbench.webp";
 
@@ -104,17 +105,23 @@ const Home = ({ onCartOpen, onQuoteOpen }: HomeProps) => {
     if (catalogLoading) return;
 
     if (routeProductId === null) {
+      lastAutoViewedProductId.current = null;
       setSelectedProduct(null);
       return;
     }
 
     const product = activeCatalog.find((item) => item.id === routeProductId) ?? null;
     setSelectedProduct(product);
-    if (product) addRecentlyViewed(product.id);
+
+    if (product && lastAutoViewedProductId.current !== product.id) {
+      lastAutoViewedProductId.current = product.id;
+      addRecentlyViewed(product.id);
+    }
   }, [activeCatalog, catalogLoading, routeProductId, addRecentlyViewed]);
 
   const handleViewProduct = (product: Product) => {
     openedFromCatalog.current = true;
+    lastAutoViewedProductId.current = product.id;
     setSelectedProduct(product);
     setRouteProductId(product.id);
     addRecentlyViewed(product.id);
