@@ -1,16 +1,31 @@
 import { memo } from 'react';
 import { motion } from 'framer-motion';
 import type { Product } from '../../data/products';
+import { useCart } from '../../context/CartContext';
+import { useToast } from '../../context/ToastContext';
 import WishlistButton from './WishlistButton';
 import ProductImage from './ProductImage';
 import { categoryLabel, formatBRL } from '../../lib/format';
 import { isMadeToOrder, productAvailabilityLabel } from '../../lib/productWhatsApp';
 
-type ProductCardProps = { product: Product; onView: (product: Product) => void };
+type ProductCardProps = {
+  product: Product;
+  onView: (product: Product) => void;
+  onCartOpen?: () => void;
+};
 
-const ProductCardComponent = ({ product, onView }: ProductCardProps) => {
+const ProductCardComponent = ({ product, onView, onCartOpen }: ProductCardProps) => {
+  const { addToCart } = useCart();
+  const { showToast } = useToast();
   const photoCount = new Set([product.image, ...(product.images || [])].filter(Boolean)).size;
   const madeToOrder = isMadeToOrder(product);
+
+  const handleOrder = () => {
+    addToCart(product);
+    showToast(`"${product.name}" adicionado ao carrinho`);
+    onCartOpen?.();
+  };
+
   return (
     <motion.article layout whileHover={{ y: -4 }} transition={{ type: 'spring', stiffness: 260, damping: 24 }} className="orume-panel orume-panel-interactive group flex h-full min-w-0 flex-col overflow-hidden rounded-[1.35rem] p-3">
       <div className="relative aspect-square overflow-hidden rounded-2xl bg-surface2">
@@ -34,7 +49,7 @@ const ProductCardComponent = ({ product, onView }: ProductCardProps) => {
             <p className="text-[0.62rem] text-muted">Valor da peça</p>
             <p className="text-xl font-bold tabular-nums text-paper">{formatBRL(product.price)}</p>
           </div>
-          <button type="button" onClick={() => onView(product)} className="shrink-0 rounded-full bg-accent px-4 py-3 text-xs font-bold text-ink transition hover:brightness-110 focus-visible:ring-2 focus-visible:ring-paper">Ver detalhes</button>
+          <button type="button" onClick={handleOrder} className="shrink-0 rounded-full bg-accent px-4 py-3 text-xs font-bold text-ink transition hover:brightness-110 focus-visible:ring-2 focus-visible:ring-paper">Pedir</button>
         </div>
       </div>
     </motion.article>
