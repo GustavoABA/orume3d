@@ -7,6 +7,7 @@ interface ProductGridProps {
   products: Product[];
   isLoading: boolean;
   onView: (product: Product) => void;
+  onCartOpen?: () => void;
   onLoadMore: () => void;
   hasMore: boolean;
   skeletonCount?: number;
@@ -16,6 +17,7 @@ const ProductGrid = ({
   products,
   isLoading,
   onView,
+  onCartOpen,
   onLoadMore,
   hasMore,
   skeletonCount = 9,
@@ -38,7 +40,7 @@ const ProductGrid = ({
       ) : (
         <motion.div key="grid" layout className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
           {products.map((product) => (
-            <ProductCard key={product.id} product={product} onView={onView} />
+            <ProductCard key={product.id} product={product} onView={onView} onCartOpen={onCartOpen} />
           ))}
         </motion.div>
       )}
