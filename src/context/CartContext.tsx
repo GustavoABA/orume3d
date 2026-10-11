@@ -40,6 +40,28 @@ const normalizeStoredItems = (items: CartItem[]) =>
     ? items.map((item) => ({ ...item, image: normalizeImageUrl(item.image) }))
     : [];
 
+const trackAddToCart = (product: Product, price: number) => {
+  if (typeof window === 'undefined') return;
+  const gtag = (window as typeof window & {
+    gtag?: (...args: unknown[]) => void;
+  }).gtag;
+  if (typeof gtag !== 'function') return;
+
+  gtag('event', 'add_to_cart', {
+    currency: 'BRL',
+    value: Number(price.toFixed(2)),
+    items: [
+      {
+        item_id: product.sku || String(product.id),
+        item_name: product.name,
+        item_category: product.category,
+        price: Number(price.toFixed(2)),
+        quantity: 1,
+      },
+    ],
+  });
+};
+
 type CartState = {
   items: CartItem[];
 };
@@ -129,7 +151,12 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [state.items]);
 
-  const addToCart = useCallback((product: Product) => dispatch({ type: 'ADD_ITEM', payload: product }), []);
+  const addToCart = useCallback((product: Product) => {
+    const basePrice = product.basePrice ?? product.price;
+    const effectivePrice = affiliatePrice(basePrice, affiliate?.rate || 0);
+    trackAddToCart(product, effectivePrice);
+    dispatch({ type: 'ADD_ITEM', payload: product });
+  }, [affiliate?.rate]);
   const removeFromCart = useCallback((id: number) => dispatch({ type: 'REMOVE_ITEM', payload: { id } }), []);
   const updateQuantity = useCallback(
     (id: number, quantity: number) => dispatch({ type: 'UPDATE_QUANTITY', payload: { id, quantity } }),
