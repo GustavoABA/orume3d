@@ -6,9 +6,10 @@ import type { Product } from '../../data/products';
 import { useCart } from '../../context/CartContext';
 import WishlistButton from './WishlistButton';
 import ProductGallery from './ProductGallery';
+import FormattedDescription from './FormattedDescription';
 import { useToast } from '../../context/ToastContext';
 import { categoryLabel, formatBRL } from '../../lib/format';
-import { isMadeToOrder, productAvailabilityLabel } from '../../lib/productWhatsApp';
+import { buildDirectProductWhatsAppUrl, isMadeToOrder, productAvailabilityLabel } from '../../lib/productWhatsApp';
 
 type ProductModalProps = {
   product: Product | null;
@@ -63,7 +64,7 @@ const ProductModal = ({ product, open, onClose, onCartOpen }: ProductModalProps)
                     {productDimensions(product) && <section className="mt-5 rounded-xl border border-paper/10 p-4"><h3 className="text-sm font-semibold text-paper">Medidas da peça</h3><p className="mt-2 text-sm leading-6 text-muted">{productDimensions(product)}</p></section>}
                     {product.description && <details className="mt-5 border-t border-paper/10 pt-4">
                       <summary className="cursor-pointer py-1 text-sm font-semibold text-paper focus-visible:outline-accent">Descrição completa</summary>
-                      <p className="mt-3 whitespace-pre-line break-words text-sm leading-6 text-muted">{product.description}</p>
+                      <div className="mt-3"><FormattedDescription text={product.description} /></div>
                     </details>}
                     {product.sku && <p className="mt-4 text-xs text-muted">Referência: {product.sku}</p>}
                     {product.shopeeUrl && <a href={product.shopeeUrl} target="_blank" rel="noopener noreferrer" className="mt-5 inline-flex text-sm font-semibold text-accentLight underline underline-offset-4">Ver anúncio na Shopee ↗</a>}
@@ -71,13 +72,19 @@ const ProductModal = ({ product, open, onClose, onCartOpen }: ProductModalProps)
                 </div>
               </div>
               <div className="flex shrink-0 flex-col gap-3 border-t border-paper/10 bg-background px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-7">
-                <div><p className="text-sm font-semibold text-paper">{madeToOrder ? 'Feito para você, sob demanda' : 'Sua próxima peça Orume'}</p><p className="mt-0.5 text-xs text-muted">Adicione ao carrinho e registre o pedido sem sair do site.</p></div>
-                <button type="button" onClick={() => {
-                  addToCart(product);
-                  showToast(`"${product.name}" adicionado ao carrinho`);
-                  onClose();
-                  onCartOpen?.();
-                }} className="shrink-0 rounded-full bg-accent px-6 py-3.5 text-sm font-bold text-ink transition hover:brightness-110 focus-visible:ring-2 focus-visible:ring-paper">Pedir</button>
+                <div><p className="text-sm font-semibold text-paper">{madeToOrder ? 'Feito para você, sob demanda' : 'Sua próxima peça Orume'}</p><p className="mt-0.5 text-xs text-muted">Escolha se prefere registrar pelo site ou falar direto no WhatsApp.</p></div>
+                <div className="flex shrink-0 flex-col gap-2 sm:flex-row">
+                  <button type="button" onClick={() => {
+                    addToCart(product);
+                    showToast(`"${product.name}" adicionado ao carrinho`);
+                    onClose();
+                    onCartOpen?.();
+                  }} className="rounded-full bg-accent px-6 py-3.5 text-sm font-bold text-ink transition hover:brightness-110 focus-visible:ring-2 focus-visible:ring-paper">Pedir</button>
+                  <button type="button" onClick={() => {
+                    const url = buildDirectProductWhatsAppUrl(product);
+                    window.open(url, '_blank', 'noopener,noreferrer');
+                  }} className="rounded-full border border-accent/30 bg-accent/[0.07] px-6 py-3.5 text-sm font-bold text-accentLight transition hover:border-accent/60 hover:bg-accent/10 focus-visible:ring-2 focus-visible:ring-paper">Pedir por WhatsApp</button>
+                </div>
               </div>
             </Dialog.Panel>
           </div>
