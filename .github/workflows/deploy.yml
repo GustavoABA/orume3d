@@ -46,6 +46,9 @@ jobs:
             sed -i 's|<meta name="robots" content="index, follow, max-image-preview:large" />|<meta name="robots" content="noindex, nofollow" />|' "$file"
           done
 
+      - name: Generate product routes and sitemap
+        run: node scripts/generate-product-routes.mjs
+
       - name: Setup Pages
         uses: actions/configure-pages@v5
 
