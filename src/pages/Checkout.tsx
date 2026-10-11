@@ -1,22 +1,45 @@
-import { useAffiliate } from '../context/AffiliateContext';
 import { FormEvent, useMemo, useRef, useState } from 'react';
-import { ArrowLeftIcon, EnvelopeIcon, CheckCircleIcon } from '@heroicons/react/24/outline';
-import { motion } from 'framer-motion';
+import { ArrowLeftIcon, CheckCircleIcon } from '@heroicons/react/24/outline';
+import { useAffiliate } from '../context/AffiliateContext';
 import { useCart } from '../context/CartContext';
 import { formatBRL } from '../lib/format';
 import { loadBackendConfig, postBackend } from '../lib/backend';
 
-import { buildWhatsAppUrl } from '../lib/whatsapp';
+const CONTACT_STORAGE_KEY = 'orume-customer-contact';
+
+type CheckoutResponse = {
+  ok: boolean;
+  error?: string;
+  checkoutId?: string;
+  orderId?: string;
+  message?: string;
+  total?: number;
+};
+
+const readStoredContact = () => {
+  try {
+    const raw = window.localStorage.getItem(CONTACT_STORAGE_KEY);
+    if (!raw) return { name: '', phone: '' };
+    const parsed = JSON.parse(raw) as { name?: string; phone?: string };
+    return {
+      name: String(parsed.name || ''),
+      phone: String(parsed.phone || ''),
+    };
+  } catch {
+    return { name: '', phone: '' };
+  }
+};
 
 const Checkout = () => {
   const affiliate = useAffiliate();
   const { items, subtotal, totalItems, resetCart } = useCart();
   const pendingCheckout = useRef({ signature: '', id: '' });
-  const [cleanService, setCleanService] = useState(false);
+  const storedContact = useMemo(readStoredContact, []);
+  const [name, setName] = useState(storedContact.name);
+  const [phone, setPhone] = useState(storedContact.phone);
   const [submitting, setSubmitting] = useState(false);
-  const [successId, setSuccessId] = useState('');
+  const [successOrderId, setSuccessOrderId] = useState('');
   const [error, setError] = useState('');
-  const [pendingWhatsAppUrl, setPendingWhatsAppUrl] = useState('');
 
   const cartLines = useMemo(
     () =>
@@ -26,15 +49,9 @@ const Checkout = () => {
         quantity: item.quantity,
         unitPrice: item.price,
         total: item.price * item.quantity,
-        image: item.image,
-        source: item.source || (item.shopeeUrl ? 'Shopee' : 'Interno'),
-        shopeeUrl: item.shopeeUrl || '',
       })),
     [items]
   );
-
-  const fieldClass =
-    'mt-2 w-full rounded-2xl border border-accent/[0.12] bg-surface/[0.85] px-4 py-3 text-sm text-paper outline-none transition placeholder:text-muted/[0.55] focus:border-accent/40 focus:ring-2 focus:ring-accent/10';
 
   const makeCheckoutId = () =>
     'CHK-' +
@@ -42,6 +59,16 @@ const Checkout = () => {
     '-' +
     Math.random().toString(36).slice(2, 7).toUpperCase();
 
+  const saveContact = (nextName: string, nextPhone: string) => {
+    try {
+      window.localStorage.setItem(
+        CONTACT_STORAGE_KEY,
+        JSON.stringify({ name: nextName, phone: nextPhone })
+      );
+    } catch {
+      // O pedido continua funcionando mesmo quando o armazenamento local está indisponível.
+    }
+  };
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -52,185 +79,87 @@ const Checkout = () => {
       return;
     }
 
-    const form = event.currentTarget;
-    if (!form.reportValidity()) return;
+    const cleanName = name.trim();
+    const cleanPhone = phone.trim();
+    const phoneDigits = cleanPhone.replace(/\D/g, '');
 
-    const data = new FormData(form);
-    const name = String(data.get('name') || '').trim();
-    const phone = String(data.get('phone') || '').trim();
-    const email = String(data.get('email') || '').trim();
-    const cep = String(data.get('cep') || '').trim();
-    const city = String(data.get('city') || '').trim();
-    const delivery = String(data.get('delivery') || '').trim();
-    const notes = String(data.get('notes') || '').trim();
+    if (!cleanName) {
+      setError('Informe seu nome.');
+      return;
+    }
 
-    if (phone.replace(/\D/g, '').length < 10) {
+    if (phoneDigits.length < 10 || phoneDigits.length > 13) {
       setError('Informe um WhatsApp válido com DDD.');
       return;
     }
 
-    if (cep.replace(/\D/g, '').length !== 8) {
-      setError('Informe um CEP válido com 8 dígitos.');
-      return;
-    }
-
-    if (cleanService && !email) {
-      setError('Informe um e-mail para usar o atendimento com o mínimo de interação.');
-      return;
-    }
-
-    const signature = JSON.stringify({ name, phone, email, cep, city, delivery, notes, cleanService, cartLines, affiliate });
+    const signature = JSON.stringify({ cleanName, cleanPhone, cartLines, affiliate, subtotal });
     if (pendingCheckout.current.signature !== signature) {
       pendingCheckout.current = { signature, id: makeCheckoutId() };
     }
     const checkoutId = pendingCheckout.current.id;
 
     setSubmitting(true);
-
     try {
       const config = await loadBackendConfig();
-      const result = await postBackend(config.endpoint, {
+      const result = await postBackend<CheckoutResponse>(config.endpoint, {
         action: 'createCheckout',
         affiliateCode: affiliate?.code || '',
         affiliateRate: affiliate?.rate,
         checkoutId,
-        name,
-        phone,
-        email,
-        cep,
-        city,
-        delivery,
-        notes,
-        cleanService,
+        name: cleanName,
+        phone: cleanPhone,
         cart: cartLines,
         subtotal,
-        freight: 0,
-        total: subtotal,
-        paymentMethod: 'PIX manual',
       });
 
-      if (result.checkoutId !== checkoutId) throw new Error('O backend não confirmou o código deste checkout.');
-      pendingCheckout.current = { signature: '', id: '' };
-
-      if (cleanService) {
-        setSuccessId(checkoutId);
-        resetCart();
-        return;
+      if (result.checkoutId !== checkoutId) {
+        throw new Error('O backend não confirmou o código deste pedido.');
       }
 
-      const itemText = cartLines
-        .map((item, index) => {
-          const lines = [
-            '📦 *' + (index + 1) + '. ' + item.name + '*',
-            '   🔢 Quantidade: *' + item.quantity + 'x*',
-            '   💰 Unitário: *' + formatBRL(item.unitPrice) + '*',
-            '   💵 Subtotal: *' + formatBRL(item.total) + '*',
-            '   🏷️ Origem: *' + (item.source === 'Interno' ? 'Produto interno Orume' : 'Shopee') + '*',
-          ];
-
-          if (item.image) {
-            lines.push('   🖼️ Imagem: ' + item.image);
-          }
-          if (item.source === 'Shopee' && item.shopeeUrl) {
-            lines.push('   🛒 Shopee: ' + item.shopeeUrl);
-          }
-
-          return lines.join('\n');
-        })
-        .join('\n\n');
-
-      const message = [
-        '✨ *ORUME 3D — NOVO PEDIDO* ✨',
-        '━━━━━━━━━━━━━━━━━━━━',
-        '',
-        '🧾 *DADOS DO PEDIDO*',
-        'Pedido: *' + checkoutId + '*',
-        '👤 Cliente: *' + name + '*',
-        '📱 WhatsApp: ' + phone,
-        email ? '📧 E-mail: ' + email : '',
-        '',
-        '🛍️ *ITENS DO CARRINHO*',
-        '━━━━━━━━━━━━━━━━━━━━',
-        itemText,
-        '',
-        '💳 *RESUMO*',
-        affiliate ? `Afiliado: ${affiliate.code} (${affiliate.rate}% já incluídos)` : '',
-        'Subtotal dos produtos: *' + formatBRL(subtotal) + '*',
-        '',
-        '🚨 *ATENÇÃO: FRETE NÃO INCLUÍDO*',
-        'O valor acima corresponde somente aos produtos.',
-        'O frete será calculado e confirmado pela Orume antes do envio do PIX.',
-        '',
-        '📍 *ENTREGA*',
-        'CEP: *' + cep + '*',
-        'Cidade / UF: *' + city + '*',
-        'Forma de entrega: *' + (delivery || 'A combinar') + '*',
-        notes ? '📝 Observações: ' + notes : '',
-        '',
-        '━━━━━━━━━━━━━━━━━━━━',
-        '✅ Gostaria de confirmar o frete e receber o PIX para pagamento.',
-      ]
-        .filter(Boolean)
-        .join('\n');
-
-      const whatsappUrl =
-        buildWhatsAppUrl(message);
-
-      setPendingWhatsAppUrl(whatsappUrl);
+      saveContact(cleanName, cleanPhone);
+      pendingCheckout.current = { signature: '', id: '' };
+      setSuccessOrderId(result.orderId || checkoutId);
+      resetCart();
     } catch (reason) {
       console.error(reason);
-      setError(reason instanceof Error ? reason.message : 'Não foi possível confirmar o checkout.');
+      setError(reason instanceof Error ? reason.message : 'Não foi possível registrar o pedido.');
     } finally {
       setSubmitting(false);
     }
   };
 
-  if (successId) {
+  if (successOrderId) {
     return (
-      <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-background px-5 py-12 text-paper">
+      <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-background px-5 py-12 text-paper">
         <div className="orume-grid pointer-events-none absolute inset-0 opacity-60" />
-        <motion.div
-          initial={{ opacity: 0, y: 18, scale: 0.98 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          className="orume-panel relative w-full max-w-xl rounded-[1.8rem] p-8 text-center sm:p-10"
-        >
-          <EnvelopeIcon className="mx-auto h-9 w-9 text-accentLight" />
+        <section className="orume-panel relative w-full max-w-xl rounded-[1.8rem] p-8 text-center sm:p-10">
+          <CheckCircleIcon className="mx-auto h-12 w-12 text-accentLight" />
           <p className="mt-5 text-[0.6rem] font-bold uppercase tracking-[0.28em] text-accent/70">
-            Atendimento mínimo
+            Pedido recebido
           </p>
-          <h1 className="mt-2 font-display text-3xl text-paper">Pedido registrado.</h1>
+          <h1 className="mt-2 font-display text-3xl text-paper">Pedido registrado com sucesso.</h1>
           <p className="mt-4 text-sm leading-6 text-muted">
-            Seu código é <strong className="text-accentLight">{successId}</strong>. A Orume recebeu os
-            dados do carrinho e o atendimento seguirá por e-mail, somente com as informações
-            necessárias para frete, PIX, produção e entrega.
+            Seu pedido é <strong className="text-accentLight">#{successOrderId}</strong>. A Orume vai
+            entrar em contato pelo WhatsApp informado para confirmar os detalhes, prazo, frete e pagamento.
+          </p>
+          <p className="mt-3 text-xs leading-5 text-muted/70">
+            Seu nome e WhatsApp ficaram salvos neste navegador para facilitar os próximos pedidos.
           </p>
           <a
             href="/"
-            className="mt-7 inline-flex rounded-full border border-accent/[0.22] bg-accent/[0.06] px-6 py-3 text-sm font-semibold text-accentLight hover:border-accent/[0.45]"
+            className="mt-7 inline-flex rounded-full bg-accent px-6 py-3 text-sm font-bold text-ink transition hover:brightness-110"
           >
             Voltar para a loja
           </a>
-        </motion.div>
-      </div>
+        </section>
+      </main>
     );
   }
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-background text-paper">
+    <main className="relative min-h-screen overflow-hidden bg-background text-paper">
       <div className="orume-grid pointer-events-none fixed inset-0 opacity-55" />
-
-      {pendingWhatsAppUrl && (
-        <div role="dialog" aria-modal="true" aria-labelledby="checkout-confirmed" className="fixed inset-0 z-[100] flex items-center justify-center bg-ink/90 px-5">
-          <div className="orume-panel w-full max-w-lg rounded-2xl p-7">
-            <CheckCircleIcon className="h-9 w-9 text-accentLight" />
-            <h2 id="checkout-confirmed" className="mt-4 text-2xl font-semibold">Pedido registrado.</h2>
-            <p className="mt-3 text-sm leading-6 text-muted">Continue no WhatsApp para combinar a entrega. O frete será confirmado antes do pagamento.</p>
-            <a href={pendingWhatsAppUrl} onClick={() => resetCart()} className="orume-primary mt-6 w-full">Continuar no WhatsApp</a>
-            <p className="mt-3 text-xs leading-5 text-muted">O WhatsApp abrirá com o resumo pronto. Toque em enviar lá para iniciar a conversa.</p>
-            <a href="/" onClick={() => resetCart()} className="mt-5 block text-center text-sm text-paper underline underline-offset-4">Voltar à loja</a>
-          </div>
-        </div>
-      )}
 
       <header className="relative z-10 border-b border-accent/10 bg-ink/80 backdrop-blur-xl">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-4 sm:px-8">
@@ -245,207 +174,101 @@ const Checkout = () => {
         </div>
       </header>
 
-      <main className="relative z-10 mx-auto grid max-w-7xl gap-8 px-5 py-10 sm:px-8 lg:grid-cols-[1fr_420px] lg:py-14">
+      <div className="relative z-10 mx-auto grid max-w-6xl gap-7 px-5 py-10 sm:px-8 lg:grid-cols-[1fr_400px] lg:py-14">
         <section>
-          <p className="text-[0.6rem] font-bold uppercase tracking-[0.3em] text-accent/70">
-            Finalizar pedido
-          </p>
-          <h1 className="mt-2 font-display text-4xl text-paper sm:text-5xl">
-            Confira seu pedido.
-          </h1>
+          <p className="text-[0.6rem] font-bold uppercase tracking-[0.3em] text-accent/70">Fazer pedido</p>
+          <h1 className="mt-2 font-display text-4xl text-paper sm:text-5xl">Só precisamos do seu contato.</h1>
           <p className="mt-4 max-w-2xl text-sm leading-6 text-muted">
-            O pagamento não acontece no site. A Orume confirma o frete e envia o PIX manualmente
-            depois que receber o pedido.
+            Informe seu nome e WhatsApp. O pedido entra direto no nosso sistema e a Orume entra em contato para confirmar os detalhes.
           </p>
 
-          <form onSubmit={handleSubmit} className="mt-9 space-y-7">
-            <div className="orume-panel rounded-3xl p-5 sm:p-7">
-              <h2 className="font-display text-xl text-paper">Seus dados</h2>
-              <div className="mt-5 grid gap-4 sm:grid-cols-2">
+          {items.length === 0 ? (
+            <div className="orume-panel mt-8 rounded-3xl p-7">
+              <h2 className="font-display text-2xl text-paper">Seu carrinho está vazio.</h2>
+              <p className="mt-3 text-sm text-muted">Adicione pelo menos um produto antes de registrar um pedido.</p>
+              <a href="/" className="mt-5 inline-flex rounded-full bg-accent px-5 py-3 text-sm font-bold text-ink">
+                Ver produtos
+              </a>
+            </div>
+          ) : (
+            <form onSubmit={handleSubmit} className="orume-panel mt-8 rounded-3xl p-5 sm:p-7">
+              <div className="grid gap-5 sm:grid-cols-2">
                 <label className="text-xs font-semibold text-paper/70">
                   Nome *
-                  <input className={fieldClass} name="name" required autoComplete="name" />
+                  <input
+                    value={name}
+                    onChange={(event) => setName(event.target.value)}
+                    autoComplete="name"
+                    required
+                    className="mt-2 w-full rounded-2xl border border-accent/[0.12] bg-surface/[0.85] px-4 py-3 text-sm text-paper outline-none transition placeholder:text-muted/[0.55] focus:border-accent/40 focus:ring-2 focus:ring-accent/10"
+                    placeholder="Seu nome"
+                  />
                 </label>
                 <label className="text-xs font-semibold text-paper/70">
                   WhatsApp *
                   <input
-                    className={fieldClass}
-                    name="phone"
-                    required
-                    inputMode="tel"
+                    value={phone}
+                    onChange={(event) => setPhone(event.target.value)}
                     autoComplete="tel"
+                    inputMode="tel"
+                    required
+                    className="mt-2 w-full rounded-2xl border border-accent/[0.12] bg-surface/[0.85] px-4 py-3 text-sm text-paper outline-none transition placeholder:text-muted/[0.55] focus:border-accent/40 focus:ring-2 focus:ring-accent/10"
                     placeholder="DDD + número"
                   />
                 </label>
-                <label className="text-xs font-semibold text-paper/70 sm:col-span-2">
-                  E-mail {cleanService ? '*' : '(opcional)'}
-                  <input
-                    className={fieldClass}
-                    name="email"
-                    type="email"
-                    autoComplete="email"
-                    required={cleanService}
-                    placeholder="voce@email.com"
-                  />
-                </label>
-              </div>
-            </div>
-
-            <div className="orume-panel rounded-3xl p-5 sm:p-7">
-              <h2 className="font-display text-xl text-paper">Entrega</h2>
-              <div className="mt-5 grid gap-4 sm:grid-cols-2">
-                <label className="text-xs font-semibold text-paper/70">
-                  CEP *
-                  <input
-                    className={fieldClass}
-                    name="cep"
-                    required
-                    inputMode="numeric"
-                    autoComplete="postal-code"
-                    pattern="[0-9]{5}-?[0-9]{3}"
-                    placeholder="00000-000"
-                  />
-                </label>
-                <label className="text-xs font-semibold text-paper/70">
-                  Cidade / UF *
-                  <input className={fieldClass} name="city" required placeholder="Ex.: Leme/SP" />
-                </label>
-                <label className="text-xs font-semibold text-paper/70 sm:col-span-2">
-                  Forma de entrega
-                  <select className={fieldClass} name="delivery" defaultValue="A combinar">
-                    <option>A combinar</option>
-                    <option>Retirada</option>
-                    <option>Correios</option>
-                    <option>Transportadora</option>
-                    <option>Entrega local</option>
-                    <option>Outro</option>
-                  </select>
-                </label>
               </div>
 
-              <label className="mt-4 block text-xs font-semibold text-paper/70">
-                Observações
-                <textarea
-                  className={fieldClass + ' min-h-24 resize-y'}
-                  name="notes"
-                  placeholder="Opcional."
-                />
-              </label>
-            </div>
-
-            <div className="orume-panel rounded-3xl p-5 sm:p-7">
-              <button
-                type="button"
-                onClick={() => setCleanService((value) => !value)}
-                className={
-                  'flex w-full items-start gap-4 rounded-2xl border p-4 text-left transition ' +
-                  (cleanService
-                    ? 'border-accent/[0.35] bg-accent/10'
-                    : 'border-accent/10 bg-paper/[0.03] hover:border-accent/25')
-                }
-              >
-                <span
-                  className={
-                    'mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded border ' +
-                    (cleanService ? 'border-accent bg-accent text-ink' : 'border-paper/20')
-                  }
-                >
-                  {cleanService ? '✓' : ''}
-                </span>
-                <span>
-                  <strong className="block text-sm text-paper/90">
-                    Atendimento com o mínimo de interação
-                  </strong>
-                  <small className="mt-1 block text-xs leading-5 text-muted/70">
-                    Não abre WhatsApp. O pedido é enviado para a Orume e o retorno acontece por
-                    e-mail, somente com o necessário para frete, PIX, produção e entrega.
-                  </small>
-                </span>
-              </button>
-            </div>
-
-            {error && (
-              <p className="rounded-2xl border border-red-900/30 bg-red-950/20 px-4 py-3 text-sm text-red-300">
-                {error}
+              <p className="mt-4 text-xs leading-5 text-muted/65">
+                Depois do primeiro pedido, esses dois dados ficam salvos apenas neste navegador para você não precisar preencher novamente.
               </p>
-            )}
 
-            <button
-              type="submit"
-              disabled={submitting || items.length === 0}
-              className="group relative w-full overflow-hidden rounded-full bg-accent px-6 py-4 text-sm font-bold text-ink shadow-glow transition enabled:hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-40"
-            >
-              <span className="relative z-10">
-                {submitting
-                  ? 'Registrando pedido…'
-                  : cleanService
-                    ? 'Enviar pedido'
-                    : 'Finalizar pelo WhatsApp'}
-              </span>
-              <span className="absolute inset-y-0 -left-1/2 w-1/3 skew-x-[-18deg] bg-paper/30 blur-sm transition-all duration-700 group-hover:left-[120%]" />
-            </button>
-          </form>
+              {error && (
+                <div className="mt-5 rounded-2xl border border-red-500/20 bg-red-500/[0.07] px-4 py-3 text-sm text-red-200">
+                  {error}
+                </div>
+              )}
+
+              <button
+                type="submit"
+                disabled={submitting}
+                className="mt-6 w-full rounded-full bg-accent px-6 py-3.5 text-sm font-bold text-ink shadow-glow transition enabled:hover:brightness-110 disabled:cursor-wait disabled:opacity-50"
+              >
+                {submitting ? 'Registrando pedido…' : 'Registrar pedido'}
+              </button>
+            </form>
+          )}
         </section>
 
-        <aside className="lg:sticky lg:top-8 lg:self-start">
-          <div className="orume-panel rounded-3xl p-5 sm:p-6">
-            <p className="text-[0.58rem] font-bold uppercase tracking-[0.26em] text-accent/[0.65]">
-              Seu carrinho
-            </p>
-            <h2 className="mt-1 font-display text-2xl text-paper">
-              {totalItems} {totalItems === 1 ? 'item' : 'itens'}
-            </h2>
-
-            <div className="mt-6 space-y-4">
-              {items.length === 0 ? (
-                <p className="rounded-2xl border border-accent/10 p-5 text-sm text-muted/70">
-                  Seu carrinho está vazio.
-                </p>
-              ) : (
-                items.map((item) => (
-                  <div key={item.id} className="flex gap-3 border-b border-accent/[0.08] pb-4 last:border-0">
-                    <img src={item.image} alt="" referrerPolicy="no-referrer" className="h-16 w-16 rounded-xl bg-ink object-cover" />
-                    <div className="min-w-0 flex-1">
-                      <p className="line-clamp-2 text-sm font-semibold text-paper/90">{item.name}</p>
-                      <p className="mt-1 text-xs text-muted/70">
-                        {item.quantity} × {formatBRL(item.price)}
-                      </p>
-                    </div>
-                    <span className="text-xs font-semibold text-accentLight">
-                      {formatBRL(item.price * item.quantity)}
-                    </span>
-                  </div>
-                ))
-              )}
+        <aside className="orume-panel h-fit rounded-3xl p-5 sm:p-6">
+          <div className="flex items-center justify-between gap-3 border-b border-paper/10 pb-4">
+            <div>
+              <p className="text-[0.58rem] font-bold uppercase tracking-[0.2em] text-accent/70">Seu pedido</p>
+              <h2 className="mt-1 font-display text-2xl text-paper">{totalItems} {totalItems === 1 ? 'item' : 'itens'}</h2>
             </div>
+            <strong className="text-lg text-accentLight">{formatBRL(subtotal)}</strong>
+          </div>
 
-            <div className="mt-6 space-y-3 border-t border-accent/10 pt-5 text-sm">
-              <div className="flex justify-between text-muted">
-                <span>Subtotal</span>
-                <span>{formatBRL(subtotal)}</span>
+          <div className="mt-4 space-y-3">
+            {items.map((item) => (
+              <div key={item.id} className="flex items-center gap-3 rounded-2xl border border-paper/10 bg-paper/[0.025] p-3">
+                <img src={item.image} alt="" className="h-14 w-14 rounded-xl object-cover" referrerPolicy="no-referrer" />
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-semibold text-paper">{item.name}</p>
+                  <p className="mt-1 text-xs text-muted">{item.quantity}x {formatBRL(item.price)}</p>
+                </div>
+                <span className="text-xs font-semibold text-paper/80">{formatBRL(item.price * item.quantity)}</span>
               </div>
-              <div className="flex justify-between text-muted">
-                <span>Frete</span>
-                <span className="font-semibold text-amber-300">não incluído</span>
-              </div>
-              <div className="flex justify-between border-t border-accent/10 pt-4 text-base font-semibold text-paper">
-                <span>Total dos itens</span>
-                <span className="orume-metal-text">{formatBRL(subtotal)}</span>
-              </div>
-            </div>
+            ))}
+          </div>
 
-            <div className="mt-5 flex gap-3 rounded-2xl border border-amber-500/20 bg-amber-500/[0.06] p-4">
-              <CheckCircleIcon className="mt-0.5 h-5 w-5 shrink-0 text-amber-300" />
-              <p className="text-xs leading-5 text-amber-100/70">
-                <strong className="text-amber-200">Frete ainda não adicionado.</strong> O valor
-                exibido é somente dos produtos. A Orume calcula e confirma o frete antes de enviar
-                o PIX.
-              </p>
-            </div>
+          <div className="mt-5 border-t border-paper/10 pt-4 text-sm">
+            <div className="flex justify-between text-muted"><span>Produtos</span><span>{formatBRL(subtotal)}</span></div>
+            <div className="mt-2 flex justify-between text-muted"><span>Frete</span><span>A confirmar</span></div>
+            <p className="mt-4 text-xs leading-5 text-muted/65">O pagamento não acontece no site. A Orume confirma frete e pagamento no contato.</p>
           </div>
         </aside>
-      </main>
-    </div>
+      </div>
+    </main>
   );
 };
 
