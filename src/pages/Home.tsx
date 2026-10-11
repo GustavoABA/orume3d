@@ -160,6 +160,7 @@ const Home = ({ onCartOpen, onQuoteOpen }: HomeProps) => {
             products={paginatedProducts}
             isLoading={catalogLoading}
             onView={handleViewProduct}
+            onCartOpen={onCartOpen}
             onLoadMore={loadMore}
             hasMore={hasMore}
             skeletonCount={PAGE_SIZE}
