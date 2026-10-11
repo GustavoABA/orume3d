@@ -8,7 +8,7 @@ import { ToastViewport } from './context/ToastContext';
 
 const Home = lazy(() => import('./pages/Home'));
 const Wishlist = lazy(() => import('./pages/Wishlist'));
-const Admin = lazy(() => import('./pages/Admin'));
+const Admin = lazy(() => import('./pages/AdminPortal'));
 const Checkout = lazy(() => import('./pages/Checkout'));
 
 const App = () => {
