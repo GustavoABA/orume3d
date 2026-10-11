@@ -4,6 +4,9 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+  schedule:
+    # Mantém páginas de produto e sitemap sincronizados com a planilha sem exigir commit.
+    - cron: '17 */6 * * *'
 
 permissions:
   contents: read
