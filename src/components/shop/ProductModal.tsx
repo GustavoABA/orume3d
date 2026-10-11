@@ -8,7 +8,7 @@ import WishlistButton from './WishlistButton';
 import ProductGallery from './ProductGallery';
 import { useToast } from '../../context/ToastContext';
 import { categoryLabel, formatBRL } from '../../lib/format';
-import { buildDirectProductWhatsAppUrl, isMadeToOrder, productAvailabilityLabel } from '../../lib/productWhatsApp';
+import { isMadeToOrder, productAvailabilityLabel } from '../../lib/productWhatsApp';
 
 type ProductModalProps = {
   product: Product | null;
@@ -57,7 +57,7 @@ const ProductModal = ({ product, open, onClose, onCartOpen }: ProductModalProps)
                       </div>
                       <div className="flex gap-3 rounded-xl bg-paper/[0.03] p-3">
                         <TruckIcon className="mt-0.5 h-5 w-5 shrink-0 text-accentLight" />
-                        <div><p className="font-semibold text-paper">Entrega a combinar</p><p className="text-muted">Informe seu CEP para consultar o frete antes do pagamento.</p></div>
+                        <div><p className="font-semibold text-paper">Entrega a combinar</p><p className="text-muted">O frete será confirmado pela Orume depois que o pedido for registrado.</p></div>
                       </div>
                     </div>
                     {productDimensions(product) && <section className="mt-5 rounded-xl border border-paper/10 p-4"><h3 className="text-sm font-semibold text-paper">Medidas da peça</h3><p className="mt-2 text-sm leading-6 text-muted">{productDimensions(product)}</p></section>}
@@ -71,14 +71,13 @@ const ProductModal = ({ product, open, onClose, onCartOpen }: ProductModalProps)
                 </div>
               </div>
               <div className="flex shrink-0 flex-col gap-3 border-t border-paper/10 bg-background px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-7">
-                <div><p className="text-sm font-semibold text-paper">{madeToOrder ? 'Feito para você, sob demanda' : 'Sua próxima peça Orume'}</p><p className="mt-0.5 text-xs text-muted">{madeToOrder ? 'Combine produção e entrega pelo WhatsApp.' : 'Adicione ao carrinho e continue seu pedido.'}</p></div>
+                <div><p className="text-sm font-semibold text-paper">{madeToOrder ? 'Feito para você, sob demanda' : 'Sua próxima peça Orume'}</p><p className="mt-0.5 text-xs text-muted">Adicione ao carrinho e registre o pedido sem sair do site.</p></div>
                 <button type="button" onClick={() => {
-                  if (madeToOrder) { window.location.href = buildDirectProductWhatsAppUrl(product); return; }
                   addToCart(product);
                   showToast(`"${product.name}" adicionado ao carrinho`);
                   onClose();
                   onCartOpen?.();
-                }} className="shrink-0 rounded-full bg-accent px-6 py-3.5 text-sm font-bold text-ink transition hover:brightness-110 focus-visible:ring-2 focus-visible:ring-paper">{madeToOrder ? 'Comprar pelo WhatsApp' : 'Adicionar ao carrinho'}</button>
+                }} className="shrink-0 rounded-full bg-accent px-6 py-3.5 text-sm font-bold text-ink transition hover:brightness-110 focus-visible:ring-2 focus-visible:ring-paper">Pedir</button>
               </div>
             </Dialog.Panel>
           </div>
