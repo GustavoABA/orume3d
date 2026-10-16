@@ -10,7 +10,7 @@ function setup(){
  ctx.sheet=()=>({appendRow:row=>rows.push(row),getLastRow:()=>rows.length});
  ctx.findRow=()=>0;ctx.checkoutAffiliate=()=>null;
  ctx.products=()=>[{id:1,active:'Sim',name:'Peça',price:20,salePrice:0}];
- ctx.allocateOrderId=()=>42;ctx.ensureAffiliateCols=()=>{};
+ ctx.allocateOrderId=()=>42;ctx.ensureAffiliateCols=()=>[33,34,35];
  ctx.setBalanceFormula=()=>{};ctx.upsertCustomer=()=>{};ctx.log=()=>{};
  return {ctx,rows};
 }

@@ -13,7 +13,7 @@ Spreadsheet ID: `1IGZ0KY2J5E87qdl4Gza3w0v_Tz_vsESCH9EHMGZtPoI`
 ## Implantação atual
 
 - Versão do backend (`action=ping`): **5**
-- Versão da implantação Google: **9**
+- Versão da implantação Google: **10**
 - Atualizada em: **16/10/2026**
 - Deployment ID: `AKfycbz0xzUYiXoI5GOJIKn4_Nnk81wSUeUVZqMkBD8sSjj3xO58HJJ2qh__f7lcIiT2sq2XQQ`
 - Web App: `https://script.google.com/macros/s/AKfycbz0xzUYiXoI5GOJIKn4_Nnk81wSUeUVZqMkBD8sSjj3xO58HJJ2qh__f7lcIiT2sq2XQQ/exec`
@@ -108,3 +108,9 @@ Essa correção do frontend não exige nova implantação do Apps Script. Altera
 Validação local: `npm test` e `npm run build`. O teste no navegador com a implantação atual confirmou leitura do catálogo e recebimento de um erro de validação de um orçamento sem ID (sem criar pedido). Uma gravação válida completa e as operações autenticadas do admin precisam ser verificadas com dados de teste controlados.
 
 Referência: https://developers.google.com/apps-script/guides/content
+
+## Colunas de afiliados em Pedidos
+
+Os campos de afiliado são localizados pelo título, depois das 32 colunas-base. Campos ausentes são acrescentados ao final da aba, preservando as colunas operacionais existentes (Responsável, Próxima ação e outras). Checkout e orçamento usam o mesmo mapeamento. Não é necessário mover ou apagar colunas manualmente.
+
+Validação: 67 testes passaram, incluindo a estrutura com 54 colunas e campos de afiliados em posições diferentes.
