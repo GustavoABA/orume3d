@@ -12,12 +12,19 @@ Spreadsheet ID: `1IGZ0KY2J5E87qdl4Gza3w0v_Tz_vsESCH9EHMGZtPoI`
 
 ## Implantação atual
 
-- Versão implantada: **4**
-- Atualizada em: **03/10/2026 09:44**
-- Deployment ID: `AKfycby7AHQGEB3LQ7WNA8X5Nu5IpfIu-B1fxsyWpE_aS8JNDK1TDEoPQD-pU--kfOmki_-Opg`
-- Web App: `https://script.google.com/macros/s/AKfycby7AHQGEB3LQ7WNA8X5Nu5IpfIu-B1fxsyWpE_aS8JNDK1TDEoPQD-pU--kfOmki_-Opg/exec`
+- Versão do backend (`action=ping`): **5**
+- Versão da implantação Google: **9**
+- Atualizada em: **16/10/2026**
+- Deployment ID: `AKfycbz0xzUYiXoI5GOJIKn4_Nnk81wSUeUVZqMkBD8sSjj3xO58HJJ2qh__f7lcIiT2sq2XQQ`
+- Web App: `https://script.google.com/macros/s/AKfycbz0xzUYiXoI5GOJIKn4_Nnk81wSUeUVZqMkBD8sSjj3xO58HJJ2qh__f7lcIiT2sq2XQQ/exec`
 
 > O Deployment ID é público por natureza. Senhas e `ADMIN_KEY` continuam fora do GitHub, somente em Script Properties.
+
+## Checkout rápido e compatibilidade
+
+O checkout coleta somente nome e WhatsApp, além dos itens do carrinho. CEP, cidade e e-mail não são exigidos nessa etapa e não devem receber valores fictícios. A implantação usada pelo site precisa responder `version: 5` ao `action=ping`. Em 16/10/2026, o código v5 já estava salvo, mas o Web App ainda executava a versão antiga; a implantação existente foi atualizada para a versão Google 9, preservando a URL.
+
+O formulário de orçamento continua tendo suas próprias exigências. O deploy do GitHub não publica o código do Apps Script: salvar no editor também não basta; é necessário editar a implantação e selecionar uma nova versão.
 
 ## Backend web atual
 

@@ -103,26 +103,12 @@ export const postBackend = async <T extends BackendResponse = BackendResponse>(
   const timer = window.setTimeout(() => controller.abort(), 60000);
   let result: T;
 
-  // Compatibilidade com a implantação antiga do checkout, que ainda valida CEP
-  // mesmo quando a interface rápida coleta somente nome + WhatsApp. O valor abaixo
-  // é apenas uma sentinela técnica e não representa o endereço do cliente.
-  const compatiblePayload =
-    payload.action === 'createCheckout' && !payload.cep
-      ? {
-          ...payload,
-          cep: '00000-000',
-          city: '',
-          delivery: 'A confirmar no WhatsApp',
-          notes: 'Checkout rápido: CEP não coletado; confirmar entrega no WhatsApp.',
-        }
-      : payload;
-
   try {
     const response = await fetch(endpoint, {
       method: 'POST',
       // text/plain evita o preflight OPTIONS, que o Web App não implementa.
       headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify(compatiblePayload),
+      body: JSON.stringify(payload),
       mode: 'cors',
       credentials: 'omit',
       redirect: 'follow',
