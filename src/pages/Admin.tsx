@@ -379,7 +379,7 @@ const Admin = () => {
         {status && <div className="mb-5 rounded-2xl border border-accent/[0.12] bg-accent/[0.04] px-4 py-3 text-sm text-paper/70">{status}</div>}
 
         {tab === 'affiliates' ? <Affiliates affiliates={affiliates} supported={affiliatesSupported} endpoint={endpoint} adminKey={adminKey} refresh={() => getSnapshot(adminKey)} /> : tab === 'orders' ? (
-          <Orders orders={orders} selected={selectedOrder} setSelected={setSelectedOrder} busy={busy} save={saveOrder} complete={completeOrder} />
+          <Orders products={products} orders={orders} selected={selectedOrder} setSelected={setSelectedOrder} busy={busy} save={saveOrder} complete={completeOrder} />
         ) : (
           <div className="grid gap-5 lg:grid-cols-[350px_1fr]">
             <section className="orume-panel flex max-h-[75vh] flex-col rounded-2xl p-3">
