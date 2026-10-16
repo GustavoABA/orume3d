@@ -122,11 +122,26 @@ function allocateOrderId(){
 }
 function setBalanceFormula(sh,row){sh.getRange(row,25).setFormula('=IF(W'+row+'="","",MAX(0,W'+row+'-X'+row+'))')}
 function ensureAffiliateCols(sh){
-  if(sh.getMaxColumns()<35)sh.insertColumnsAfter(sh.getMaxColumns(),35-sh.getMaxColumns());
   const expected=['Afiliado','Acréscimo afiliado (%)','Valor acréscimo afiliado'];
-  const h=sh.getRange(1,33,1,3).getValues()[0];
-  if(h.some((v,i)=>v&&v!==expected[i]))throw new Error('As colunas 33–35 da aba '+sh.getName()+' já estão ocupadas.');
-  sh.getRange(1,33,1,3).setValues([expected]);
+  const last=Math.max(32,sh.getLastColumn());
+  const headers=sh.getRange(1,1,1,last).getValues()[0];
+  let next=last;
+  return expected.map(name=>{
+    const index=headers.findIndex((value,i)=>i>=32&&String(value||'').trim()===name);
+    if(index>=0)return index+1;
+    const col=++next;
+    if(sh.getMaxColumns()<col)sh.insertColumnsAfter(sh.getMaxColumns(),col-sh.getMaxColumns());
+    sh.getRange(1,col).setValue(name);
+    return col;
+  });
+}
+function appendOrderWithAffiliate(sh,row,columns){
+  const values=row.slice(0,32);
+  columns.forEach((col,i)=>{
+    while(values.length<col)values.push('');
+    values[col-1]=row[32+i]===undefined?'':row[32+i];
+  });
+  sh.appendRow(values);
 }
 function upsertCustomer(r){
   const sh=sheet(S.customers),p=String(r[7]||''),row=p?findRow(sh,3,p):0,now=new Date();
@@ -180,7 +195,7 @@ function createCheckout(p){
     aff?'Afiliado: '+aff.code+' ('+aff.rate+'%)':''
   ].filter(Boolean).join('\n');
 
-  ensureAffiliateCols(sh);
+  const affiliateColumns=ensureAffiliateCols(sh);
   const row=[
     id,checkoutId,now,now,'Aguardando contato','Normal',name,ph,'','',
     aff?aff.code:'',summary,totalQty,'','','A confirmar','','',
@@ -188,7 +203,7 @@ function createCheckout(p){
     subtotal,0,'','A combinar','Pendente','','Site ORUME','','',uid,
     aff?aff.code:'',aff?aff.rate:'',aff?affCents/100:''
   ];
-  sh.appendRow(row);
+  appendOrderWithAffiliate(sh,row,affiliateColumns);
   setBalanceFormula(sh,sh.getLastRow());
   upsertCustomer(row);
   log('Pedido','Criado','Pedido',uid,'Site','Pedido rápido '+fmtId(id),checkoutId);
@@ -217,8 +232,8 @@ function createQuote(p){
     txt(p.notes,2500),money(p.amount),0,'',txt(p.paymentMethod,120),'Pendente','','Site ORUME','','',uid,
     aff?aff.code:'',aff?aff.rate:'',''
   ];
-  ensureAffiliateCols(sh);
-  sh.appendRow(row);
+  const affiliateColumns=ensureAffiliateCols(sh);
+  appendOrderWithAffiliate(sh,row,affiliateColumns);
   setBalanceFormula(sh,sh.getLastRow());
   upsertCustomer(row);
   return{ok:true,orderId:fmtId(id),uid};
