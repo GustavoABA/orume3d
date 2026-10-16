@@ -1,11 +1,12 @@
+import Orders from '../components/admin/Orders';
 import Affiliates from '../components/admin/Affiliates';
 import type { Affiliate } from '../lib/affiliate';
 import { FormEvent, useEffect, useMemo, useState } from 'react';
-import { ArrowPathIcon, ArrowTopRightOnSquareIcon, CheckCircleIcon, CubeIcon, ShoppingBagIcon } from '@heroicons/react/24/outline';
+import { ArrowPathIcon, ArrowTopRightOnSquareIcon, CubeIcon, ShoppingBagIcon } from '@heroicons/react/24/outline';
 import { loadBackendConfig, jsonp, postBackend } from '../lib/backend';
 import { formatBRL } from '../lib/format';
 
-type Order = {
+export type Order = {
   id: number;
   displayId: string;
   createdAt: string;
@@ -163,7 +164,6 @@ const Admin = () => {
   const [status, setStatus] = useState('');
   const [busy, setBusy] = useState(false);
 
-  const completed = (value: string) => value === 'Concluído' || value === 'Cancelado';
 
   const startNewProduct = () => {
     setSelectedProduct(emptyProduct());
@@ -332,7 +332,6 @@ const Admin = () => {
     }
   };
 
-  const visibleOrders = useMemo(() => orders.slice(0, 250), [orders]);
   const activeProducts = useMemo(() => products.filter((product) => product.active === 'Sim'), [products]);
   const readyProducts = useMemo(() => activeProducts.filter((product) => Number(product.stock || 0) > 0), [activeProducts]);
   const madeToOrderProducts = useMemo(() => activeProducts.filter((product) => Number(product.stock || 0) <= 0), [activeProducts]);
@@ -380,12 +379,7 @@ const Admin = () => {
         {status && <div className="mb-5 rounded-2xl border border-accent/[0.12] bg-accent/[0.04] px-4 py-3 text-sm text-paper/70">{status}</div>}
 
         {tab === 'affiliates' ? <Affiliates affiliates={affiliates} supported={affiliatesSupported} endpoint={endpoint} adminKey={adminKey} refresh={() => getSnapshot(adminKey)} /> : tab === 'orders' ? (
-          <div className="grid gap-5 lg:grid-cols-[390px_1fr]">
-            <section className="orume-panel max-h-[75vh] overflow-auto rounded-2xl p-3"><div className="px-2 pb-3 text-[0.62rem] font-bold uppercase tracking-[0.22em] text-accent/[0.65]">Pedidos 0000–1000</div><div className="space-y-2">{visibleOrders.map((order) => <button key={order.id} onClick={() => setSelectedOrder({ ...order })} className={'w-full rounded-xl border p-3 text-left transition ' + (completed(order.status) ? 'border-red-900/40 bg-red-950/35 text-red-200' : 'border-accent/10 bg-paper/[0.03] hover:border-accent/30')}><div className="flex items-center justify-between gap-3"><span className="font-mono text-sm font-bold">#{order.displayId}</span><span className="text-[0.62rem] uppercase tracking-[0.1em] opacity-70">{order.status}</span></div><p className="mt-1 truncate text-sm font-semibold">{order.name || 'Sem cliente'}</p><div className="mt-2 flex justify-between text-xs text-muted/70"><span>{order.product}</span><span>{order.amount ? formatBRL(order.amount) : '—'}</span></div></button>)}{!visibleOrders.length && <p className="p-5 text-center text-sm text-muted/70">Nenhum pedido.</p>}</div></section>
-            <section className="orume-panel rounded-2xl p-5 sm:p-7">
-              {!selectedOrder ? <div className="py-20 text-center text-sm text-muted/70">Selecione um pedido na lista.</div> : <><div className="mb-6 flex flex-wrap items-end justify-between gap-3 border-b border-accent/10 pb-5"><div><p className="text-[0.6rem] font-bold uppercase tracking-[0.22em] text-accent/[0.65]">Pedido</p><h2 className="mt-1 font-display text-3xl">#{selectedOrder.displayId}</h2></div><div className="flex gap-2"><button onClick={saveOrder} disabled={busy} className="rounded-full bg-accent px-5 py-2.5 text-xs font-bold text-ink disabled:opacity-40">Salvar</button><button onClick={completeOrder} disabled={busy} className="inline-flex items-center gap-2 rounded-full border border-red-800/50 px-5 py-2.5 text-xs font-bold text-red-300 disabled:opacity-40"><CheckCircleIcon className="h-4 w-4" /> Concluir</button></div></div><div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">{[['Status','status'],['Prioridade','priority'],['Cliente','name'],['WhatsApp','phone'],['Cidade / UF','city'],['CEP','cep'],['Produto','product'],['Quantidade','quantity'],['Cor','color'],['Material','material'],['Prazo','deadline'],['Entrega','delivery'],['Atendimento clean','cleanService'],['Indicado por','referral'],['Valor a cobrar','amount'],['Valor pago','paid'],['Forma de pagamento','paymentMethod'],['Status pagamento','paymentStatus'],['Rastreio','tracking']].map(([label,key]) => <label key={key} className="text-xs font-semibold text-muted">{label}<input className={inputClass} type={key === 'amount' || key === 'paid' || key === 'quantity' ? 'number' : 'text'} value={String((selectedOrder as unknown as Record<string, unknown>)[key] ?? '')} onChange={(event) => setSelectedOrder((current) => current ? ({ ...current, [key]: key === 'amount' || key === 'paid' ? Number(event.target.value) : event.target.value } as Order) : current)} /></label>)}</div>{[['Medidas aproximadas','dimensions'],['Links / referências','links'],['Detalhes do projeto','description'],['Observações','notes']].map(([label,key]) => <label key={key} className="mt-4 block text-xs font-semibold text-muted">{label}<textarea className={inputClass + ' min-h-24 resize-y'} value={String((selectedOrder as unknown as Record<string, unknown>)[key] ?? '')} onChange={(event) => setSelectedOrder((current) => current ? ({ ...current, [key]: event.target.value } as Order) : current)} /></label>)}</>}
-            </section>
-          </div>
+          <Orders orders={orders} selected={selectedOrder} setSelected={setSelectedOrder} busy={busy} save={saveOrder} complete={completeOrder} />
         ) : (
           <div className="grid gap-5 lg:grid-cols-[350px_1fr]">
             <section className="orume-panel flex max-h-[75vh] flex-col rounded-2xl p-3">
