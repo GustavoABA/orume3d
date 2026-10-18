@@ -1,3 +1,4 @@
+import { buildWhatsAppUrl } from '../lib/whatsapp';
 import { FormEvent, useMemo, useRef, useState } from 'react';
 import { ArrowLeftIcon, CheckCircleIcon } from '@heroicons/react/24/outline';
 import { useAffiliate } from '../context/AffiliateContext';
@@ -150,9 +151,10 @@ const Checkout = () => {
           <p className="mt-3 text-xs leading-5 text-muted/70">
             Seu nome e WhatsApp ficaram salvos neste navegador para facilitar os próximos pedidos.
           </p>
+          <a href={buildWhatsAppUrl(`Olá, fiz o pedido #${successOrderId} no site da orume e gostaria de combinar os detalhes.`)} target="_blank" rel="noopener noreferrer" className="mt-6 inline-flex w-full justify-center rounded-full bg-accent px-6 py-3 text-sm font-bold text-ink">Continuar no WhatsApp</a>
           <a
             href="/"
-            className="mt-7 inline-flex rounded-full bg-accent px-6 py-3 text-sm font-bold text-ink transition hover:brightness-110"
+            className="mt-4 inline-flex rounded-full border border-paper/20 px-6 py-3 text-sm font-bold text-paper transition hover:border-accent"
           >
             Voltar para a loja
           </a>
@@ -167,6 +169,7 @@ const Checkout = () => {
 
       <header className="relative z-10 border-b border-accent/10 bg-ink/80 backdrop-blur-xl">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-4 sm:px-8">
+          <a href={buildWhatsAppUrl(`Olá, fiz o pedido #${successOrderId} no site da orume e gostaria de combinar os detalhes.`)} target="_blank" rel="noopener noreferrer" className="mt-6 inline-flex w-full justify-center rounded-full bg-accent px-6 py-3 text-sm font-bold text-ink">Continuar no WhatsApp</a>
           <a
             href="/"
             className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.15em] text-muted hover:text-accentLight"
