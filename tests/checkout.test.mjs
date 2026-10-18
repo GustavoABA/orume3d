@@ -11,6 +11,8 @@ const require = createRequire(import.meta.url);
 const source = await readFile(new URL('../src/pages/Checkout.tsx', import.meta.url), 'utf8');
 const code = ts.transpileModule(source,{compilerOptions:{module:ts.ModuleKind.CommonJS,jsx:ts.JsxEmit.ReactJSX,target:ts.ScriptTarget.ES2020}}).outputText;
 
+const whatsappSource = await readFile(new URL('../src/lib/whatsapp.ts', import.meta.url), 'utf8');
+const whatsapp = await import('data:text/javascript;base64,' + Buffer.from(ts.transpileModule(whatsappSource,{compilerOptions:{module:ts.ModuleKind.ESNext,target:ts.ScriptTarget.ES2020}}).outputText).toString('base64'));
 function setup(t, success, affiliate = null) {
   const calls=[];
   let resets=0;
@@ -28,6 +30,7 @@ function setup(t, success, affiliate = null) {
     console,
     window:{localStorage},
     require:id=>{
+      if(id.endsWith('/whatsapp')) return whatsapp;
       if(id==='framer-motion') return {motion};
       if(id.endsWith('/CartContext')) return {useCart:()=>({items:[{id:5,name:'Produto',quantity:1,price:80,image:''}],subtotal:80,totalItems:1,resetCart(){resets++;}})};
       if(id.endsWith('/backend')) return {
@@ -76,7 +79,11 @@ test('successful checkout registers the order, clears the cart and shows contact
   assert.match(text,/Pedido registrado com sucesso/);
   assert.match(text,/0042/);
   assert.match(text,/entrar em contato pelo WhatsApp informado/);
-  assert.equal(s.r.root.findAllByType('a').some(node=>String(node.props.href||'').startsWith('https://wa.me/')),false);
+  const contact = s.r.root.findAllByType('a').find(node=>String(node.props.href||'').startsWith('https://wa.me/'));
+  assert.ok(contact);
+  const message = new URL(contact.props.href).searchParams.get('text');
+  assert.match(message,/orume/);
+  assert.match(message,/#0042/);
   assert.deepEqual(JSON.parse(s.storage.get('orume-customer-contact')),{name:'Teste local',phone:'19999999999'});
 });
 
@@ -89,11 +96,11 @@ test('failed checkout keeps the cart and shows the backend error',async t=>{
   assert.equal(s.r.root.findAllByType('a').some(node=>String(node.props.href||'').startsWith('https://wa.me/')),false);
 });
 
-test('affiliate code and rate reach the direct site checkout without WhatsApp continuation',async t=>{
+test('affiliate code and rate reach the registered checkout before optional WhatsApp continuation',async t=>{
   const s=setup(t,true,{code:'afiliado-linux',rate:20});
   await s.submit();
   assert.equal(s.calls[0].affiliateCode,'afiliado-linux');
   assert.equal(s.calls[0].affiliateRate,20);
   assert.equal(s.resets,1);
-  assert.equal(s.r.root.findAllByType('a').some(node=>String(node.props.href||'').startsWith('https://wa.me/')),false);
+  assert.equal(s.r.root.findAllByType('a').some(node=>String(node.props.href||'').startsWith('https://wa.me/')),true);
 });
