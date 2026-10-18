@@ -9,7 +9,7 @@ import ProductGallery from './ProductGallery';
 import FormattedDescription from './FormattedDescription';
 import { useToast } from '../../context/ToastContext';
 import { categoryLabel, formatBRL } from '../../lib/format';
-import { buildDirectProductWhatsAppUrl, isMadeToOrder, productAvailabilityLabel } from '../../lib/productWhatsApp';
+import { isMadeToOrder, productAvailabilityLabel } from '../../lib/productWhatsApp';
 
 type ProductModalProps = {
   product: Product | null;
@@ -71,19 +71,14 @@ const ProductModal = ({ product, open, onClose, onCartOpen }: ProductModalProps)
                   </div>
                 </div>
               </div>
-              <div className="flex shrink-0 flex-col gap-3 border-t border-paper/10 bg-background px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-7">
-                <div><p className="text-sm font-semibold text-paper">{madeToOrder ? 'Feito para você, sob demanda' : 'Sua próxima peça Orume'}</p><p className="mt-0.5 text-xs text-muted">Escolha se prefere registrar pelo site ou falar direto no WhatsApp.</p></div>
-                <div className="flex shrink-0 flex-col gap-2 sm:flex-row">
+              <div className="shrink-0 border-t border-paper/10 bg-background px-5 py-3 sm:px-7">
+                <div className="flex justify-end">
                   <button type="button" onClick={() => {
                     addToCart(product);
                     showToast(`"${product.name}" adicionado ao carrinho`);
                     onClose();
                     onCartOpen?.();
-                  }} className="rounded-full bg-accent px-6 py-3.5 text-sm font-bold text-ink transition hover:brightness-110 focus-visible:ring-2 focus-visible:ring-paper">Pedir</button>
-                  <button type="button" onClick={() => {
-                    const url = buildDirectProductWhatsAppUrl(product);
-                    window.open(url, '_blank', 'noopener,noreferrer');
-                  }} className="rounded-full border border-accent/30 bg-accent/[0.07] px-6 py-3.5 text-sm font-bold text-accentLight transition hover:border-accent/60 hover:bg-accent/10 focus-visible:ring-2 focus-visible:ring-paper">Pedir por WhatsApp</button>
+                  }} className="w-full rounded-full bg-accent px-6 py-3 sm:w-auto text-sm font-bold text-ink transition hover:brightness-110 focus-visible:ring-2 focus-visible:ring-paper">Pedir</button>
                 </div>
               </div>
             </Dialog.Panel>

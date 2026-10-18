@@ -39,10 +39,9 @@ const ProductCardComponent = ({ product, onView, onCartOpen }: ProductCardProps)
         {photoCount > 1 && <span className="pointer-events-none absolute bottom-3 right-3 rounded-full bg-background/85 px-2.5 py-1 text-[0.65rem] text-paper/80">{photoCount} fotos</span>}
       </div>
       <div className="flex flex-1 flex-col px-2 pb-2 pt-4">
-        <h3 className="h-12 text-lg font-bold leading-6 tracking-tight text-paper">
-          <button type="button" onClick={() => onView(product)} className="line-clamp-2 w-full break-words text-left transition hover:text-accentLight focus-visible:outline-accent">{product.name}</button>
+        <h3 className="min-h-12 text-lg font-bold leading-6 tracking-tight text-paper">
+          <button type="button" onClick={() => onView(product)} className="w-full break-words text-left transition hover:text-accentLight focus-visible:outline-accent">{product.name}</button>
         </h3>
-        <p className="mt-2 line-clamp-2 h-10 text-sm leading-5 text-muted">{product.description || 'Conheça os detalhes desta peça Orume.'}</p>
         <p className={`mt-4 text-[0.62rem] font-semibold uppercase tracking-wider ${madeToOrder ? 'text-amber-200' : 'text-emerald-200'}`}>{productAvailabilityLabel(product)}</p>
         <div className="mt-auto flex items-end justify-between gap-3 border-t border-paper/10 pt-4">
           <div className="min-w-0 pt-4">

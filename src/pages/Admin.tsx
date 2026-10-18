@@ -395,6 +395,70 @@ const Admin = () => {
               {selectedProduct.source === 'Shopee' && <div className="rounded-2xl border border-accent/[0.12] bg-surface/[0.65] p-4"><label className="text-xs font-semibold text-muted">Link do anúncio na Shopee<input className={inputClass} value={selectedProduct.shopeeUrl} onChange={(event) => setSelectedProduct((current) => ({ ...current, shopeeUrl: event.target.value }))} placeholder="https://shopee.com.br/..." /></label><div className="mt-3 flex flex-wrap items-center gap-3"><button type="button" onClick={scrape} disabled={busy} className="inline-flex items-center gap-2 rounded-full border border-accent/25 bg-accent/10 px-4 py-2.5 text-xs font-bold text-accentLight disabled:opacity-40"><ArrowPathIcon className="h-4 w-4" />Tentar scraping</button></div></div>}
               <div className="mt-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-3"><label className="text-xs font-semibold text-muted">Nome<input className={inputClass} value={selectedProduct.name} onChange={(e) => setSelectedProduct((p) => ({ ...p, name: e.target.value }))} /></label><label className="text-xs font-semibold text-muted">SKU<input className={inputClass} value={selectedProduct.sku} onChange={(e) => setSelectedProduct((p) => ({ ...p, sku: e.target.value }))} /></label><label className="text-xs font-semibold text-muted">Categoria<input className={inputClass} value={selectedProduct.category} onChange={(e) => setSelectedProduct((p) => ({ ...p, category: e.target.value }))} /></label><label className="text-xs font-semibold text-muted">Ativo?<select className={inputClass} value={selectedProduct.active} onChange={(e) => setSelectedProduct((p) => ({ ...p, active: e.target.value }))}><option>Sim</option><option>Não</option></select></label><label className="text-xs font-semibold text-muted">Destaque?<select className={inputClass} value={selectedProduct.featured} onChange={(e) => setSelectedProduct((p) => ({ ...p, featured: e.target.value }))}><option>Não</option><option>Sim</option></select></label><label className="text-xs font-semibold text-muted">Preço<input type="number" step="0.01" className={inputClass} value={selectedProduct.price} onChange={(e) => setSelectedProduct((p) => ({ ...p, price: Number(e.target.value) }))} /></label><label className="text-xs font-semibold text-muted">Preço promocional<input type="number" step="0.01" className={inputClass} value={selectedProduct.salePrice} onChange={(e) => setSelectedProduct((p) => ({ ...p, salePrice: Number(e.target.value) }))} /></label><label className="text-xs font-semibold text-muted">Estoque<input type="number" min="0" className={inputClass} value={selectedProduct.stock} onChange={(e) => setSelectedProduct((p) => ({ ...p, stock: Math.max(0, Number(e.target.value)) }))} /></label><label className="text-xs font-semibold text-muted">Produção (dias)<input type="number" min="0" className={inputClass} value={selectedProduct.productionDays} onChange={(e) => setSelectedProduct((p) => ({ ...p, productionDays: Math.max(0, Number(e.target.value)) }))} /></label></div>
               <label className="mt-4 block text-xs font-semibold text-muted">Descrição<textarea className={inputClass + ' min-h-28 resize-y'} value={selectedProduct.description} onChange={(e) => setSelectedProduct((p) => ({ ...p, description: e.target.value }))} /></label>
+              <div className="mt-4">
+                <p className="text-xs font-semibold text-muted">Imagens do produto</p>
+                <p className="mt-1 text-[0.68rem] leading-5 text-muted/60">
+                  Aceita URL direta ou link prnt.sc. Links do Lightshot são convertidos automaticamente para a imagem real ao salvar. A primeira imagem é usada no card principal.
+                </p>
+                <div className="mt-3 grid gap-4 sm:grid-cols-3">
+                  {(['imageMain', 'image2', 'image3'] as const).map((key, index) => (
+                    <div key={key} className="rounded-xl border border-accent/10 bg-paper/[0.02] p-3">
+                      <label className="text-xs font-semibold text-muted">
+                        {'Imagem ' + (index + 1)}
+                        <input
+                          className={inputClass}
+                          value={selectedProduct[key]}
+                          onChange={(e) => setSelectedProduct((p) => ({ ...p, [key]: e.target.value.trim() }))}
+                          placeholder="https://... ou https://prnt.sc/..."
+                        />
+                      </label>
+
+                      {isLightshotUrl(selectedProduct[key]) && (
+                        <button
+                          type="button"
+                          disabled={busy}
+                          onClick={async () => {
+                            setBusy(true);
+                            setStatus('Resolvendo imagem do Lightshot…');
+                            try {
+                              const resolved = await resolveLightshotImage(selectedProduct[key]);
+                              setSelectedProduct((current) => ({ ...current, [key]: resolved }));
+                              setStatus('Link do Lightshot convertido para imagem direta.');
+                            } catch (error) {
+                              setStatus(error instanceof Error ? error.message : 'Falha ao resolver Lightshot.');
+                            } finally {
+                              setBusy(false);
+                            }
+                          }}
+                          className="mt-2 w-full rounded-lg border border-accent/20 bg-accent/[0.06] px-3 py-2 text-[0.68rem] font-bold text-accentLight transition hover:bg-accent/10 disabled:opacity-40"
+                        >
+                          Resolver imagem do Lightshot
+                        </button>
+                      )}
+
+                      {selectedProduct[key] && !isLightshotUrl(selectedProduct[key]) && (
+                        <div className="mt-3 overflow-hidden rounded-lg border border-accent/10 bg-ink">
+                          <img
+                            key={selectedProduct[key]} src={selectedProduct[key]}
+                            alt={`Prévia da imagem ${index + 1}`}
+                            referrerPolicy="no-referrer"
+                            className="h-28 w-full object-cover"
+                            onError={(event) => {
+                              event.currentTarget.style.display = 'none';
+                              const warning = event.currentTarget.nextElementSibling as HTMLElement | null;
+                              if (warning) warning.style.display = 'block';
+                            }}
+                          />
+                          <p className="hidden p-3 text-[0.68rem] leading-5 text-amber-300">
+                            Não foi possível carregar esta URL como imagem.
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+
               <label className="mt-4 block text-xs font-semibold text-muted">Observações internas<textarea className={inputClass + ' min-h-20 resize-y'} value={selectedProduct.adminNotes} onChange={(e) => setSelectedProduct((p) => ({ ...p, adminNotes: e.target.value }))} /></label>
             </section>
           </div>
