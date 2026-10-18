@@ -169,7 +169,7 @@ const Checkout = () => {
 
       <header className="relative z-10 border-b border-accent/10 bg-ink/80 backdrop-blur-xl">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-4 sm:px-8">
-          <a href={buildWhatsAppUrl(`Olá, fiz o pedido #${successOrderId} no site da orume e gostaria de combinar os detalhes.`)} target="_blank" rel="noopener noreferrer" className="mt-6 inline-flex w-full justify-center rounded-full bg-accent px-6 py-3 text-sm font-bold text-ink">Continuar no WhatsApp</a>
+
           <a
             href="/"
             className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.15em] text-muted hover:text-accentLight"
