@@ -428,7 +428,7 @@ function deleteProduct_(id){
   const n=Number(id);
   if(!Number.isInteger(n)||n<1)throw new Error('ID do produto inválido.');
   const sh=sheet(S.products),row=findRow(sh,1,n);
-  if(!row||String(sh.getRange(row,3).getValue())==='Excluído')throw new Error('Produto não encontrado.');
+  if(!row||String(sh.getRange(row,3).getValues()[0][0])==='Excluído')throw new Error('Produto não encontrado.');
   // Soft delete: preserva IDs e integridade dos pedidos antigos.
   sh.getRange(row,3).setValue('Excluído');
   sh.getRange(row,23).setValue(new Date());

@@ -12,12 +12,14 @@ function setup(){
  ctx.products=()=>[{id:1,active:'Sim',name:'Peça',price:20,salePrice:0}];
  ctx.allocateOrderId=()=>42;ctx.ensureAffiliateCols=()=>[33,34,35];
  ctx.setBalanceFormula=()=>{};ctx.upsertCustomer=()=>{};ctx.log=()=>{};
+  ctx.trackToken_=()=> 'fixture-tracking-token';
  return {ctx,rows};
 }
 const payload={checkoutId:'CHK-regression',name:'Teste local',phone:'19999999999',cart:[{id:1,quantity:2}],subtotal:40};
 test('quick checkout stores an order with only visible contact fields and no invented address',()=>{
  const {ctx,rows}=setup();const result=ctx.createCheckout(payload);
  assert.equal(result.ok,true);assert.equal(result.checkoutId,payload.checkoutId);
+  assert.equal(result.trackingToken,'fixture-tracking-token');
  assert.equal(rows.length,1);assert.equal(rows[0][6],payload.name);assert.equal(rows[0][7],payload.phone);
  assert.equal(rows[0][8],'');assert.equal(rows[0][9],'');assert.equal(rows[0][22],40);
 });

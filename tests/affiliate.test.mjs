@@ -169,10 +169,12 @@ test('checkout preserves 54 operational columns and appends affiliate headers on
   ctx.saveAffiliate(affiliate,'create');
   assert.equal(ctx.createCheckout({...payload,checkoutId:'CHK-columns'}).ok,true);
   assert.deepEqual(orders.rows[0].slice(0,54),headers);
-  assert.deepEqual(orders.rows[1].slice(54),[affiliate.code,20,32]);
+  assert.deepEqual(orders.rows[1].slice(54,57),[affiliate.code,20,32]);
+   assert.equal(orders.rows[0][57],'Token de acompanhamento');
+   assert.ok(orders.rows[1][57]);
   assert.ok(orders.rows[1].slice(32,54).every(v=>v===''));
   ctx.createQuote({siteId:'SITE-extra',name:'Teste',phone:'19999999999',cep:'13600000',product:'Peça',affiliateCode:affiliate.code,affiliateRate:20});
-  assert.equal(orders.rows[0].length,57);
+  assert.equal(orders.rows[0].length,58);
   assert.deepEqual(orders.rows[2].slice(54),[affiliate.code,20,'']);
 });
 
@@ -182,6 +184,7 @@ test('existing affiliate headers are reused even when reordered among extra colu
   orders.rows[0][40]='Valor acréscimo afiliado';orders.rows[0][50]='Afiliado';orders.rows[0][35]='Acréscimo afiliado (%)';
   const headers=[...orders.rows[0]];
   ctx.saveAffiliate(affiliate,'create');ctx.createCheckout(payload);
-  assert.deepEqual(orders.rows[0],headers);
+  assert.deepEqual(orders.rows[0].slice(0,54),headers);
+   assert.equal(orders.rows[0][54],'Token de acompanhamento');
   assert.equal(orders.rows[1][50],affiliate.code);assert.equal(orders.rows[1][35],20);assert.equal(orders.rows[1][40],32);
 });
