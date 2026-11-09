@@ -518,7 +518,7 @@ function saveProduct(p,mode){
   }else{
     id=req;
     row=findRow(sh,1,id);
-    if(!row||String(sh.getRange(row,3).getValue())==='Excluído')throw new Error('Produto #'+id+' não encontrado para edição.');
+    if(!row||String(sh.getRange(row,3).getValues()[0][0])==='Excluído')throw new Error('Produto #'+id+' não encontrado para edição.');
   }
 
   const normalizedDims={};
