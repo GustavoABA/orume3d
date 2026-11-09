@@ -9,7 +9,7 @@ import { PreferencesProvider } from './context/PreferencesContext';
 import { ToastProvider } from './context/ToastContext';
 
 // Inicia a consulta enquanto o código da página inicial é carregado.
-if (!/\/(admin|checkout)\/?$/.test(window.location.pathname)) void loadCatalog().catch(() => undefined);
+if (!/\/(admin|checkout|pedido)\/?$/.test(window.location.pathname)) void loadCatalog().catch(() => undefined);
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>

@@ -10,12 +10,14 @@ const Home = lazy(() => import('./pages/Home'));
 const Wishlist = lazy(() => import('./pages/Wishlist'));
 const Admin = lazy(() => import('./pages/AdminPortal'));
 const Checkout = lazy(() => import('./pages/Checkout'));
+const OrderTracking = lazy(() => import('./pages/OrderTracking'));
 
 const App = () => {
   const rawPathname = window.location.pathname.replace(/\/+$/, '') || '/';
   const pathname = rawPathname.replace(/^\/orume3d(?=\/|$)/, '') || '/';
   const isAdminRoute = pathname === '/admin';
   const isCheckoutRoute = pathname === '/checkout';
+  const isTrackingRoute = pathname === '/pedido';
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isQuoteOpen, setIsQuoteOpen] = useState(false);
   const [activePage, setActivePage] = useState<'home' | 'wishlist'>('home');
@@ -40,6 +42,10 @@ const App = () => {
         <Admin />
       </Suspense>
     );
+  }
+
+  if (isTrackingRoute) {
+    return <Suspense fallback={<div className="min-h-screen bg-background p-10 text-center text-stone-500">CARREGANDO PEDIDO ORUME…</div>}><OrderTracking /></Suspense>;
   }
 
   if (isCheckoutRoute) {

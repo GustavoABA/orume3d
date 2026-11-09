@@ -1,6 +1,6 @@
 const SPREADSHEET_ID='1IGZ0KY2J5E87qdl4Gza3w0v_Tz_vsESCH9EHMGZtPoI';
 const S={orders:'Pedidos',products:'Produtos',customers:'Clientes',logs:'Logs',history:'Histórico'};
-const MAX_ORDER_ID=1000, DONE=['Concluído','Cancelado'], VERSION=5;
+const MAX_ORDER_ID=1000, DONE=['Concluído','Cancelado','Excluído'], VERSION=6;
 
 function doGet(e){
   try{
@@ -9,6 +9,7 @@ function doGet(e){
     if(a==='catalog')return out({ok:true,products:publicCatalog()},p.callback);
     if(a==='affiliate')return out({ok:true,affiliate:needAffiliate(p.code)},p.callback);
     if(a==='status')return out(orderStatus(p.siteId),p.callback);
+    if(a==='customerOrder')return out(customerOrder_(p.token),p.callback);
     needAdmin(p.adminKey);
     if(a==='adminSnapshot')return out({ok:true,orders:listOrders(),products:products(),affiliates:affiliates()},p.callback);
     if(a==='adminOrder')return out({ok:true,order:orderById(p.id)},p.callback);
@@ -27,10 +28,13 @@ function doPost(e){
     const p=parseBody(e),a=String(p.action||'quote');
     if(a==='createCheckout')return out(createCheckout(p));
     if(a==='quote')return out(createQuote(p));
+    if(a==='customerUpdateOrder')return out(customerUpdateOrder_(p));
     needAdmin(p.adminKey);
     if(a==='adminSaveOrder')return out({ok:true,order:saveOrder(p.order||{})});
     if(a==='adminCompleteOrder')return out({ok:true,order:completeOrder(p.id)});
+    if(a==='adminDeleteOrder')return out(deleteOrder_(p.id));
     if(a==='adminSaveProduct')return out({ok:true,product:saveProduct(p.product||{},p.mode||'')});
+    if(a==='adminDeleteProduct')return out(deleteProduct_(p.id));
     if(a==='adminSaveAffiliate')return out({ok:true,affiliate:saveAffiliate(p.affiliate||{},p.mode||'')});
     return out({ok:false,error:'Ação POST desconhecida.'});
   }catch(err){
@@ -164,7 +168,7 @@ function createCheckout(p){
   const sh=sheet(S.orders),dup=findRow(sh,2,checkoutId);
   if(dup){
     const r=sh.getRange(dup,1,1,32).getValues()[0];
-    return{ok:true,duplicate:true,checkoutId,orderId:fmtId(r[0]),uid:r[31],status:r[4]};
+    return{ok:true,duplicate:true,checkoutId,orderId:fmtId(r[0]),uid:r[31],status:r[4],trackingToken:trackToken_(sh,dup)};
   }
 
   const aff=checkoutAffiliate(p),cat=products();
@@ -206,9 +210,10 @@ function createCheckout(p){
   appendOrderWithAffiliate(sh,row,affiliateColumns);
   setBalanceFormula(sh,sh.getLastRow());
   upsertCustomer(row);
+  const trackingToken=trackToken_(sh,sh.getLastRow());
   log('Pedido','Criado','Pedido',uid,'Site','Pedido rápido '+fmtId(id),checkoutId);
   return{
-    ok:true,checkoutId,orderId:fmtId(id),uid,status:'Aguardando contato',total:subtotal,
+    ok:true,checkoutId,orderId:fmtId(id),uid,status:'Aguardando contato',total:subtotal,trackingToken,
     message:'Pedido registrado. A Orume vai entrar em contato pelo WhatsApp informado.'
   };
 }
@@ -261,10 +266,19 @@ function orderObj(r){
 function listOrders(){
   const sh=sheet(S.orders),last=sh.getLastRow();
   if(last<=1)return[];
-  return sh.getRange(2,1,last-1,32).getValues()
-    .filter(r=>r[0]!==''&&r[0]!=null)
-    .sort((a,b)=>(b[3]instanceof Date?b[3].getTime():0)-(a[3]instanceof Date?a[3].getTime():0))
-    .slice(0,250).map(orderObj);
+  const rows=sh.getRange(2,1,last-1,32).getValues();
+  const tokenCol=trackingColumn_(sh);
+  const tokens=sh.getRange(2,tokenCol,last-1,1).getValues();
+  return rows.map((r,i)=>({r,i})).filter(x=>x.r[0]!==''&&x.r[0]!=null&&String(x.r[4])!=='Excluído')
+    .sort((a,b)=>(b.r[3]instanceof Date?b.r[3].getTime():0)-(a.r[3]instanceof Date?a.r[3].getTime():0))
+    .slice(0,250).map(x=>{
+      let token=txt(tokens[x.i][0],140);
+      if(!DONE.includes(String(x.r[4]||''))&&!token){
+        token=newTrackingToken_();
+        sh.getRange(x.i+2,tokenCol).setValue(token);
+      }
+      return Object.assign(orderObj(x.r),{trackingToken:DONE.includes(String(x.r[4]||''))?'':token});
+    });
 }
 function orderById(id){
   const sh=sheet(S.orders),row=findRow(sh,1,Number(id));
@@ -291,6 +305,7 @@ function saveOrder(o){
   r[24]=Math.max(0,r[22]-r[23]);
   if(DONE.includes(r[4])&&!r[29])r[29]=new Date();
   sh.getRange(row,1,1,32).setValues([r]);
+  if(DONE.includes(String(r[4]||'')))expireTrackToken_(sh,row);
   return orderObj(r);
 }
 function completeOrder(id){
@@ -299,7 +314,126 @@ function completeOrder(id){
   sh.getRange(row,5).setValue('Concluído');
   sh.getRange(row,4).setValue(new Date());
   sh.getRange(row,30).setValue(new Date());
+  expireTrackToken_(sh,row);
   return orderObj(sh.getRange(row,1,1,32).getValues()[0]);
+}
+
+// O token é um segredo de acesso: nunca usar o ID sequencial do pedido como autenticação.
+const TRACKING_HEADER_='Token de acompanhamento';
+function newTrackingToken_(){
+  return Utilities.getUuid().replace(/-/g,'')+Utilities.getUuid().replace(/-/g,'');
+}
+function trackingColumn_(sh){
+  const width=Math.max(1,sh.getLastColumn());
+  const headers=sh.getRange(1,1,1,width).getValues()[0];
+  const existing=headers.indexOf(TRACKING_HEADER_);
+  if(existing>=0)return existing+1;
+  const column=width+1;
+  if(sh.getMaxColumns()<column)sh.insertColumnsAfter(sh.getMaxColumns(),column-sh.getMaxColumns());
+  sh.getRange(1,column).setValue(TRACKING_HEADER_);
+  return column;
+}
+function trackToken_(sh,row){
+  if(DONE.includes(String(sh.getRange(row,5).getValue()||'')))return'';
+  const col=trackingColumn_(sh);
+  let token=txt(sh.getRange(row,col).getValue(),140);
+  if(!token){
+    token=newTrackingToken_();
+    sh.getRange(row,col).setValue(token);
+  }
+  return token;
+}
+function expireTrackToken_(sh,row){
+  sh.getRange(row,trackingColumn_(sh)).clearContent();
+}
+function authorizedTrackingRow_(value){
+  const token=txt(value,140);
+  if(!/^[0-9a-f]{64}$/i.test(token))throw new Error('Link de acompanhamento inválido ou encerrado.');
+  const sh=sheet(S.orders),row=findRow(sh,trackingColumn_(sh),token);
+  if(!row||DONE.includes(String(sh.getRange(row,5).getValue()||''))){
+    throw new Error('Link de acompanhamento inválido ou encerrado.');
+  }
+  return {sh,row};
+}
+// Lista pública intencionalmente restrita: nunca retornar pagamentos, notas internas, UID ou token.
+function publicOrder_(r){
+  return{
+    displayId:fmtId(r[0]),updatedAt:serial(r[3]),status:r[4]||'',
+    priority:r[5]||'',name:r[6]||'',phone:r[7]||'',city:r[8]||'',cep:r[9]||'',
+    referral:r[10]||'',product:r[11]||'',quantity:r[12]||'',dimensions:r[13]||'',
+    color:r[14]||'',material:r[15]||'',deadline:serial(r[16]),
+    delivery:r[19]||'',cleanService:r[20]||'',tracking:r[27]||''
+  };
+}
+function customerOrder_(token){
+  const target=authorizedTrackingRow_(token);
+  return{ok:true,order:publicOrder_(target.sh.getRange(target.row,1,1,32).getValues()[0])};
+}
+function customerUpdateOrder_(p){
+  const target=authorizedTrackingRow_(p.token),sh=target.sh,row=target.row;
+  const changes=p.changes;
+  if(!changes||typeof changes!=='object'||Array.isArray(changes))throw new Error('Alterações inválidas.');
+  const columns={name:7,phone:8,city:9,cep:10,referral:11,cleanService:21};
+  const keys=Object.keys(changes);
+  if(!keys.length)throw new Error('Nenhum dado foi alterado.');
+  keys.forEach(key=>{
+    if(!Object.prototype.hasOwnProperty.call(columns,key))throw new Error('Campo não permitido.');
+  });
+  const values={};
+  keys.forEach(key=>{
+    let value=changes[key];
+    if(key==='name'){
+      value=txt(value,180);
+      if(!value)throw new Error('Informe o nome do cliente.');
+    }else if(key==='phone'){
+      value=phone(value);
+      if(!value)throw new Error('Informe um WhatsApp válido com DDD.');
+    }else if(key==='cep'){
+      const raw=txt(value,20);
+      value=raw?cep(raw):'';
+      if(raw&&!value)throw new Error('CEP inválido.');
+    }else if(key==='cleanService'){
+      const flag=txt(value,20).toLowerCase();
+      if(!['sim','não','nao'].includes(flag))throw new Error('Selecione Sim ou Não para atendimento clean.');
+      value=flag==='sim'?'Sim':'Não';
+    }else{
+      value=txt(value,key==='city'?180:180);
+    }
+    values[key]=value;
+  });
+  keys.forEach(key=>sh.getRange(row,columns[key]).setValue(values[key]));
+  sh.getRange(row,4).setValue(new Date());
+  const updated=sh.getRange(row,1,1,32).getValues()[0];
+  if(keys.includes('name')||keys.includes('phone'))upsertCustomer(updated);
+  log('Pedido','Atualização cliente','Pedido',updated[31],'Portal do cliente',keys.join(', '),updated[1]);
+  return{ok:true,order:publicOrder_(updated)};
+}
+function deleteOrder_(id){
+  const n=Number(id);
+  if(!Number.isInteger(n)||n<0||n>MAX_ORDER_ID)throw new Error('ID de pedido inválido.');
+  const sh=sheet(S.orders),row=findRow(sh,1,n);
+  if(!row)throw new Error('Pedido não encontrado.');
+  const r=sh.getRange(row,1,1,32).getValues()[0];
+  if(String(r[4])!=='Concluído')throw new Error('Somente pedidos concluídos podem ser excluídos.');
+  // Arquiva a versão final e mantém uma lápide no pedido para impedir recriação pela sincronização.
+  sheet(S.history).appendRow(r.slice(0,32));
+  sh.getRange(row,5).setValue('Excluído');
+  sh.getRange(row,4).setValue(new Date());
+  sh.getRange(row,31).setValue('Excluído pelo administrador');
+  expireTrackToken_(sh,row);
+  log('Pedido','Excluído','Pedido',r[31],'Admin','Pedido '+fmtId(n),r[1]);
+  return{ok:true,deletedId:n};
+}
+function deleteProduct_(id){
+  const n=Number(id);
+  if(!Number.isInteger(n)||n<1)throw new Error('ID do produto inválido.');
+  const sh=sheet(S.products),row=findRow(sh,1,n);
+  if(!row||String(sh.getRange(row,3).getValue())==='Excluído')throw new Error('Produto não encontrado.');
+  // Soft delete: preserva IDs e integridade dos pedidos antigos.
+  sh.getRange(row,3).setValue('Excluído');
+  sh.getRange(row,23).setValue(new Date());
+  log('Produto','Excluído','Produto',n,'Admin','Produto retirado do catálogo','');
+  return{ok:true,deletedId:n};
 }
 
 function normalizeDimension_(v){
@@ -331,7 +465,7 @@ function products(){
   if(last<=1)return[];
   const h=sh.getRange(1,1,1,sh.getLastColumn()).getValues()[0];
   return sh.getRange(2,1,last-1,Math.max(23,h.length)).getValues()
-    .filter(r=>r[0]!==''&&r[0]!=null).map(r=>productObj(r,h));
+    .filter(r=>r[0]!==''&&r[0]!=null&&String(r[2])!=='Excluído').map(r=>productObj(r,h));
 }
 function publicCatalog(){
   return products().filter(p=>yes(p.active)).map(p=>({
@@ -345,7 +479,8 @@ function productById(id){
   const sh=sheet(S.products),row=findRow(sh,1,Number(id));
   if(!row)return null;
   const h=sh.getRange(1,1,1,sh.getLastColumn()).getValues()[0];
-  return productObj(sh.getRange(row,1,1,Math.max(23,h.length)).getValues()[0],h);
+  const r=sh.getRange(row,1,1,Math.max(23,h.length)).getValues()[0];
+  return String(r[2])==='Excluído'?null:productObj(r,h);
 }
 function ensureDims(sh){
   const labels=['Altura (cm)','Largura (cm)','Profundidade (cm)'];
@@ -377,13 +512,13 @@ function saveProduct(p,mode){
   const sh=sheet(S.products),dims=ensureDims(sh),req=Number(p.id);
   let id,row;
   if(String(mode).toLowerCase()==='create'||!Number.isInteger(req)||req<=0){
-    const ids=products().map(x=>x.id);
+    const ids=sh.getLastRow()>1?sh.getRange(2,1,sh.getLastRow()-1,1).getValues().map(r=>Number(r[0])).filter(n=>Number.isInteger(n)&&n>0):[];
     id=ids.length?Math.max.apply(null,ids)+1:1;
     row=sh.getLastRow()+1;
   }else{
     id=req;
     row=findRow(sh,1,id);
-    if(!row)throw new Error('Produto #'+id+' não encontrado para edição.');
+    if(!row||String(sh.getRange(row,3).getValue())==='Excluído')throw new Error('Produto #'+id+' não encontrado para edição.');
   }
 
   const normalizedDims={};

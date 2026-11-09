@@ -15,6 +15,7 @@ type CheckoutResponse = {
   orderId?: string;
   message?: string;
   total?: number;
+  trackingToken?: string;
 };
 
 const readStoredContact = () => {
@@ -40,6 +41,7 @@ const Checkout = () => {
   const [phone, setPhone] = useState(storedContact.phone);
   const [submitting, setSubmitting] = useState(false);
   const [successOrderId, setSuccessOrderId] = useState('');
+  const [successTrackingToken, setSuccessTrackingToken] = useState('');
   const [error, setError] = useState('');
 
   const cartLines = useMemo(
@@ -121,6 +123,7 @@ const Checkout = () => {
       saveContact(cleanName, cleanPhone);
       pendingCheckout.current = { signature: '', id: '' };
       setSuccessOrderId(result.orderId || checkoutId);
+      setSuccessTrackingToken(result.trackingToken || '');
       resetCart();
     } catch (reason) {
       console.error(reason);
@@ -151,6 +154,16 @@ const Checkout = () => {
           <p className="mt-3 text-xs leading-5 text-muted/70">
             Seu nome e WhatsApp ficaram salvos neste navegador para facilitar os próximos pedidos.
           </p>
+          {successTrackingToken && (
+            <div className="mt-6 rounded-2xl border border-accent/30 bg-accent/5 p-4">
+              <p className="text-sm font-semibold text-paper">Acompanhe seu pedido</p>
+              <p className="mt-2 text-xs leading-5 text-muted">Guarde este link exclusivo. Ele fica disponível enquanto o pedido estiver em aberto.</p>
+              <a href={'/pedido/?token=' + encodeURIComponent(successTrackingToken)} className="mt-3 inline-flex w-full justify-center rounded-xl border border-accent/30 bg-accent/10 px-4 py-3 text-sm font-bold text-accentLight">Abrir acompanhamento do pedido</a>
+              <button type="button" onClick={() => {
+                void navigator.clipboard.writeText(window.location.origin + '/pedido/?token=' + encodeURIComponent(successTrackingToken)).catch(() => undefined);
+              }} className="mt-2 w-full rounded-xl border border-paper/20 px-4 py-2 text-xs font-semibold text-paper">Copiar link de acompanhamento</button>
+            </div>
+          )}
           <a href={buildWhatsAppUrl(`Olá, fiz o pedido #${successOrderId} no site da orume e gostaria de combinar os detalhes.`)} target="_blank" rel="noopener noreferrer" className="mt-6 inline-flex w-full justify-center rounded-full bg-accent px-6 py-3 text-sm font-bold text-ink">Continuar no WhatsApp</a>
           <a
             href="/"

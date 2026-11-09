@@ -12,9 +12,9 @@ Spreadsheet ID: `1IGZ0KY2J5E87qdl4Gza3w0v_Tz_vsESCH9EHMGZtPoI`
 
 ## Implantação atual
 
-- Versão do backend (`action=ping`): **5**
-- Versão da implantação Google: **10**
-- Atualizada em: **16/10/2026**
+- Versão do backend (`action=ping`): **6**
+- Versão da implantação Google: **10** (atual; substituir por nova versão manualmente)
+- Alteração do código no GitHub: **09/11/2026**; implantação Google v6 **pendente**
 - Deployment ID: `AKfycbz0xzUYiXoI5GOJIKn4_Nnk81wSUeUVZqMkBD8sSjj3xO58HJJ2qh__f7lcIiT2sq2XQQ`
 - Web App: `https://script.google.com/macros/s/AKfycbz0xzUYiXoI5GOJIKn4_Nnk81wSUeUVZqMkBD8sSjj3xO58HJJ2qh__f7lcIiT2sq2XQQ/exec`
 
@@ -22,7 +22,7 @@ Spreadsheet ID: `1IGZ0KY2J5E87qdl4Gza3w0v_Tz_vsESCH9EHMGZtPoI`
 
 ## Checkout rápido e compatibilidade
 
-O checkout coleta somente nome e WhatsApp, além dos itens do carrinho. CEP, cidade e e-mail não são exigidos nessa etapa e não devem receber valores fictícios. A implantação usada pelo site precisa responder `version: 5` ao `action=ping`. Em 16/10/2026, o código v5 já estava salvo, mas o Web App ainda executava a versão antiga; a implantação existente foi atualizada para a versão Google 9, preservando a URL.
+O checkout coleta somente nome e WhatsApp, além dos itens do carrinho. CEP, cidade e e-mail não são exigidos nessa etapa e não devem receber valores fictícios. A implantação usada pelo site precisa responder `version: 6` ao `action=ping`. Em 16/10/2026, o código v5 já estava salvo, mas o Web App ainda executava a versão antiga; a implantação existente foi atualizada para a versão Google 9, preservando a URL.
 
 O formulário de orçamento continua tendo suas próprias exigências. O deploy do GitHub não publica o código do Apps Script: salvar no editor também não basta; é necessário editar a implantação e selecionar uma nova versão.
 
@@ -114,3 +114,13 @@ Referência: https://developers.google.com/apps-script/guides/content
 Os campos de afiliado são localizados pelo título, depois das 32 colunas-base. Campos ausentes são acrescentados ao final da aba, preservando as colunas operacionais existentes (Responsável, Próxima ação e outras). Checkout e orçamento usam o mesmo mapeamento. Não é necessário mover ou apagar colunas manualmente.
 
 Validação: 67 testes passaram, incluindo a estrutura com 54 colunas e campos de afiliados em posições diferentes.
+
+## Portal do cliente e exclusão controlada (backend v6)
+
+A implantação existente do Google Apps Script precisa ser atualizada **manualmente** para estas funções operarem. No projeto Apps Script atual, substitua o arquivo principal pelo conteúdo de `backend/google-apps-script/Code.gs`. O arquivo `backend/Orume_Backend_Atual.gs` é somente espelho: não instale os dois como scripts separados porque contêm funções duplicadas. Preserve módulos de sincronização, gatilhos e Script Properties.
+
+**Implantar → Gerenciar implantações → Editar → Nova versão → Implantar.** Mantenha o mesmo endereço `/exec` e verifique `action=ping`: deve responder `version: 6`.
+
+Novas rotas: `customerOrder` (GET com token), `customerUpdateOrder` (POST com token), `adminDeleteOrder`, `adminDeleteProduct`. Tokens são gerados pelo servidor, constam na confirmação do checkout e no snapshot administrativo, e são invalidados ao concluir/cancelar o pedido. A exclusão de pedido exige status **Concluído**, grava uma cópia em Histórico e deixa registro marcado Excluído em Pedidos para impedir recriação pelo sincronizador. Produtos removidos são ocultos por soft delete, mantendo ID antigo.
+
+O deploy automático de GitHub Pages não publica o backend. **Antes da atualização manual do Apps Script o portal, a edição por cliente e as exclusões não funcionarão**, embora o site continue com o checkout existente.

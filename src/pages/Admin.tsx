@@ -34,6 +34,7 @@ export type Order = {
   paymentMethod: string;
   paymentStatus: string;
   tracking: string;
+  trackingToken?: string;
 };
 
 type ProductSource = 'Shopee' | 'Interno' | '';
@@ -163,6 +164,7 @@ const Admin = () => {
   const [affiliatesSupported, setAffiliatesSupported] = useState(false);
   const [status, setStatus] = useState('');
   const [busy, setBusy] = useState(false);
+  const [productMenu, setProductMenu] = useState<{ id: number; x: number; y: number } | null>(null);
 
 
   const startNewProduct = () => {
@@ -265,6 +267,41 @@ const Admin = () => {
       setStatus('Pedido marcado como concluído.');
     } catch (error) {
       setStatus(error instanceof Error ? error.message : 'Falha ao concluir.');
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const deleteOrder = async () => {
+    if (!selectedOrder || selectedOrder.status !== 'Concluído') return;
+    if (!window.confirm('Excluir o pedido #' + selectedOrder.displayId + '? O link do cliente será encerrado. O histórico será preservado.')) return;
+    setBusy(true);
+    setStatus('Excluindo pedido…');
+    try {
+      await postBackend(endpoint, { action: 'adminDeleteOrder', adminKey, id: selectedOrder.id });
+      setSelectedOrder(null);
+      await getSnapshot(adminKey);
+      setStatus('Pedido excluído da lista. Histórico preservado.');
+    } catch (error) {
+      setStatus(error instanceof Error ? error.message : 'Falha ao excluir pedido.');
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const deleteProduct = async (product: Product) => {
+    setProductMenu(null);
+    if (!window.confirm('Excluir o produto "' + product.name + '"? Ele sairá do catálogo e da lista de produtos.')) return;
+    setBusy(true);
+    setStatus('Excluindo produto…');
+    try {
+      await postBackend(endpoint, { action: 'adminDeleteProduct', adminKey, id: product.id });
+      setSelectedProduct(emptyProduct());
+      setIsCreatingProduct(false);
+      await getSnapshot(adminKey);
+      setStatus('Produto excluído do catálogo. Referências antigas preservadas.');
+    } catch (error) {
+      setStatus(error instanceof Error ? error.message : 'Falha ao excluir produto.');
     } finally {
       setBusy(false);
     }
@@ -379,13 +416,19 @@ const Admin = () => {
         {status && <div className="mb-5 rounded-2xl border border-accent/[0.12] bg-accent/[0.04] px-4 py-3 text-sm text-paper/70">{status}</div>}
 
         {tab === 'affiliates' ? <Affiliates affiliates={affiliates} supported={affiliatesSupported} endpoint={endpoint} adminKey={adminKey} refresh={() => getSnapshot(adminKey)} /> : tab === 'orders' ? (
-          <Orders products={products} orders={orders} selected={selectedOrder} setSelected={setSelectedOrder} busy={busy} save={saveOrder} complete={completeOrder} />
+          <Orders products={products} orders={orders} selected={selectedOrder} setSelected={setSelectedOrder} busy={busy} save={saveOrder} complete={completeOrder} remove={deleteOrder} />
         ) : (
           <div className="grid gap-5 lg:grid-cols-[350px_1fr]">
             <section className="orume-panel flex max-h-[75vh] flex-col rounded-2xl p-3">
               <button onClick={startNewProduct} className="mb-3 w-full shrink-0 rounded-xl border border-accent/25 bg-accent/10 px-4 py-3 text-sm font-semibold text-accentLight">+ Novo produto</button>
               <div className="min-h-0 flex-1 space-y-2 overflow-auto">
-                {products.map((product) => <button key={product.id} onClick={() => { setSelectedProduct(normalizeProductSource({ ...product })); setIsCreatingProduct(false); setStatus(''); }} className="flex w-full gap-3 rounded-xl border border-accent/10 bg-paper/[0.03] p-3 text-left transition hover:border-accent/30">{(product.imageMain || product.detectedImage) ? <img src={product.imageMain || product.detectedImage} alt="" referrerPolicy="no-referrer" className="h-14 w-14 rounded-lg object-cover" /> : <div className="flex h-14 w-14 items-center justify-center rounded-lg bg-ink text-muted/[0.55]"><CubeIcon className="h-6 w-6" /></div>}<div className="min-w-0 flex-1"><p className="truncate text-sm font-semibold text-paper/90">{product.name || 'Produto sem nome'}</p><p className="mt-1 text-xs text-muted/70">{product.price ? formatBRL(product.price) : 'Sem preço'} • {product.active}</p><span className="mt-2 mr-2 inline-flex rounded-full border border-accent/15 bg-accent/[0.05] px-2.5 py-1 text-[0.56rem] font-bold uppercase tracking-[0.1em] text-accentLight">{product.source === 'Shopee' ? 'Shopee' : 'Interno'}</span></div></button>)}
+                {products.map(product => <div key={product.id} className="relative flex items-center gap-1">
+                  <button disabled={busy} onClick={() => { setProductMenu(null); setSelectedProduct(normalizeProductSource({ ...product })); setIsCreatingProduct(false); setStatus(''); }} onContextMenu={event => { event.preventDefault(); setProductMenu({ id: product.id, x: Math.min(event.clientX, window.innerWidth-220), y: Math.min(event.clientY, window.innerHeight-130) }); }} className="flex min-w-0 flex-1 gap-3 rounded-xl border border-accent/10 bg-paper/[0.03] p-3 text-left transition hover:border-accent/30 disabled:opacity-50">
+                    {(product.imageMain || product.detectedImage) ? <img src={product.imageMain || product.detectedImage} alt="" referrerPolicy="no-referrer" className="h-14 w-14 rounded-lg object-cover" /> : <div className="flex h-14 w-14 items-center justify-center rounded-lg bg-ink text-muted/60"><CubeIcon className="h-6 w-6" /></div>}
+                    <div className="min-w-0 flex-1"><p className="truncate text-sm font-semibold text-paper/90">{product.name || 'Produto sem nome'}</p><p className="mt-1 text-xs text-muted/70">{product.price ? formatBRL(product.price) : 'Sem preço'} • {product.active}</p><span className="mt-2 inline-flex rounded-full border border-accent/15 bg-accent/5 px-2.5 py-1 text-[0.56rem] font-bold uppercase tracking-[0.1em] text-accentLight">{product.source === 'Shopee' ? 'Shopee' : 'Interno'}</span></div>
+                  </button>
+                  <button type="button" disabled={busy} aria-label={'Mais ações para '+product.name} onClick={() => setProductMenu({ id: product.id, x: Math.max(12,window.innerWidth-230), y: Math.min(window.innerHeight-125,window.innerHeight/2) })} className="rounded-lg border border-paper/10 px-2 py-3 text-lg text-muted hover:text-paper">⋮</button>
+                </div>)}
               </div>
             </section>
 
@@ -460,10 +503,12 @@ const Admin = () => {
               </div>
 
               <label className="mt-4 block text-xs font-semibold text-muted">Observações internas<textarea className={inputClass + ' min-h-20 resize-y'} value={selectedProduct.adminNotes} onChange={(e) => setSelectedProduct((p) => ({ ...p, adminNotes: e.target.value }))} /></label>
+              {!isCreatingProduct && selectedProduct.id > 0 && <button type="button" disabled={busy} onClick={() => void deleteProduct(selectedProduct)} className="mt-6 rounded-xl border border-red-400/30 px-5 py-3 text-sm font-semibold text-red-300 hover:bg-red-500/10 disabled:opacity-40">Excluir produto</button>}
             </section>
           </div>
         )}
       </div>
+      {productMenu && <><button type="button" aria-label="Fechar menu de produto" className="fixed inset-0 z-40 cursor-default" onClick={() => setProductMenu(null)} /><div className="fixed z-50 w-52 rounded-xl border border-paper/20 bg-surface p-2 shadow-2xl" style={{ left: Math.max(12,productMenu.x), top: Math.max(12,productMenu.y) }}><button type="button" className="block w-full rounded-lg px-4 py-2 text-left text-sm hover:bg-paper/10" onClick={() => { const p=products.find(item => item.id === productMenu?.id); if(p){setSelectedProduct(normalizeProductSource({...p}));setIsCreatingProduct(false);setStatus('');}setProductMenu(null); }}>Editar produto</button><button type="button" className="block w-full rounded-lg px-4 py-2 text-left text-sm text-red-300 hover:bg-red-500/10" onClick={() => { const p=products.find(item=>item.id===productMenu.id); if(p)void deleteProduct(p); else setProductMenu(null); }}>Excluir produto</button></div></>}
     </main>
   );
 };
