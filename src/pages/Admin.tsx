@@ -1,7 +1,7 @@
 import Orders from '../components/admin/Orders';
 import Affiliates from '../components/admin/Affiliates';
 import type { Affiliate } from '../lib/affiliate';
-import { FormEvent, useEffect, useMemo, useState } from 'react';
+import { FormEvent, useEffect, useMemo, useState, type MouseEvent } from 'react';
 import { ArrowPathIcon, ArrowTopRightOnSquareIcon, CubeIcon, ShoppingBagIcon } from '@heroicons/react/24/outline';
 import { loadBackendConfig, jsonp, postBackend } from '../lib/backend';
 import { formatBRL } from '../lib/format';
@@ -166,6 +166,30 @@ const Admin = () => {
   const [busy, setBusy] = useState(false);
   const [productMenu, setProductMenu] = useState<{ id: number; x: number; y: number } | null>(null);
 
+  // Posiciona o menu junto ao produto acionado, sem depender da borda da tela.
+  const openProductMenu = (id: number, event: MouseEvent<HTMLElement>, atCursor = false) => {
+    const rect = event.currentTarget.getBoundingClientRect();
+    const menuWidth = 208;
+    const menuHeight = 112;
+    const margin = 12;
+    const proposedX = atCursor ? event.clientX : rect.right - menuWidth;
+    const proposedY = atCursor ? event.clientY : rect.bottom + 6;
+    setProductMenu({
+      id,
+      x: Math.max(margin, Math.min(proposedX, window.innerWidth - menuWidth - margin)),
+      y: Math.max(margin, Math.min(proposedY, window.innerHeight - menuHeight - margin)),
+    });
+  };
+
+  // A implantação Apps Script precisa reconhecer as ações de exclusão (backend v6+).
+  const requireDeletionBackend = async () => {
+    const result = await jsonp<{ ok: boolean; version?: number }>(endpoint, { action: 'ping' }, 15000);
+    const version = Number(result.version);
+    if (!result.ok || !Number.isInteger(version) || version < 6) {
+      throw new Error('Exclusão indisponível: o Google Apps Script publicado está desatualizado. Atualize o Code.gs para a versão 6 e escolha Nova versão na implantação existente.');
+    }
+  };
+
 
   const startNewProduct = () => {
     setSelectedProduct(emptyProduct());
@@ -278,6 +302,7 @@ const Admin = () => {
     setBusy(true);
     setStatus('Excluindo pedido…');
     try {
+      await requireDeletionBackend();
       await postBackend(endpoint, { action: 'adminDeleteOrder', adminKey, id: selectedOrder.id });
       setSelectedOrder(null);
       await getSnapshot(adminKey);
@@ -295,6 +320,7 @@ const Admin = () => {
     setBusy(true);
     setStatus('Excluindo produto…');
     try {
+      await requireDeletionBackend();
       await postBackend(endpoint, { action: 'adminDeleteProduct', adminKey, id: product.id });
       setSelectedProduct(emptyProduct());
       setIsCreatingProduct(false);
@@ -423,11 +449,11 @@ const Admin = () => {
               <button onClick={startNewProduct} className="mb-3 w-full shrink-0 rounded-xl border border-accent/25 bg-accent/10 px-4 py-3 text-sm font-semibold text-accentLight">+ Novo produto</button>
               <div className="min-h-0 flex-1 space-y-2 overflow-auto">
                 {products.map(product => <div key={product.id} className="relative flex items-center gap-1">
-                  <button disabled={busy} onClick={() => { setProductMenu(null); setSelectedProduct(normalizeProductSource({ ...product })); setIsCreatingProduct(false); setStatus(''); }} onContextMenu={event => { event.preventDefault(); setProductMenu({ id: product.id, x: Math.min(event.clientX, window.innerWidth-220), y: Math.min(event.clientY, window.innerHeight-130) }); }} className="flex min-w-0 flex-1 gap-3 rounded-xl border border-accent/10 bg-paper/[0.03] p-3 text-left transition hover:border-accent/30 disabled:opacity-50">
+                  <button disabled={busy} onClick={() => { setProductMenu(null); setSelectedProduct(normalizeProductSource({ ...product })); setIsCreatingProduct(false); setStatus(''); }} onContextMenu={event => { event.preventDefault(); openProductMenu(product.id, event, true); }} className="flex min-w-0 flex-1 gap-3 rounded-xl border border-accent/10 bg-paper/[0.03] p-3 text-left transition hover:border-accent/30 disabled:opacity-50">
                     {(product.imageMain || product.detectedImage) ? <img src={product.imageMain || product.detectedImage} alt="" referrerPolicy="no-referrer" className="h-14 w-14 rounded-lg object-cover" /> : <div className="flex h-14 w-14 items-center justify-center rounded-lg bg-ink text-muted/60"><CubeIcon className="h-6 w-6" /></div>}
                     <div className="min-w-0 flex-1"><p className="truncate text-sm font-semibold text-paper/90">{product.name || 'Produto sem nome'}</p><p className="mt-1 text-xs text-muted/70">{product.price ? formatBRL(product.price) : 'Sem preço'} • {product.active}</p><span className="mt-2 inline-flex rounded-full border border-accent/15 bg-accent/5 px-2.5 py-1 text-[0.56rem] font-bold uppercase tracking-[0.1em] text-accentLight">{product.source === 'Shopee' ? 'Shopee' : 'Interno'}</span></div>
                   </button>
-                  <button type="button" disabled={busy} aria-label={'Mais ações para '+product.name} onClick={() => setProductMenu({ id: product.id, x: Math.max(12,window.innerWidth-230), y: Math.min(window.innerHeight-125,window.innerHeight/2) })} className="rounded-lg border border-paper/10 px-2 py-3 text-lg text-muted hover:text-paper">⋮</button>
+                  <button type="button" disabled={busy} aria-label={'Mais ações para '+product.name} onClick={event => openProductMenu(product.id, event)} className="rounded-lg border border-paper/10 px-2 py-3 text-lg text-muted hover:text-paper">⋮</button>
                 </div>)}
               </div>
             </section>
@@ -508,7 +534,7 @@ const Admin = () => {
           </div>
         )}
       </div>
-      {productMenu && <><button type="button" aria-label="Fechar menu de produto" className="fixed inset-0 z-40 cursor-default" onClick={() => setProductMenu(null)} /><div className="fixed z-50 w-52 rounded-xl border border-paper/20 bg-surface p-2 shadow-2xl" style={{ left: Math.max(12,productMenu.x), top: Math.max(12,productMenu.y) }}><button type="button" className="block w-full rounded-lg px-4 py-2 text-left text-sm hover:bg-paper/10" onClick={() => { const p=products.find(item => item.id === productMenu?.id); if(p){setSelectedProduct(normalizeProductSource({...p}));setIsCreatingProduct(false);setStatus('');}setProductMenu(null); }}>Editar produto</button><button type="button" className="block w-full rounded-lg px-4 py-2 text-left text-sm text-red-300 hover:bg-red-500/10" onClick={() => { const p=products.find(item=>item.id===productMenu.id); if(p)void deleteProduct(p); else setProductMenu(null); }}>Excluir produto</button></div></>}
+      {productMenu && <><button type="button" aria-label="Fechar menu de produto" className="fixed inset-0 z-40 cursor-default" onClick={() => setProductMenu(null)} /><div className="fixed z-50 w-52 rounded-xl border border-paper/20 bg-surface p-2 shadow-2xl" style={{ left: productMenu.x, top: productMenu.y }}><button type="button" className="block w-full rounded-lg px-4 py-2 text-left text-sm hover:bg-paper/10" onClick={() => { const p=products.find(item => item.id === productMenu?.id); if(p){setSelectedProduct(normalizeProductSource({...p}));setIsCreatingProduct(false);setStatus('');}setProductMenu(null); }}>Editar produto</button><button type="button" className="block w-full rounded-lg px-4 py-2 text-left text-sm text-red-300 hover:bg-red-500/10" onClick={() => { const p=products.find(item=>item.id===productMenu.id); if(p)void deleteProduct(p); else setProductMenu(null); }}>Excluir produto</button></div></>}
     </main>
   );
 };
